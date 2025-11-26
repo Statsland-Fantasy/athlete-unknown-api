@@ -218,6 +218,26 @@ func handleSubmitResults(w http.ResponseWriter, r *http.Request) {
 		round.Stats.HighestScore = result.Score
 	}
 
+	// Track tile flips
+	if len(result.TilesFlipped) > 0 {
+		// Track first tile flipped
+		incrementTileTracker(&round.Stats.FirstTileFlippedTracker, result.TilesFlipped[0])
+
+		// Track last tile flipped
+		incrementTileTracker(&round.Stats.LastTileFlippedTracker, result.TilesFlipped[len(result.TilesFlipped)-1])
+
+		// Track all tiles flipped
+		for _, tile := range result.TilesFlipped {
+			incrementTileTracker(&round.Stats.MostTileFlippedTracker, tile)
+		}
+
+		// Recalculate most/least common tiles
+		round.Stats.MostCommonFirstTileFlipped = findMostCommonTile(&round.Stats.FirstTileFlippedTracker)
+		round.Stats.MostCommonLastTileFlipped = findMostCommonTile(&round.Stats.LastTileFlippedTracker)
+		round.Stats.MostCommonTileFlipped = findMostCommonTile(&round.Stats.MostTileFlippedTracker)
+		round.Stats.LeastCommonTileFlipped = findLeastCommonTile(&round.Stats.MostTileFlippedTracker)
+	}
+
 	// Save the updated round
 	err = db.UpdateRound(ctx, round)
 	if err != nil {
