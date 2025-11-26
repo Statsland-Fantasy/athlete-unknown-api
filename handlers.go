@@ -1,61 +1,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sort"
-	"sync"
 	"time"
 )
 
-// In-memory storage
-var (
-	rounds      = make(map[string]*Round)      // key: sport_playDate
-	userStats   = make(map[string]*UserStats)  // key: userId
-	roundsMutex sync.RWMutex
-	statsMutex  sync.RWMutex
-)
-
-func init() {
-	// Initialize with sample data
-	sampleRound := &Round{
-		RoundID:               "Basketball100",
-		Sport:                 "basketball",
-		PlayDate:              "2025-11-24",
-		Created:               time.Now(),
-		LastUpdated:           time.Now(),
-		PreviouslyPlayedDates: []string{"2025-11-01", "2025-11-08"},
-		Player: Player{
-			Sport:                "basketball",
-			SportsReferenceURL:   "https://www.basketball-reference.com/players/j/jamesle01.html",
-			Name:                 "LeBron James",
-			Bio:                  "DOB: December 30, 1984 in Akron, Ohio",
-			PlayerInformation:    `6'9", 250 lbs, Forward, Shoots Right`,
-			DraftInformation:     "Round 1 (1st overall) from St. Vincent-St. Mary High School",
-			YearsActive:          "2003-Present",
-			TeamsPlayedOn:        "CLE, MIA, LAL",
-			JerseyNumbers:        "#23, #6",
-			CareerStats:          "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5",
-			PersonalAchievements: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist",
-			Photo:                "https://cdn.triviagame.com/players/lebron-james.jpg",
-		},
-		Stats: RoundStats{
-			PlayDate:                   "2025-11-24",
-			Name:                       "LeBron James",
-			Sport:                      "basketball",
-			TotalPlays:                 1247,
-			PercentageCorrect:          68.5,
-			HighestScore:               9,
-			AverageCorrectScore:        7.8,
-			MostCommonFirstTileFlipped: "tile1",
-			MostCommonLastTileFlipped:  "tile9",
-			MostCommonTileFlipped:      "tile5",
-			LeastCommonTileFlipped:     "tile3",
-		},
-	}
-	rounds["basketball_2025-11-24"] = sampleRound
-}
+// Global DB instance
+var db *DB
 
 // handleGetRound handles GET /v1/round
 func handleGetRound(w http.ResponseWriter, r *http.Request) {
@@ -80,15 +34,15 @@ func handleGetRound(w http.ResponseWriter, r *http.Request) {
 	if playDate == "" {
 		playDate = time.Now().Format("2006-01-02")
 	}
-	fmt.Println("playdateeee", playDate)
 
-	key := sport + "_" + playDate
+	ctx := context.Background()
+	round, err := db.GetRound(ctx, sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to retrieve round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
 
-	roundsMutex.RLock()
-	round, exists := rounds[key]
-	roundsMutex.RUnlock()
-
-	if !exists {
+	if round == nil {
 		errorResponseWithCode(w, "Not Found", "No round found for the specified sport and playDate", "ROUND_NOT_FOUND", http.StatusNotFound)
 		return
 	}
@@ -123,29 +77,16 @@ func handleCreateRound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := round.Sport + "_" + round.PlayDate
-
-	roundsMutex.Lock()
-	if _, exists := rounds[key]; exists {
-		roundsMutex.Unlock()
-		errorResponseWithCode(w, "Conflict", "Round already exists for sport '"+round.Sport+"' on playDate '"+round.PlayDate+"'", "ROUND_ALREADY_EXISTS", http.StatusConflict)
+	ctx := context.Background()
+	err := db.CreateRound(ctx, &round)
+	if err != nil {
+		if err.Error() == "round already exists" {
+			errorResponseWithCode(w, "Conflict", "Round already exists for sport '"+round.Sport+"' on playDate '"+round.PlayDate+"'", "ROUND_ALREADY_EXISTS", http.StatusConflict)
+			return
+		}
+		errorResponseWithCode(w, "Internal Server Error", "Failed to create round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
 		return
 	}
-
-	// Set timestamps
-	now := time.Now()
-	round.Created = now
-	round.LastUpdated = now
-
-	// Initialize stats if not provided
-	if round.Stats.PlayDate == "" {
-		round.Stats.PlayDate = round.PlayDate
-		round.Stats.Name = round.Player.Name
-		round.Stats.Sport = round.Sport
-	}
-
-	rounds[key] = &round
-	roundsMutex.Unlock()
 
 	jsonResponse(w, round, http.StatusCreated)
 }
@@ -169,17 +110,24 @@ func handleDeleteRound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := sport + "_" + playDate
+	ctx := context.Background()
 
-	roundsMutex.Lock()
-	if _, exists := rounds[key]; !exists {
-		roundsMutex.Unlock()
+	// Check if the round exists first
+	round, err := db.GetRound(ctx, sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to check round existence: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
+	if round == nil {
 		errorResponseWithCode(w, "Not Found", "Round not found for sport '"+sport+"' on playDate '"+playDate+"'", "ROUND_NOT_FOUND", http.StatusNotFound)
 		return
 	}
 
-	delete(rounds, key)
-	roundsMutex.Unlock()
+	err = db.DeleteRound(ctx, sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to delete round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -200,24 +148,12 @@ func handleGetUpcomingRounds(w http.ResponseWriter, r *http.Request) {
 	startDate := r.URL.Query().Get("startDate")
 	endDate := r.URL.Query().Get("endDate")
 
-	roundsMutex.RLock()
-	var upcomingRounds []*Round
-	for _, round := range rounds {
-		if round.Sport != sport {
-			continue
-		}
-
-		// Filter by date range if provided
-		if startDate != "" && round.PlayDate < startDate {
-			continue
-		}
-		if endDate != "" && round.PlayDate > endDate {
-			continue
-		}
-
-		upcomingRounds = append(upcomingRounds, round)
+	ctx := context.Background()
+	upcomingRounds, err := db.GetRoundsBySport(ctx, sport, startDate, endDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to retrieve rounds: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
 	}
-	roundsMutex.RUnlock()
 
 	if len(upcomingRounds) == 0 {
 		errorResponseWithCode(w, "Not Found", "No upcoming rounds found for sport '"+sport+"' in the specified date range", "NO_UPCOMING_ROUNDS", http.StatusNotFound)
@@ -253,19 +189,19 @@ func handleSubmitResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := sport + "_" + playDate
+	ctx := context.Background()
 
-	roundsMutex.RLock()
-	round, exists := rounds[key]
-	roundsMutex.RUnlock()
-
-	if !exists {
+	round, err := db.GetRound(ctx, sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to retrieve round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
+	if round == nil {
 		errorResponseWithCode(w, "Not Found", "Round not found for sport '"+sport+"' on date '"+playDate+"'", "ROUND_NOT_FOUND", http.StatusNotFound)
 		return
 	}
 
 	// Update round statistics
-	roundsMutex.Lock()
 	round.Stats.TotalPlays++
 	if result.IsCorrect {
 		correctCount := int(round.Stats.PercentageCorrect * float64(round.Stats.TotalPlays-1) / 100)
@@ -282,8 +218,12 @@ func handleSubmitResults(w http.ResponseWriter, r *http.Request) {
 		round.Stats.HighestScore = result.Score
 	}
 
-	round.LastUpdated = time.Now()
-	roundsMutex.Unlock()
+	// Save the updated round
+	err = db.UpdateRound(ctx, round)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to update round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
 
 	jsonResponse(w, result, http.StatusOK)
 }
@@ -303,13 +243,14 @@ func handleGetRoundStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := sport + "_" + playDate
+	ctx := context.Background()
+	round, err := db.GetRound(ctx, sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to retrieve round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
 
-	roundsMutex.RLock()
-	round, exists := rounds[key]
-	roundsMutex.RUnlock()
-
-	if !exists {
+	if round == nil {
 		errorResponseWithCode(w, "Not Found", "No statistics found for sport '"+sport+"' on date '"+playDate+"'", "STATS_NOT_FOUND", http.StatusNotFound)
 		return
 	}
@@ -330,11 +271,14 @@ func handleGetUserStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	statsMutex.RLock()
-	stats, exists := userStats[userID]
-	statsMutex.RUnlock()
+	ctx := context.Background()
+	stats, err := db.GetUserStats(ctx, userID)
+	if err != nil {
+		errorResponseWithCode(w, "Internal Server Error", "Failed to retrieve user stats: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
+		return
+	}
 
-	if !exists {
+	if stats == nil {
 		errorResponseWithCode(w, "Not Found", "No statistics found for user '"+userID+"'", "USER_STATS_NOT_FOUND", http.StatusNotFound)
 		return
 	}

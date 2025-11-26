@@ -9,6 +9,18 @@ import (
 )
 
 func main() {
+	// Load configuration
+	cfg := LoadConfig()
+
+	// Initialize DynamoDB client
+	var err error
+	db, err = NewDB(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize DynamoDB client: %v", err)
+	}
+	log.Printf("DynamoDB client initialized (Rounds Table: %s, User Stats Table: %s, Region: %s)",
+		cfg.RoundsTableName, cfg.UserStatsTableName, cfg.AWSRegion)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

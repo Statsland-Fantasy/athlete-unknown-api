@@ -4,7 +4,9 @@
       "Bash(go version:*)",
       "Bash(go mod init:*)",
       "Bash(go build:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(go get:*)"
     ],
     "deny": [],
     "ask": []

@@ -5,15 +5,87 @@ Backend API to facilitate creation and playing of Athlete Unknown - a sports tri
 
 ### Prerequisites
 - Go 1.25 or higher
+- AWS DynamoDB (or DynamoDB Local for development)
+- AWS credentials configured (via AWS CLI, environment variables, or IAM role)
+
+### Configuration
+
+The API requires the following environment variables for DynamoDB configuration:
+
+- `DYNAMODB_ENDPOINT` (optional): Custom DynamoDB endpoint URL. Use this for DynamoDB Local or custom endpoints. Leave empty for standard AWS DynamoDB.
+- `ROUNDS_TABLE_NAME` (optional): Name of the rounds DynamoDB table. Defaults to `AthleteUnknownRoundsDev`.
+- `USER_STATS_TABLE_NAME` (optional): Name of the user stats DynamoDB table. Defaults to `AthleteUnknownUserStatsDev`.
+- `AWS_REGION` (optional): AWS region for DynamoDB. Defaults to `us-west-2`.
+- `PORT` (optional): Port for the HTTP server. Defaults to `8080`.
+
+### DynamoDB Table Structure
+
+The application uses two separate DynamoDB tables:
+
+#### 1. Rounds Table (AthleteUnknownRoundsDev)
+**Primary Key:**
+- `playDate` (String): Partition key in format `YYYY-MM-DD` (e.g., `2025-11-24`)
+- `sport` (String): Sort key (e.g., `basketball`, `baseball`, `football`)
+
+**Attributes:**
+The table stores Round objects with all their nested attributes (Player, Stats, etc.)
+
+**Example DynamoDB Local table creation:**
+```bash
+aws dynamodb create-table \
+    --table-name AthleteUnknownRoundsDev \
+    --attribute-definitions \
+        AttributeName=playDate,AttributeType=S \
+        AttributeName=sport,AttributeType=S \
+    --key-schema \
+        AttributeName=playDate,KeyType=HASH \
+        AttributeName=sport,KeyType=RANGE \
+    --billing-mode PAY_PER_REQUEST \
+    --endpoint-url http://localhost:8000
+```
+
+#### 2. User Stats Table (AthleteUnknownUserStatsDev)
+**Primary Key:**
+- `userId` (String): Partition key (user's unique identifier)
+
+**Attributes:**
+The table stores UserStats objects with all their nested attributes (Sports, aggregate statistics, etc.)
+
+**Example DynamoDB Local table creation:**
+```bash
+aws dynamodb create-table \
+    --table-name AthleteUnknownUserStatsDev \
+    --attribute-definitions \
+        AttributeName=userId,AttributeType=S \
+    --key-schema \
+        AttributeName=userId,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST \
+    --endpoint-url http://localhost:8000
+```
+
+**Performance Note:**
+The `GetRoundsBySport` endpoint uses a Scan operation to filter by sport. For better performance with large datasets, consider adding a Global Secondary Index (GSI) with `sport` as the partition key and `playDate` as the sort key.
 
 ### Running the API
 
-1. Run the server:
+1. **Using AWS DynamoDB:**
 ```bash
+export AWS_REGION=us-west-2
+export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
+export USER_STATS_TABLE_NAME=AthleteUnknownUserStatsDev
 go run .
 ```
 
-The server will start on port 8080 by default. You can change the port by setting the `PORT` environment variable:
+2. **Using DynamoDB Local:**
+```bash
+export DYNAMODB_ENDPOINT=http://localhost:8000
+export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
+export USER_STATS_TABLE_NAME=AthleteUnknownUserStatsDev
+export AWS_REGION=us-west-2
+go run .
+```
+
+3. **Change the server port:**
 ```bash
 PORT=3000 go run .
 ```
@@ -311,6 +383,16 @@ All error responses follow this format:
 
 ---
 
+## Features
+
+- RESTful API design following OpenAPI 3.0 specification
+- DynamoDB integration for persistent data storage
+- Configurable DynamoDB endpoint (supports DynamoDB Local)
+- CORS support for cross-origin requests
+- Request logging middleware
+- Comprehensive error handling with specific error codes
+- Support for three sports: basketball, baseball, and football
+
 ## Project Structure
 
 ```
@@ -318,17 +400,10 @@ athlete-unknown-api/
 ├── main.go                      # HTTP server setup, routing, and middleware
 ├── handlers.go                  # API endpoint handlers
 ├── models.go                    # Data models and structures
+├── database.go                  # DynamoDB operations
+├── config.go                    # Configuration management
 ├── go.mod                       # Go module definition
+├── go.sum                       # Go module checksums
 ├── AthleteUnknownAPISpec.yaml  # OpenAPI specification
 └── README.md                    # This file
 ```
-
-## Features
-
-- RESTful API design following OpenAPI 3.0 specification
-- In-memory data storage (easily replaceable with database)
-- CORS support for cross-origin requests
-- Request logging middleware
-- Comprehensive error handling with specific error codes
-- Thread-safe operations with mutex locks
-- Support for three sports: basketball, baseball, and football

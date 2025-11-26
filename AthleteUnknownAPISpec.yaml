@@ -80,7 +80,7 @@ paths:
                     previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
                     player:
                       sport: "basketball"
-                      sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
+                      sportsReferencePath: "/players/j/jamesle01.html"
                       name: "LeBron James"
                       bio: "DOB: December 30, 1984 in Akron, Ohio"
                       playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
@@ -114,7 +114,7 @@ paths:
                     previouslyPlayedDates: []
                     player:
                       sport: "baseball"
-                      sportsReferenceURL: "https://www.baseball-reference.com/players/j/jeterde01.shtml"
+                      sportsReferencePath: "/players/j/jeterde01.shtml"
                       name: "Derek Jeter"
                       bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
                       playerInformation: '6''3", 195 lbs, Shortstop, Bats Right, Throws Right'
@@ -148,7 +148,7 @@ paths:
                     previouslyPlayedDates: ["2025-11-04"]
                     player:
                       sport: "football"
-                      sportsReferenceURL: "https://www.pro-football-reference.com/players/B/BradTo00.htm"
+                      sportsReferencePath: "/players/B/BradTo00.htm"
                       name: "Tom Brady"
                       bio: "DOB: August 3, 1977 in San Mateo, California"
                       playerInformation: '6''4", 225 lbs, Quarterback, Throws Right'
@@ -247,7 +247,7 @@ paths:
                   previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
                   player:
                     sport: "basketball"
-                    sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
+                    sportsReferencePath: "/players/j/jamesle01.html"
                     name: "LeBron James"
                     bio: "DOB: December 30, 1984 in Akron, Ohio"
                     playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
@@ -281,7 +281,7 @@ paths:
                   previouslyPlayedDates: []
                   player:
                     sport: "baseball"
-                    sportsReferenceURL: "https://www.baseball-reference.com/players/j/jeterde01.shtml"
+                    sportsReferencePath: "/players/j/jeterde01.shtml"
                     name: "Derek Jeter"
                     bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
                     playerInformation: '6''3", 195 lbs, Shortstop, Bats Right, Throws Right'
@@ -320,7 +320,7 @@ paths:
                 previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
                 player:
                   sport: "basketball"
-                  sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
+                  sportsReferencePath: "/players/j/jamesle01.html"
                   name: "LeBron James"
                   bio: "DOB: December 30, 1984 in Akron, Ohio"
                   playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
@@ -496,7 +496,7 @@ paths:
                       previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
                       player:
                         sport: "basketball"
-                        sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
+                        sportsReferencePath: "/players/j/jamesle01.html"
                         name: "LeBron James"
                         bio: "DOB: December 30, 1984 in Akron, Ohio"
                         playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
@@ -527,7 +527,7 @@ paths:
                       previouslyPlayedDates: ["2025-11-05"]
                       player:
                         sport: "basketball"
-                        sportsReferenceURL: "https://www.basketball-reference.com/players/c/curryst01.html"
+                        sportsReferencePath: "/players/c/curryst01.html"
                         name: "Stephen Curry"
                         bio: "DOB: March 14, 1988 in Akron, Ohio"
                         playerInformation: '6''2", 185 lbs, Guard, Shoots Right'
@@ -558,7 +558,7 @@ paths:
                       previouslyPlayedDates: []
                       player:
                         sport: "basketball"
-                        sportsReferenceURL: "https://www.basketball-reference.com/players/d/duranke01.html"
+                        sportsReferencePath: "/players/d/duranke01.html"
                         name: "Kevin Durant"
                         bio: "DOB: September 29, 1988 in Washington, D.C."
                         playerInformation: '6''10", 240 lbs, Forward, Shoots Right'
@@ -897,7 +897,7 @@ components:
       type: object
       required:
         - sport
-        - sportsReferenceURL
+        - sportsReferencePath
         - name
         - bio
         - playerInformation
@@ -917,10 +917,10 @@ components:
             - football
           description: The sport of the player
           example: "basketball"
-        sportsReferenceURL:
+        sportsReferencePath:
           type: string
-          description: URL to the player's sports-reference.com page
-          example: "https://www.basketball-reference.com/players/j/jamesle01.html"
+          description: Path to the player's sports-reference.com page
+          example: "/players/j/jamesle01.html"
         name:
           type: string
           description: Player's full name
@@ -1208,49 +1208,47 @@ components:
               example: 15
 
     UserStats:
-      allOf:
-        - $ref: "#/components/schemas/Stats"
-        - type: object
-          required:
-            - userId
-            - userCreated
-            - sports
-          properties:
-            userId:
-              type: string
-              description: Unique identifier for the user
-              example: "123e4567-e89b-12d3-a456-426614174000"
-            userCreated:
-              type: string
-              format: date-time
-              description: Timestamp when the user account was created
-              example: "2025-10-01T08:00:00Z"
-            sports:
-              type: array
-              description: Array of sport-specific statistics for the user
-              items:
-                $ref: "#/components/schemas/SportStats"
-              example:
-                - sport: "basketball"
-                  currentDailyStreak: 15
-                  totalPlays: 450
-                  percentageCorrect: 72.5
-                  highestScore: 9
-                  averageCorrectScore: 8.2
-                  mostCommonFirstTileFlipped: "playerInformation"
-                  mostCommonLastTileFlipped: "photo"
-                  mostCommonTileFlipped: "careerStats"
-                  leastCommonTileFlipped: "bio"
-                - sport: "baseball"
-                  currentDailyStreak: 8
-                  totalPlays: 230
-                  percentageCorrect: 68.0
-                  highestScore: 9
-                  averageCorrectScore: 7.9
-                  mostCommonFirstTileFlipped: "teamsPlayedOn"
-                  mostCommonLastTileFlipped: "photo"
-                  mostCommonTileFlipped: "jerseyNumbers"
-                  leastCommonTileFlipped: "draftInformation"
+      type: object
+      required:
+        - userId
+        - userCreated
+        - sports
+      properties:
+        userId:
+          type: string
+          description: Unique identifier for the user
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        userCreated:
+          type: string
+          format: date-time
+          description: Timestamp when the user account was created
+          example: "2025-10-01T08:00:00Z"
+        sports:
+          type: array
+          description: Array of sport-specific statistics for the user
+          items:
+            $ref: "#/components/schemas/SportStats"
+          example:
+            - sport: "basketball"
+              currentDailyStreak: 15
+              totalPlays: 450
+              percentageCorrect: 72.5
+              highestScore: 9
+              averageCorrectScore: 8.2
+              mostCommonFirstTileFlipped: "playerInformation"
+              mostCommonLastTileFlipped: "photo"
+              mostCommonTileFlipped: "careerStats"
+              leastCommonTileFlipped: "bio"
+            - sport: "baseball"
+              currentDailyStreak: 8
+              totalPlays: 230
+              percentageCorrect: 68.0
+              highestScore: 9
+              averageCorrectScore: 7.9
+              mostCommonFirstTileFlipped: "teamsPlayedOn"
+              mostCommonLastTileFlipped: "photo"
+              mostCommonTileFlipped: "jerseyNumbers"
+              leastCommonTileFlipped: "draftInformation"
 
     Error:
       type: object
