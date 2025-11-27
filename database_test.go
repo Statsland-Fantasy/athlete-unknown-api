@@ -84,34 +84,35 @@ func TestDBStruct(t *testing.T) {
 func TestRoundMarshaling(t *testing.T) {
 	now := time.Now()
 	round := &Round{
-		RoundID:     "test-round-id",
-		Sport:       "basketball",
-		PlayDate:    "2024-01-01",
-		Created:     now,
-		LastUpdated: now,
+		RoundID:               "test-round-id",
+		Sport:                 "basketball",
+		PlayDate:              "2024-01-01",
+		Created:               now,
+		LastUpdated:           now,
 		PreviouslyPlayedDates: []string{"2023-12-31", "2023-12-30"},
 		Player: Player{
-			Sport:                 "basketball",
-			SportsReferenceURL:    "http://example.com",
-			Name:                  "Test Player",
-			Bio:                   "Test bio",
-			PlayerInformation:     "Test info",
-			DraftInformation:      "Test draft",
-			YearsActive:           "2010-2020",
-			TeamsPlayedOn:         "Team A, Team B",
-			JerseyNumbers:         "23, 32",
-			CareerStats:           "Points: 1000",
-			PersonalAchievements:  "MVP 2015",
-			Photo:                 "http://example.com/photo.jpg",
+			Sport:                "basketball",
+			SportsReferenceURL:   "http://example.com",
+			Name:                 "Test Player",
+			Bio:                  "Test bio",
+			PlayerInformation:    "Test info",
+			DraftInformation:     "Test draft",
+			YearsActive:          "2010-2020",
+			TeamsPlayedOn:        "Team A, Team B",
+			JerseyNumbers:        "23, 32",
+			CareerStats:          "Points: 1000",
+			PersonalAchievements: "MVP 2015",
+			Photo:                "http://example.com/photo.jpg",
 		},
 		Stats: RoundStats{
-			PlayDate:              "2024-01-01",
-			Name:                  "Test Player",
-			Sport:                 "basketball",
-			TotalPlays:            100,
-			PercentageCorrect:     75.5,
-			HighestScore:          200,
-			AverageCorrectScore:   150.0,
+			PlayDate:                   "2024-01-01",
+			Name:                       "Test Player",
+			Sport:                      "basketball",
+			TotalPlays:                 100,
+			PercentageCorrect:          75.5,
+			HighestScore:               200,
+			AverageCorrectScore:        150.0,
+			AverageNumberOfTileFlips:   4.5,
 			MostCommonFirstTileFlipped: "bio",
 			MostCommonLastTileFlipped:  "photo",
 			MostCommonTileFlipped:      "careerStats",
@@ -155,41 +156,43 @@ func TestRoundMarshaling(t *testing.T) {
 func TestUserStatsMarshaling(t *testing.T) {
 	now := time.Now()
 	stats := &UserStats{
-		UserID:            "test-user-123",
-		UserName:          "test-user-name",
-		UserCreated:       now,
-		TotalPlays:        500,
-		PercentageCorrect: 80.0,
-		HighestScore:      250,
-		AverageCorrectScore: 175.0,
+		UserID:                     "test-user-123",
+		UserName:                   "John Doe",
+		UserCreated:                now,
+		TotalPlays:                 500,
+		PercentageCorrect:          80.0,
+		HighestScore:               250,
+		AverageCorrectScore:        175.0,
 		MostCommonFirstTileFlipped: "bio",
 		MostCommonLastTileFlipped:  "photo",
 		MostCommonTileFlipped:      "careerStats",
 		LeastCommonTileFlipped:     "jerseyNumbers",
 		Sports: []SportStats{
 			{
-				Sport:                       "basketball",
-				CurrentDailyStreak:          5,
-				TotalPlays:                  200,
-				PercentageCorrect:           75.0,
-				HighestScore:                200,
-				AverageCorrectScore:         150.0,
-				MostCommonFirstTileFlipped:  "bio",
-				MostCommonLastTileFlipped:   "photo",
-				MostCommonTileFlipped:       "careerStats",
-				LeastCommonTileFlipped:      "jerseyNumbers",
+				Sport:                      "basketball",
+				CurrentDailyStreak:         5,
+				TotalPlays:                 200,
+				PercentageCorrect:          75.0,
+				HighestScore:               200,
+				AverageCorrectScore:        150.0,
+				AverageNumberOfTileFlips:   5.2,
+				MostCommonFirstTileFlipped: "bio",
+				MostCommonLastTileFlipped:  "photo",
+				MostCommonTileFlipped:      "careerStats",
+				LeastCommonTileFlipped:     "jerseyNumbers",
 			},
 			{
-				Sport:                       "baseball",
-				CurrentDailyStreak:          3,
-				TotalPlays:                  150,
-				PercentageCorrect:           80.0,
-				HighestScore:                180,
-				AverageCorrectScore:         140.0,
-				MostCommonFirstTileFlipped:  "playerInformation",
-				MostCommonLastTileFlipped:   "careerStats",
-				MostCommonTileFlipped:       "bio",
-				LeastCommonTileFlipped:      "photo",
+				Sport:                      "baseball",
+				CurrentDailyStreak:         3,
+				TotalPlays:                 150,
+				PercentageCorrect:          80.0,
+				HighestScore:               180,
+				AverageCorrectScore:        140.0,
+				AverageNumberOfTileFlips:   6.1,
+				MostCommonFirstTileFlipped: "playerInformation",
+				MostCommonLastTileFlipped:  "careerStats",
+				MostCommonTileFlipped:      "bio",
+				LeastCommonTileFlipped:     "photo",
 			},
 		},
 		FirstTileFlippedTracker: TileFlipTracker{
@@ -209,8 +212,8 @@ func TestUserStatsMarshaling(t *testing.T) {
 	if stats.UserID != "test-user-123" {
 		t.Errorf("UserID = %v, want test-user-123", stats.UserID)
 	}
-	if stats.UserName != "test-user-name" {
-		t.Errorf("UserName = %v, want test-user-name", stats.UserName)
+	if stats.UserName != "John Doe" {
+		t.Errorf("UserName = %v, want John Doe", stats.UserName)
 	}
 	if stats.TotalPlays != 500 {
 		t.Errorf("TotalPlays = %v, want 500", stats.TotalPlays)
@@ -223,6 +226,12 @@ func TestUserStatsMarshaling(t *testing.T) {
 	}
 	if stats.Sports[0].Sport != "basketball" {
 		t.Errorf("Sports[0].Sport = %v, want basketball", stats.Sports[0].Sport)
+	}
+	if stats.Sports[0].AverageNumberOfTileFlips != 5.2 {
+		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", stats.Sports[0].AverageNumberOfTileFlips)
+	}
+	if stats.Sports[1].AverageNumberOfTileFlips != 6.1 {
+		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", stats.Sports[1].AverageNumberOfTileFlips)
 	}
 	if stats.FirstTileFlippedTracker.Bio != 100 {
 		t.Errorf("FirstTileFlippedTracker.Bio = %v, want 100", stats.FirstTileFlippedTracker.Bio)
@@ -288,18 +297,18 @@ func TestTileFlipTracker(t *testing.T) {
 // Test Player structure
 func TestPlayerStructure(t *testing.T) {
 	player := Player{
-		Sport:                 "basketball",
-		SportsReferenceURL:    "http://example.com/player",
-		Name:                  "John Doe",
-		Bio:                   "Professional basketball player",
-		PlayerInformation:     "Height: 6'5\", Weight: 220 lbs",
-		DraftInformation:      "Round 1, Pick 5, 2010",
-		YearsActive:           "2010-2023",
-		TeamsPlayedOn:         "Lakers, Bulls, Heat",
-		JerseyNumbers:         "23, 6, 24",
-		CareerStats:           "PPG: 25.5, RPG: 7.2, APG: 6.8",
-		PersonalAchievements:  "3x NBA Champion, 2x MVP, 10x All-Star",
-		Photo:                 "http://example.com/photo.jpg",
+		Sport:                "basketball",
+		SportsReferenceURL:   "http://example.com/player",
+		Name:                 "John Doe",
+		Bio:                  "Professional basketball player",
+		PlayerInformation:    "Height: 6'5\", Weight: 220 lbs",
+		DraftInformation:     "Round 1, Pick 5, 2010",
+		YearsActive:          "2010-2023",
+		TeamsPlayedOn:        "Lakers, Bulls, Heat",
+		JerseyNumbers:        "23, 6, 24",
+		CareerStats:          "PPG: 25.5, RPG: 7.2, APG: 6.8",
+		PersonalAchievements: "3x NBA Champion, 2x MVP, 10x All-Star",
+		Photo:                "http://example.com/photo.jpg",
 	}
 
 	if player.Sport != "basketball" {
@@ -357,5 +366,118 @@ func TestErrorResponseStructure(t *testing.T) {
 	}
 	if errResp.Details["parameter"] != "sport" {
 		t.Errorf("Details[parameter] = %v, want sport", errResp.Details["parameter"])
+	}
+}
+
+// Test AverageNumberOfTileFlips calculation
+func TestAverageNumberOfTileFlipsCalculation(t *testing.T) {
+	tests := []struct {
+		name               string
+		initialAverage     float64
+		initialTotalPlays  int
+		newTileFlips       int
+		expectedAverage    float64
+		expectedTotalPlays int
+	}{
+		{
+			name:               "first game with 5 tiles",
+			initialAverage:     0.0,
+			initialTotalPlays:  0,
+			newTileFlips:       5,
+			expectedAverage:    5.0,
+			expectedTotalPlays: 1,
+		},
+		{
+			name:               "second game with 3 tiles",
+			initialAverage:     5.0,
+			initialTotalPlays:  1,
+			newTileFlips:       3,
+			expectedAverage:    4.0,
+			expectedTotalPlays: 2,
+		},
+		{
+			name:               "third game with 7 tiles",
+			initialAverage:     4.0,
+			initialTotalPlays:  2,
+			newTileFlips:       7,
+			expectedAverage:    5.0,
+			expectedTotalPlays: 3,
+		},
+		{
+			name:               "game with 9 tiles",
+			initialAverage:     5.0,
+			initialTotalPlays:  3,
+			newTileFlips:       9,
+			expectedAverage:    6.0,
+			expectedTotalPlays: 4,
+		},
+		{
+			name:               "game with 0 tiles",
+			initialAverage:     6.0,
+			initialTotalPlays:  4,
+			newTileFlips:       0,
+			expectedAverage:    4.8,
+			expectedTotalPlays: 5,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Simulate the calculation logic from handlers.go
+			totalPlays := tt.initialTotalPlays + 1
+			totalTileFlips := tt.initialAverage * float64(tt.initialTotalPlays)
+			totalTileFlips += float64(tt.newTileFlips)
+			actualAverage := totalTileFlips / float64(totalPlays)
+
+			if actualAverage != tt.expectedAverage {
+				t.Errorf("AverageNumberOfTileFlips = %v, want %v", actualAverage, tt.expectedAverage)
+			}
+			if totalPlays != tt.expectedTotalPlays {
+				t.Errorf("TotalPlays = %v, want %v", totalPlays, tt.expectedTotalPlays)
+			}
+		})
+	}
+}
+
+// Test RoundStats with AverageNumberOfTileFlips
+func TestRoundStatsWithAverageNumberOfTileFlips(t *testing.T) {
+	stats := RoundStats{
+		PlayDate:                   "2024-01-01",
+		Name:                       "Test Player",
+		Sport:                      "basketball",
+		TotalPlays:                 100,
+		PercentageCorrect:          75.5,
+		HighestScore:               200,
+		AverageCorrectScore:        150.0,
+		AverageNumberOfTileFlips:   5.7,
+		MostCommonFirstTileFlipped: "bio",
+		MostCommonLastTileFlipped:  "photo",
+		MostCommonTileFlipped:      "careerStats",
+		LeastCommonTileFlipped:     "jerseyNumbers",
+	}
+
+	if stats.AverageNumberOfTileFlips != 5.7 {
+		t.Errorf("AverageNumberOfTileFlips = %v, want 5.7", stats.AverageNumberOfTileFlips)
+	}
+}
+
+// Test UserName field in UserStats
+func TestUserStatsWithUserName(t *testing.T) {
+	now := time.Now()
+	stats := UserStats{
+		UserID:              "user-123",
+		UserName:            "Jane Smith",
+		UserCreated:         now,
+		TotalPlays:          50,
+		PercentageCorrect:   85.0,
+		HighestScore:        9,
+		AverageCorrectScore: 7.5,
+	}
+
+	if stats.UserName != "Jane Smith" {
+		t.Errorf("UserName = %v, want Jane Smith", stats.UserName)
+	}
+	if stats.UserID != "user-123" {
+		t.Errorf("UserID = %v, want user-123", stats.UserID)
 	}
 }

@@ -218,6 +218,11 @@ func handleSubmitResults(w http.ResponseWriter, r *http.Request) {
 		round.Stats.HighestScore = result.Score
 	}
 
+	// Update average number of tile flips
+	totalTileFlips := round.Stats.AverageNumberOfTileFlips * float64(round.Stats.TotalPlays-1)
+	totalTileFlips += float64(len(result.TilesFlipped))
+	round.Stats.AverageNumberOfTileFlips = totalTileFlips / float64(round.Stats.TotalPlays)
+
 	// Track tile flips
 	if len(result.TilesFlipped) > 0 {
 		// Track first tile flipped
