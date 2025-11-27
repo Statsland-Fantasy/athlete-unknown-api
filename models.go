@@ -88,6 +88,7 @@ type SportStats struct {
 // UserStats represents comprehensive statistics for a user
 type UserStats struct {
 	UserID                      string          `json:"userId" dynamodbav:"userId"`
+	UserName                    string          `json:"userName" dynamodbav:"userName"`
 	UserCreated                 time.Time       `json:"userCreated" dynamodbav:"userCreated"`
 	Sports                      []SportStats    `json:"sports" dynamodbav:"sports"`
 	TotalPlays                  int             `json:"totalPlays" dynamodbav:"totalPlays"`

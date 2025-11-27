@@ -156,6 +156,7 @@ func TestUserStatsMarshaling(t *testing.T) {
 	now := time.Now()
 	stats := &UserStats{
 		UserID:            "test-user-123",
+		UserName:          "test-user-name",
 		UserCreated:       now,
 		TotalPlays:        500,
 		PercentageCorrect: 80.0,
@@ -207,6 +208,9 @@ func TestUserStatsMarshaling(t *testing.T) {
 	// Verify all fields are set correctly
 	if stats.UserID != "test-user-123" {
 		t.Errorf("UserID = %v, want test-user-123", stats.UserID)
+	}
+	if stats.UserName != "test-user-name" {
+		t.Errorf("UserName = %v, want test-user-name", stats.UserName)
 	}
 	if stats.TotalPlays != 500 {
 		t.Errorf("TotalPlays = %v, want 500", stats.TotalPlays)

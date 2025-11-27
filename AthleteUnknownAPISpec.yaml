@@ -1211,6 +1211,7 @@ components:
       type: object
       required:
         - userId
+        - userName
         - userCreated
         - sports
       properties:
@@ -1218,6 +1219,10 @@ components:
           type: string
           description: Unique identifier for the user
           example: "123e4567-e89b-12d3-a456-426614174000"
+        userName:
+          type: string
+          description: Display name for the user
+          example: "JohnDoe123"
         userCreated:
           type: string
           format: date-time
