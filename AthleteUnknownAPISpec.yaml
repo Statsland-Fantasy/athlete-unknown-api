@@ -217,16 +217,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-    post:
+    put:
       tags:
         - Game
-      summary: Create a new round
+      summary: Create or update a round
       description: |
-        Creates a new game round with player information and metadata.
+        Creates or updates a game round with player information and metadata.
         The request body contains the complete Round data.
         Note: Only one round per sport per playDate is allowed.
         **Admin access required.**
-      operationId: createRound
+      operationId: createOrUpdateRound
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -371,6 +371,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Game
+      summary: Create a new round by scraping player data
+      description: |
+        Creates a new game round by web scraping player information from sports reference websites.
+        Requires either player name OR sportsReferencePath parameter.
+        If name is provided, the endpoint will search for the player.
+        If sportsReferencePath is provided, it will scrape directly from that path.
+        **Admin access required.**
+      operationId: scrapeAndCreateRound
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport for the round
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: playDate
+          in: query
+          description: The scheduled play date for the round (format YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+        - name: name
+          in: query
+          description: Player name to search for (required if sportsReferencePath not provided)
+          required: false
+          schema:
+            type: string
+          example: "LeBron James"
+        - name: sportsReferencePath
+          in: query
+          description: Direct path to player page on sports reference site (required if name not provided)
+          required: false
+          schema:
+            type: string
+          example: "/players/j/jamesle01.html"
+      responses:
+        '201':
+          description: Round successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingBothParams:
+                  summary: Missing both optional parameters
+                  value:
+                    error: "Bad Request"
+                    message: "Either 'name' or 'sportsReferencePath' parameter must be provided"
+                    code: "MISSING_REQUIRED_PARAMETER"
+                    timestamp: "2025-11-11T10:00:00Z"
+                missingSport:
+                  summary: Missing required sport parameter
+                  value:
+                    error: "Bad Request"
+                    message: "Sport parameter is required"
+                    code: "MISSING_REQUIRED_PARAMETER"
+                    timestamp: "2025-11-11T10:00:00Z"
+        '409':
+          description: Round already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Conflict"
+                message: "Round already exists for sport 'basketball' on playDate '2025-11-15'"
+                code: "ROUND_ALREADY_EXISTS"
+                timestamp: "2025-11-11T10:00:00Z"
+        '500':
+          description: Internal server error or scraping failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Internal Server Error"
+                message: "Failed to scrape player data"
+                code: "SCRAPING_ERROR"
+                timestamp: "2025-11-11T10:00:00Z"
 
     delete:
       tags:
