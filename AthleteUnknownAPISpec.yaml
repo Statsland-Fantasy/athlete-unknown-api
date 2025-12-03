@@ -1,0 +1,1271 @@
+openapi: 3.0.3
+info:
+  title: Trivia Game API
+  description: |
+    Backend API for a sports trivia game application that provides rounds with player information, 
+    processes game results, and tracks round statistics.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@triviagame.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.triviagame.com/v1
+    description: Production server
+  - url: https://staging-api.triviagame.com/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Local development server
+
+tags:
+  - name: Game
+    description: Round operations
+  - name: Results
+    description: Game result submission and processing
+  - name: Statistics
+    description: Round statistics and metrics
+
+paths:
+  /round:
+    get:
+      tags:
+        - Game
+      summary: Get a round
+      description: |
+        Retrieves a round containing player information for the trivia game.
+        The round includes comprehensive player data including stats, achievements, and team history.
+        Rounds are uniquely identified by sport + playDate (only one round per sport per day).
+      operationId: getRound
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport to retrieve round data for
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: playDate
+          in: query
+          description: The scheduled play date for the round (format YYYY-MM-DD). If not provided, defaults to the current date.
+          required: false
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+      responses:
+        '200':
+          description: Successfully retrieved round
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+              examples:
+                basketballRound:
+                  summary: Basketball player round
+                  value:
+                    roundId: "Basketball100"
+                    sport: "basketball"
+                    playDate: "2025-11-15"
+                    created: "2025-11-11T10:00:00Z"
+                    lastUpdated: "2025-11-11T14:30:00Z"
+                    previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                    player:
+                      sport: "basketball"
+                      sportsReferencePath: "/players/j/jamesle01.html"
+                      name: "LeBron James"
+                      bio: "DOB: December 30, 1984 in Akron, Ohio"
+                      playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                      draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
+                      yearsActive: "2003-Present"
+                      teamsPlayedOn: "CLE, MIA, LAL"
+                      jerseyNumbers: "#23, #6"
+                      careerStats: "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5"
+                      personalAchievements: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist"
+                      photo: "https://cdn.triviagame.com/players/lebron-james.jpg"
+                    stats:
+                      playDate: "2025-11-15"
+                      name: "LeBron James"
+                      sport: "basketball"
+                      totalPlays: 1247
+                      percentageCorrect: 68.5
+                      highestScore: 9
+                      averageCorrectScore: 7.8
+                      mostCommonFirstTileFlipped: "tile1"
+                      mostCommonLastTileFlipped: "tile9"
+                      mostCommonTileFlipped: "tile5"
+                      leastCommonTileFlipped: "tile3"
+                baseballRound:
+                  summary: Baseball player round
+                  value:
+                    roundId: "Baseball75"
+                    sport: "baseball"
+                    playDate: "2025-11-12"
+                    created: "2025-11-10T09:00:00Z"
+                    lastUpdated: "2025-11-10T09:00:00Z"
+                    previouslyPlayedDates: []
+                    player:
+                      sport: "baseball"
+                      sportsReferencePath: "/players/j/jeterde01.shtml"
+                      name: "Derek Jeter"
+                      bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
+                      playerInformation: "6'3\", 195 lbs, Shortstop, Bats Right, Throws Right"
+                      draftInformation: "Round 1 (6th overall) from Kalamazoo Central High School"
+                      yearsActive: "1995-2014"
+                      teamsPlayedOn: "NYY"
+                      jerseyNumbers: "#2"
+                      careerStats: "AVG: .310, HR: 260, SB: 358, WAR: 71.3"
+                      personalAchievements: "5x World Series Champion, 14x All-Star, 5x Gold Glove, World Series MVP"
+                      photo: "https://cdn.triviagame.com/players/derek-jeter.jpg"
+                    stats:
+                      playDate: "2025-11-12"
+                      name: "Derek Jeter"
+                      sport: "baseball"
+                      totalPlays: 892
+                      percentageCorrect: 72.3
+                      highestScore: 9
+                      averageCorrectScore: 8.1
+                      mostCommonFirstTileFlipped: "tile2"
+                      mostCommonLastTileFlipped: "tile8"
+                      mostCommonTileFlipped: "tile4"
+                      leastCommonTileFlipped: "tile7"
+                footballRound:
+                  summary: Football player round
+                  value:
+                    roundId: "Football50"
+                    sport: "football"
+                    playDate: "2025-11-18"
+                    created: "2025-11-09T08:00:00Z"
+                    lastUpdated: "2025-11-09T08:00:00Z"
+                    previouslyPlayedDates: ["2025-11-04"]
+                    player:
+                      sport: "football"
+                      sportsReferencePath: "/players/B/BradTo00.htm"
+                      name: "Tom Brady"
+                      bio: "DOB: August 3, 1977 in San Mateo, California"
+                      playerInformation: "6'4\", 225 lbs, Quarterback, Throws Right"
+                      draftInformation: "Round 6 (199th overall) from University of Michigan"
+                      yearsActive: "2000-2023"
+                      teamsPlayedOn: "NWE, TAM"
+                      jerseyNumbers: "#12"
+                      careerStats: "Pass Yds: 89,214, Pass TD: 649, Comp%: 64.3, QB Rating: 97.2"
+                      personalAchievements: "7x Super Bowl Champion, 5x Super Bowl MVP, 3x NFL MVP, 15x Pro Bowl"
+                      photo: "https://cdn.triviagame.com/players/tom-brady.jpg"
+                    stats:
+                      playDate: "2025-11-18"
+                      name: "Tom Brady"
+                      sport: "football"
+                      totalPlays: 1150
+                      percentageCorrect: 65.0
+                      highestScore: 9
+                      averageCorrectScore: 7.5
+                      mostCommonFirstTileFlipped: "tile1"
+                      mostCommonLastTileFlipped: "tile9"
+                      mostCommonTileFlipped: "tile4"
+                      leastCommonTileFlipped: "tile6"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Sport parameter is required"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:30:00Z"
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "No round found for the specified sport and playDate"
+                code: "ROUND_NOT_FOUND"
+                timestamp: "2025-11-11T10:30:00Z"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Too Many Requests"
+                message: "Rate limit exceeded. Please try again in 60 seconds"
+                code: "RATE_LIMIT_EXCEEDED"
+                timestamp: "2025-11-11T10:30:00Z"
+          headers:
+            Retry-After:
+              description: Number of seconds to wait before making another request
+              schema:
+                type: integer
+              example: 60
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Game
+      summary: Create a new round
+      description: |
+        Creates a new game round with player information and metadata.
+        The request body contains the complete Round data.
+        Note: Only one round per sport per playDate is allowed.
+        **Admin access required.**
+      operationId: createRound
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Round'
+            examples:
+              basketballRound:
+                summary: Create basketball round
+                value:
+                  roundId: "Basketball100"
+                  sport: "basketball"
+                  playDate: "2025-11-15"
+                  created: "2025-11-11T10:00:00Z"
+                  lastUpdated: "2025-11-11T10:00:00Z"
+                  previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                  player:
+                    sport: "basketball"
+                    sportsReferencePath: "/players/j/jamesle01.html"
+                    name: "LeBron James"
+                    bio: "DOB: December 30, 1984 in Akron, Ohio"
+                    playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                    draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
+                    yearsActive: "2003-Present"
+                    teamsPlayedOn: "CLE, MIA, LAL"
+                    jerseyNumbers: "#23, #6"
+                    careerStats: "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5"
+                    personalAchievements: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist"
+                    photo: "https://cdn.triviagame.com/players/lebron-james.jpg"
+                  stats:
+                    playDate: "2025-11-15"
+                    name: "LeBron James"
+                    sport: "basketball"
+                    totalPlays: 0
+                    percentageCorrect: 0.0
+                    highestScore: 0
+                    averageCorrectScore: 0.0
+                    mostCommonFirstTileFlipped: ""
+                    mostCommonLastTileFlipped: ""
+                    mostCommonTileFlipped: ""
+                    leastCommonTileFlipped: ""
+              baseballRound:
+                summary: Create baseball round
+                value:
+                  roundId: "Baseball75"
+                  sport: "baseball"
+                  playDate: "2025-11-12"
+                  created: "2025-11-11T10:00:00Z"
+                  lastUpdated: "2025-11-11T10:00:00Z"
+                  previouslyPlayedDates: []
+                  player:
+                    sport: "baseball"
+                    sportsReferencePath: "/players/j/jeterde01.shtml"
+                    name: "Derek Jeter"
+                    bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
+                    playerInformation: "6'3\", 195 lbs, Shortstop, Bats Right, Throws Right"
+                    draftInformation: "Round 1 (6th overall) from Kalamazoo Central High School"
+                    yearsActive: "1995-2014"
+                    teamsPlayedOn: "NYY"
+                    jerseyNumbers: "#2"
+                    careerStats: "AVG: .310, HR: 260, SB: 358, WAR: 71.3"
+                    personalAchievements: "5x World Series Champion, 14x All-Star, 5x Gold Glove, World Series MVP"
+                    photo: "https://cdn.triviagame.com/players/derek-jeter.jpg"
+                  stats:
+                    playDate: "2025-11-12"
+                    name: "Derek Jeter"
+                    sport: "baseball"
+                    totalPlays: 0
+                    percentageCorrect: 0.0
+                    highestScore: 0
+                    averageCorrectScore: 0.0
+                    mostCommonFirstTileFlipped: ""
+                    mostCommonLastTileFlipped: ""
+                    mostCommonTileFlipped: ""
+                    leastCommonTileFlipped: ""
+      responses:
+        '201':
+          description: Round successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+              example:
+                roundId: "Basketball100"
+                sport: "basketball"
+                playDate: "2025-11-15"
+                created: "2025-11-11T10:00:00Z"
+                lastUpdated: "2025-11-11T10:00:00Z"
+                previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                player:
+                  sport: "basketball"
+                  sportsReferencePath: "/players/j/jamesle01.html"
+                  name: "LeBron James"
+                  bio: "DOB: December 30, 1984 in Akron, Ohio"
+                  playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                  draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
+                  yearsActive: "2003-Present"
+                  teamsPlayedOn: "CLE, MIA, LAL"
+                  jerseyNumbers: "#23, #6"
+                  careerStats: "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5"
+                  personalAchievements: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist"
+                  photo: "https://cdn.triviagame.com/players/lebron-james.jpg"
+                stats:
+                  playDate: "2025-11-15"
+                  name: "LeBron James"
+                  sport: "basketball"
+                  totalPlays: 0
+                  percentageCorrect: 0.0
+                  highestScore: 0
+                  averageCorrectScore: 0.0
+                  mostCommonFirstTileFlipped: ""
+                  mostCommonLastTileFlipped: ""
+                  mostCommonTileFlipped: ""
+                  leastCommonTileFlipped: ""
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Missing required field: sport"
+                code: "MISSING_REQUIRED_FIELD"
+                timestamp: "2025-11-11T10:00:00Z"
+        '409':
+          description: Round already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Conflict"
+                message: "Round already exists for sport 'basketball' on playDate '2025-11-15'"
+                code: "ROUND_ALREADY_EXISTS"
+                timestamp: "2025-11-11T10:00:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Game
+      summary: Delete a round
+      description: |
+        Deletes an existing game round identified by sport and playDate.
+        This permanently removes the round and all associated data.
+        **Admin access required.**
+      operationId: deleteRound
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport of the round to delete
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: playDate
+          in: query
+          description: The play date of the round to delete (format YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+      responses:
+        '204':
+          description: Round successfully deleted (no content returned)
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Missing required parameter: sport"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:00:00Z"
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "Round not found for sport 'basketball' on playDate '2025-11-15'"
+                code: "ROUND_NOT_FOUND"
+                timestamp: "2025-11-11T10:00:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /upcoming-rounds:
+    get:
+      tags:
+        - Game
+      summary: Get upcoming rounds
+      description: |
+        Retrieves a list of upcoming game rounds for a specific sport.
+        Results are sorted by playDate and can be filtered by date range.
+        **Admin access required.**
+      operationId: getUpcomingRounds
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport to retrieve upcoming rounds for
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: startDate
+          in: query
+          description: Optional start date for filtering rounds (format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+        - name: endDate
+          in: query
+          description: Optional end date for filtering rounds (format YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+          example: "2025-11-30"
+      responses:
+        '200':
+          description: Successfully retrieved upcoming rounds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Round'
+              examples:
+                basketballUpcomingRounds:
+                  summary: Upcoming basketball rounds
+                  value:
+                    - roundId: "Basketball100"
+                      sport: "basketball"
+                      playDate: "2025-11-15"
+                      created: "2025-11-11T10:00:00Z"
+                      lastUpdated: "2025-11-11T10:00:00Z"
+                      previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                      player:
+                        sport: "basketball"
+                        sportsReferencePath: "/players/j/jamesle01.html"
+                        name: "LeBron James"
+                        bio: "DOB: December 30, 1984 in Akron, Ohio"
+                        playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                        draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
+                        yearsActive: "2003-Present"
+                        teamsPlayedOn: "CLE, MIA, LAL"
+                        jerseyNumbers: "#23, #6"
+                        careerStats: "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5"
+                        personalAchievements: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist"
+                        photo: "https://cdn.triviagame.com/players/lebron-james.jpg"
+                      stats:
+                        playDate: "2025-11-15"
+                        name: "LeBron James"
+                        sport: "basketball"
+                        totalPlays: 1247
+                        percentageCorrect: 68.5
+                        highestScore: 9
+                        averageCorrectScore: 7.8
+                        mostCommonFirstTileFlipped: "tile1"
+                        mostCommonLastTileFlipped: "tile9"
+                        mostCommonTileFlipped: "tile5"
+                        leastCommonTileFlipped: "tile3"
+                    - roundId: "Basketball101"
+                      sport: "basketball"
+                      playDate: "2025-11-20"
+                      created: "2025-11-12T09:00:00Z"
+                      lastUpdated: "2025-11-12T09:00:00Z"
+                      previouslyPlayedDates: ["2025-11-05"]
+                      player:
+                        sport: "basketball"
+                        sportsReferencePath: "/players/c/curryst01.html"
+                        name: "Stephen Curry"
+                        bio: "DOB: March 14, 1988 in Akron, Ohio"
+                        playerInformation: "6'2\", 185 lbs, Guard, Shoots Right"
+                        draftInformation: "Round 1 (7th overall) from Davidson College"
+                        yearsActive: "2009-Present"
+                        teamsPlayedOn: "GSW"
+                        jerseyNumbers: "#30"
+                        careerStats: "PPG: 24.8, RPG: 4.7, APG: 6.4, WS: 142.8"
+                        personalAchievements: "4x NBA Champion, 2x NBA MVP, 10x NBA All-Star"
+                        photo: "https://cdn.triviagame.com/players/stephen-curry.jpg"
+                      stats:
+                        playDate: "2025-11-20"
+                        name: "Stephen Curry"
+                        sport: "basketball"
+                        totalPlays: 980
+                        percentageCorrect: 65.2
+                        highestScore: 9
+                        averageCorrectScore: 7.6
+                        mostCommonFirstTileFlipped: "tile2"
+                        mostCommonLastTileFlipped: "tile8"
+                        mostCommonTileFlipped: "tile4"
+                        leastCommonTileFlipped: "tile7"
+                    - roundId: "Basketball102"
+                      sport: "basketball"
+                      playDate: "2025-11-25"
+                      created: "2025-11-13T08:30:00Z"
+                      lastUpdated: "2025-11-13T08:30:00Z"
+                      previouslyPlayedDates: []
+                      player:
+                        sport: "basketball"
+                        sportsReferencePath: "/players/d/duranke01.html"
+                        name: "Kevin Durant"
+                        bio: "DOB: September 29, 1988 in Washington, D.C."
+                        playerInformation: "6'10\", 240 lbs, Forward, Shoots Right"
+                        draftInformation: "Round 1 (2nd overall) from University of Texas"
+                        yearsActive: "2007-Present"
+                        teamsPlayedOn: "SEA, OKC, GSW, BRK, PHO"
+                        jerseyNumbers: "#35, #7"
+                        careerStats: "PPG: 27.3, RPG: 7.0, APG: 4.4, WS: 178.5"
+                        personalAchievements: "2x NBA Champion, 2x Finals MVP, NBA MVP, 14x All-Star"
+                        photo: "https://cdn.triviagame.com/players/kevin-durant.jpg"
+                      stats:
+                        playDate: "2025-11-25"
+                        name: "Kevin Durant"
+                        sport: "basketball"
+                        totalPlays: 0
+                        percentageCorrect: 0.0
+                        highestScore: 0
+                        averageCorrectScore: 0.0
+                        mostCommonFirstTileFlipped: ""
+                        mostCommonLastTileFlipped: ""
+                        mostCommonTileFlipped: ""
+                        leastCommonTileFlipped: ""
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Sport parameter is required"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:00:00Z"
+        '404':
+          description: No upcoming rounds found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "No upcoming rounds found for sport 'basketball' in the specified date range"
+                code: "NO_UPCOMING_ROUNDS"
+                timestamp: "2025-11-11T10:00:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /results:
+    post:
+      tags:
+        - Results
+      summary: Submit game results
+      description: |
+        Submits the results of a completed trivia round. 
+        Records the player's score, correctness, and tiles flipped for a specific round (identified by sport + playDate).
+        There is only one unique trivia round per sport each day.
+        The user ID is automatically extracted from the JWT authentication token.
+      operationId: submitResults
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport for the results being submitted
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: playDate
+          in: query
+          description: The date of the round (format YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Result'
+            examples:
+              basketballResult:
+                summary: Basketball game result
+                value:
+                  score: 9
+                  isCorrect: true
+                  tilesFlipped: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+              partialResult:
+                summary: Partial game result
+                value:
+                  score: 6
+                  isCorrect: false
+                  tilesFlipped: ["tile1", "tile3", "tile5", "tile7"]
+      responses:
+        '200':
+          description: Results successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                score: 9
+                isCorrect: true
+                tilesFlipped: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+        '400':
+          description: Invalid submission data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Sport and playDate parameters are required"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:45:00Z"
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "Round not found for sport 'basketball' on date '2025-11-15'"
+                code: "ROUND_NOT_FOUND"
+                timestamp: "2025-11-11T10:45:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /stats/round:
+    get:
+      tags:
+        - Statistics
+      summary: Get round statistics
+      description: |
+        Retrieves comprehensive statistics for a specific round.
+        Stats are aggregated from all users who have played this round.
+        The round is identified by sport + playDate (only one round per sport per day).
+      operationId: getRoundStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sport
+          in: query
+          description: The sport to retrieve statistics for
+          required: true
+          schema:
+            type: string
+            enum:
+              - basketball
+              - baseball
+              - football
+          example: "basketball"
+        - name: playDate
+          in: query
+          description: The date of the round for statistics (format YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-11-15"
+      responses:
+        '200':
+          description: Successfully retrieved round statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoundStats'
+              examples:
+                basketballStats:
+                  summary: Basketball round statistics
+                  value:
+                    playDate: "2025-11-15"
+                    name: "LeBron James"
+                    sport: "basketball"
+                    totalPlays: 1247
+                    percentageCorrect: 68.5
+                    highestScore: 9
+                    averageCorrectScore: 7.8
+                    mostCommonFirstTileFlipped: "tile1"
+                    mostCommonLastTileFlipped: "tile9"
+                    mostCommonTileFlipped: "tile5"
+                    leastCommonTileFlipped: "tile3"
+                baseballStats:
+                  summary: Baseball round statistics
+                  value:
+                    playDate: "2025-11-12"
+                    name: "Derek Jeter"
+                    sport: "baseball"
+                    totalPlays: 892
+                    percentageCorrect: 72.3
+                    highestScore: 9
+                    averageCorrectScore: 8.1
+                    mostCommonFirstTileFlipped: "tile2"
+                    mostCommonLastTileFlipped: "tile8"
+                    mostCommonTileFlipped: "tile4"
+                    leastCommonTileFlipped: "tile7"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "Sport and playDate parameters are required"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:50:00Z"
+        '404':
+          description: Statistics not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "No statistics found for sport 'basketball' on date '2025-11-15'"
+                code: "STATS_NOT_FOUND"
+                timestamp: "2025-11-11T10:50:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /stats/user:
+    get:
+      tags:
+        - Statistics
+      summary: Get user statistics
+      description: |
+        Retrieves comprehensive statistics for a specific user across all rounds they have played.
+        Stats include play history, streaks, and performance metrics.
+      operationId: getUserStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          description: The user ID to retrieve statistics for
+          required: true
+          schema:
+            type: string
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Successfully retrieved user statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStats'
+              examples:
+                userStats:
+                  summary: User statistics example
+                  value:
+                    userId: "123e4567-e89b-12d3-a456-426614174000"
+                    firstPlayDate: "2025-10-01"
+                    currentDailyStreak: 15
+                    totalPlays: 42
+                    percentageCorrect: 71.4
+                    highestScore: 9
+                    averageCorrectScore: 8.2
+                    mostCommonFirstTileFlipped: "tile1"
+                    mostCommonLastTileFlipped: "tile9"
+                    mostCommonTileFlipped: "tile5"
+                    leastCommonTileFlipped: "tile3"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Bad Request"
+                message: "userId parameter is required"
+                code: "MISSING_REQUIRED_PARAMETER"
+                timestamp: "2025-11-11T10:50:00Z"
+        '404':
+          description: User statistics not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Not Found"
+                message: "No statistics found for user '123e4567-e89b-12d3-a456-426614174000'"
+                code: "USER_STATS_NOT_FOUND"
+                timestamp: "2025-11-11T10:50:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Player:
+      type: object
+      required:
+        - sport
+        - sportsReferencePath
+        - name
+        - bio
+        - playerInformation
+        - draftInformation
+        - yearsActive
+        - teamsPlayedOn
+        - jerseyNumbers
+        - careerStats
+        - personalAchievements
+        - photo
+      properties:
+        sport:
+          type: string
+          enum:
+            - basketball
+            - baseball
+            - football
+          description: The sport of the player
+          example: "basketball"
+        sportsReferencePath:
+          type: string
+          description: Path to the player's sports-reference.com page
+          example: "/players/j/jamesle01.html"
+        name:
+          type: string
+          description: Player's full name
+          example: "LeBron James"
+        bio:
+          type: string
+          description: Date of birth and place of birth
+          example: "DOB: December 30, 1984 in Akron, Ohio"
+        playerInformation:
+          type: string
+          description: Physical stats, position(s), and handedness/throwing preference
+          example: "6'9\", 250 lbs, Forward, Shoots Right"
+        draftInformation:
+          type: string
+          description: Draft round, overall pick, and school/institution
+          example: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
+        yearsActive:
+          type: string
+          description: Years the player was/is active in professional sports (use 'Present' for current players)
+          example: "2003-Present"
+        teamsPlayedOn:
+          type: string
+          description: List of team abbreviations the player has played for (using sports-reference.com abbreviations)
+          example: "CLE, MIA, LAL"
+        jerseyNumbers:
+          type: string
+          description: Jersey numbers worn by the player
+          example: "#23, #6"
+        careerStats:
+          type: string
+          description: "Career statistics summary (Basketball: PPG, RPG, APG, WS; Baseball: AVG, HR, SB, WAR; Football: position-dependent)"
+          example: "PPG: 27.2, RPG: 7.5, APG: 7.3, WS: 273.5"
+        personalAchievements:
+          type: string
+          description: Notable achievements and awards
+          example: "4x NBA Champion, 4x NBA MVP, 19x NBA All-Star, 2x Olympic Gold Medalist"
+        photo:
+          type: string
+          description: URL to player's photo
+          example: "https://cdn.triviagame.com/players/lebron-james.jpg"
+
+    Round:
+      type: object
+      required:
+        - player
+        - stats
+        - playDate
+        - sport
+        - roundId
+        - created
+        - lastUpdated
+        - previouslyPlayedDates
+      properties:
+        player:
+          $ref: '#/components/schemas/Player'
+        stats:
+          $ref: '#/components/schemas/RoundStats'
+        playDate:
+          type: string
+          format: date
+          description: The scheduled date for this round to be played (format YYYY-MM-DD). Must be unique per sport - only one round per sport per day.
+          example: "2025-11-15"
+        sport:
+          type: string
+          enum:
+            - basketball
+            - baseball
+            - football
+          description: The sport for this round
+          example: "basketball"
+        roundId:
+          type: string
+          description: Unique identifier for the round, format is Sport name + round number (e.g., Basketball100)
+          example: "Basketball100"
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the round was created
+          example: "2025-11-11T10:00:00Z"
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Timestamp when the round was last updated
+          example: "2025-11-11T14:30:00Z"
+        previouslyPlayedDates:
+          type: array
+          items:
+            type: string
+            format: date
+          description: Array of historical dates when this round was previously played (format YYYY-MM-DD). Used for admin record-keeping purposes.
+          example: ["2025-11-01", "2025-11-08"]
+
+    Result:
+      type: object
+      required:
+        - score
+        - isCorrect
+        - tilesFlipped
+      properties:
+        score:
+          type: integer
+          description: The score achieved in the game
+          minimum: 0
+          maximum: 100
+          example: 9
+        isCorrect:
+          type: boolean
+          description: Whether the player answered correctly
+          example: true
+        tilesFlipped:
+          type: array
+          items:
+            type: string
+          minItems: 0
+          maxItems: 9
+          description: Array of tile identifiers that were flipped during the game
+          example: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+
+    TileFlipTracker:
+      type: object
+      required:
+        - bio
+        - playerInformation
+        - draftInformation
+        - teamsPlayedOn
+        - jerseyNumbers
+        - careerStats
+        - personalAchievements
+        - photo
+        - yearsActive
+      properties:
+        bio:
+          type: integer
+          description: Count for bio tile
+          example: 145
+        playerInformation:
+          type: integer
+          description: Count for playerInformation tile
+          example: 203
+        draftInformation:
+          type: integer
+          description: Count for draftInformation tile
+          example: 98
+        teamsPlayedOn:
+          type: integer
+          description: Count for teamsPlayedOn tile
+          example: 312
+        jerseyNumbers:
+          type: integer
+          description: Count for jerseyNumbers tile
+          example: 167
+        careerStats:
+          type: integer
+          description: Count for careerStats tile
+          example: 421
+        personalAchievements:
+          type: integer
+          description: Count for personalAchievements tile
+          example: 289
+        photo:
+          type: integer
+          description: Count for photo tile
+          example: 134
+        yearsActive:
+          type: integer
+          description: Count for yearsActive tile
+          example: 156
+
+    Stats:
+      type: object
+      required:
+        - totalPlays
+        - percentageCorrect
+        - highestScore
+        - averageCorrectScore
+        - averageNumberOfTileFlips
+        - mostCommonFirstTileFlipped
+        - mostCommonLastTileFlipped
+        - mostCommonTileFlipped
+        - leastCommonTileFlipped
+        - firstTileFlippedTracker
+        - lastTileFlippedTracker
+        - mostTileFlippedTracker
+      properties:
+        totalPlays:
+          type: integer
+          description: Total number of times this round has been played by all users
+          example: 1247
+        percentageCorrect:
+          type: number
+          format: float
+          description: Percentage of players who answered correctly
+          example: 68.5
+        highestScore:
+          type: number
+          description: Highest score achieved across all users
+          example: 9
+        averageCorrectScore:
+          type: number
+          format: float
+          description: Average score among players who answered correctly
+          example: 7.8
+        averageNumberOfTileFlips:
+          type: number
+          format: float
+          description: Average number of tiles flipped per game
+          example: 5.3
+        mostCommonFirstTileFlipped:
+          type: string
+          description: The tile most commonly flipped first
+          example: "tile1"
+        mostCommonLastTileFlipped:
+          type: string
+          description: The tile most commonly flipped last
+          example: "tile9"
+        mostCommonTileFlipped:
+          type: string
+          description: The tile flipped most frequently overall
+          example: "tile5"
+        leastCommonTileFlipped:
+          type: string
+          description: The tile flipped least frequently overall
+          example: "tile3"
+        firstTileFlippedTracker:
+          $ref: '#/components/schemas/TileFlipTracker'
+          description: Tracks how many times each tile was flipped first
+        lastTileFlippedTracker:
+          $ref: '#/components/schemas/TileFlipTracker'
+          description: Tracks how many times each tile was flipped last
+        mostTileFlippedTracker:
+          $ref: '#/components/schemas/TileFlipTracker'
+          description: Tracks how many times each tile was flipped overall
+
+    RoundStats:
+      allOf:
+        - $ref: '#/components/schemas/Stats'
+        - type: object
+          required:
+            - playDate
+            - name
+            - sport
+          properties:
+            playDate:
+              type: string
+              format: date
+              description: The scheduled play date for this round (format YYYY-MM-DD)
+              example: "2025-11-15"
+            name:
+              type: string
+              description: Player name for this round
+              example: "LeBron James"
+            sport:
+              type: string
+              enum:
+                - basketball
+                - baseball
+                - football
+              description: The sport for this round
+              example: "basketball"
+
+    SportStats:
+      allOf:
+        - $ref: '#/components/schemas/Stats'
+        - type: object
+          required:
+            - sport
+            - currentDailyStreak
+          properties:
+            sport:
+              type: string
+              enum:
+                - basketball
+                - baseball
+                - football
+              description: The sport for these statistics
+              example: "basketball"
+            currentDailyStreak:
+              type: integer
+              description: The user's current consecutive daily play streak for this sport
+              example: 15
+
+    UserStats:
+      type: object
+      required:
+        - userId
+        - userName
+        - userCreated
+        - sports
+      properties:
+        userId:
+          type: string
+          description: Unique identifier for the user
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        userName:
+          type: string
+          description: Display name for user in Statsland
+          example: "John Doe"
+        userCreated:
+          type: string
+          format: date-time
+          description: Timestamp when the user account was created
+          example: "2025-10-01T08:00:00Z"
+        sports:
+          type: array
+          description: Array of sport-specific statistics for the user
+          items:
+            $ref: '#/components/schemas/SportStats'
+          example:
+            - sport: "basketball"
+              currentDailyStreak: 15
+              totalPlays: 450
+              percentageCorrect: 72.5
+              highestScore: 9
+              averageCorrectScore: 8.2
+              mostCommonFirstTileFlipped: "playerInformation"
+              mostCommonLastTileFlipped: "photo"
+              mostCommonTileFlipped: "careerStats"
+              leastCommonTileFlipped: "bio"
+            - sport: "baseball"
+              currentDailyStreak: 8
+              totalPlays: 230
+              percentageCorrect: 68.0
+              highestScore: 9
+              averageCorrectScore: 7.9
+              mostCommonFirstTileFlipped: "teamsPlayedOn"
+              mostCommonLastTileFlipped: "photo"
+              mostCommonTileFlipped: "jerseyNumbers"
+              leastCommonTileFlipped: "draftInformation"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+        - code
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Short error title
+          example: "Bad Request"
+        message:
+          type: string
+          description: Detailed error message
+          example: "Invalid difficulty level provided"
+        code:
+          type: string
+          description: Application-specific error code
+          example: "INVALID_PARAMETER"
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when error occurred
+          example: "2025-11-11T10:30:00Z"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token for public client access (players)
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for admin access (round management)
