@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 // Global DB instance
 var db *DB
 
-// TODO - 1) need career stats per sport/position 2) curate personal achievements list 3) fix any bugs 4) create new util/helper file 5) unit tests
+// TODO - 1) need career stats per sport/position, finish out with final checks, 2) curate personal achievements list 3) fix any bugs (years active for football) 4) create string of draft info 5) unit tests
 
 // handleGetRound handles GET /v1/round
 func handleGetRound(w http.ResponseWriter, r *http.Request) {
@@ -463,6 +464,9 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 			// Use the single player result
 			finalURL = fmt.Sprintf("https://www.%s%s", hostname, playerSearchItems[0])
 			fmt.Printf("Found single player result, using URL: %s\n", finalURL)
+		} else if len(playerSearchItems) == 0 {
+			errorResponseWithCode(w, "Bad Request", "No players found with the name '"+name+"'. Please check the player name and sport again.", "NO_PLAYERS_FOUND", http.StatusBadRequest)
+			return			
 		} else {
 			errorResponseWithCode(w, "Bad Request", "Multiple players found with the name '"+name+"'. Please provide the sportsReferencePath parameter to specify the exact player.", "MULTIPLE_PLAYERS_FOUND", http.StatusBadRequest)
 			return
@@ -541,7 +545,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			text = strings.ReplaceAll(text, "\n", " ")
 			text = strings.Join(strings.Fields(text), " ")
 			// Remove country code (last 3 characters: space + 2-char code)
-			if len(text) > 3 {
+			if sport != "football" && len(text) > 3 {
 				text = strings.TrimSpace(text[:len(text)-3])
 			}
 			player.Bio = text
@@ -640,6 +644,12 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 		}
 	})
 
+	// Capture the stats_pullout element for later processing
+	var statsPulloutElement *colly.HTMLElement
+	c.OnHTML(".stats_pullout", func(e *colly.HTMLElement) {
+		statsPulloutElement = e
+	})
+
 	// Extract jersey numbers using uni_holder class
 	var jerseyNumbersMap = make(map[string]bool)
 	c.OnHTML(".uni_holder", func(e *colly.HTMLElement) {
@@ -707,6 +717,50 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 		if len(physicalAttrs) > 0 {
 			player.PlayerInformation = strings.Join(physicalAttrs, " ")
 		}
+
+		// Extract career stats using the config based on sport and position
+		if statsPulloutElement != nil {
+			careerStatsConfig := GetCareerStatsConfig(sport, player.PlayerInformation)
+
+			// baseball pitcher-only
+			winsOrSavesValue := 0
+			var winsOrSavesLabel string
+
+			// Extract each stat from the configuration
+			var careerStats []string
+			for _, statConfig := range careerStatsConfig.Stats {
+				statValue := strings.TrimSpace(statsPulloutElement.DOM.Find(statConfig.HTMLPath).Text())
+				if statValue != "" {
+					// logic to correctly display the higher of Wins or Saves
+					if statConfig.StatLabel == "W" || statConfig.StatLabel == "SV" {
+						intStatValue, err := strconv.Atoi(statValue)
+						if err != nil {
+							// If conversion fails, skip this stat and continue
+							fmt.Printf("Warning: Failed to convert %s value '%s' to integer: %v\n", statConfig.StatLabel, statValue, err)
+							continue
+						}
+						if intStatValue > winsOrSavesValue {
+							winsOrSavesValue = intStatValue
+							winsOrSavesLabel = statConfig.StatLabel
+						}
+					} else {
+						careerStats = append(careerStats, fmt.Sprintf("%s %s", statValue, statConfig.StatLabel))
+					}
+				}
+			}
+
+			// baseball pitcher-only
+			if winsOrSavesLabel != "" {
+				careerStats = append([]string{fmt.Sprintf("%d %s", winsOrSavesValue, winsOrSavesLabel)}, careerStats...)
+			}
+
+			// Join all stats into the CareerStats field
+			if len(careerStats) > 0 {
+				player.CareerStats = strings.Join(careerStats, ", ")
+			}
+		}
+
+
 	})
 
 	// Extract career stats based on sport
@@ -795,137 +849,4 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	}
 
 	return player, nil
-}
-
-// contains checks if a string slice contains a specific string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-// isValidYear checks if a year string is valid (not empty and not a summary row label)
-func isValidYear(year string) bool {
-	if year == "" {
-		return false
-	}
-	invalidValues := []string{"Season", "Career", "Yr", "Avg", "Average"}
-	for _, invalid := range invalidValues {
-		if year == invalid || strings.Contains(year, invalid) {
-			return false
-		}
-	}
-	return true
-}
-
-// formatYearsAsRanges converts a slice of year strings into consolidated ranges
-// Example: ["2010", "2011", "2013", "2014"] -> "2010-2011, 2013-2014"
-// If the last year matches the current season for the sport, it displays "Present"
-// For basketball, handles season format like "2024-25" and extracts start year
-func formatYearsAsRanges(years []string, sport string) string {
-	if len(years) == 0 {
-		return ""
-	}
-
-	// Convert strings to integers and sort
-	var yearInts []int
-	for _, y := range years {
-		var yearInt int
-
-		// For basketball, handle season format like "2024-25"
-		if sport == "basketball" && strings.Contains(y, "-") {
-			// Extract the first year from the season range (e.g., "2024" from "2024-25")
-			parts := strings.Split(y, "-")
-			if len(parts) > 0 {
-				_, err := fmt.Sscanf(parts[0], "%d", &yearInt)
-				if err == nil {
-					yearInts = append(yearInts, yearInt)
-				}
-			}
-		} else {
-			// Regular year format
-			_, err := fmt.Sscanf(y, "%d", &yearInt)
-			if err == nil {
-				yearInts = append(yearInts, yearInt)
-			}
-		}
-	}
-
-	if len(yearInts) == 0 {
-		return ""
-	}
-
-	sort.Ints(yearInts)
-	currentSeasonYear := GetCurrentSeasonYear(sport)
-
-	// Build ranges
-	var ranges []string
-	rangeStart := yearInts[0]
-	rangeEnd := yearInts[0]
-
-	for i := 1; i < len(yearInts); i++ {
-		if yearInts[i] == rangeEnd+1 {
-			// Consecutive year, extend the range
-			rangeEnd = yearInts[i]
-		} else {
-			// Gap found, save the current range and start a new one
-			if rangeStart == rangeEnd {
-				if rangeStart == currentSeasonYear {
-					ranges = append(ranges, "Present")
-				} else {
-					// For basketball single seasons, add 1 to show the ending year
-					if sport == "basketball" {
-						ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
-					} else {
-						ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
-					}
-				}
-			} else {
-				// For basketball, add 1 to the end year to show the actual ending year
-				displayEndYear := rangeEnd
-				if sport == "basketball" {
-					displayEndYear = rangeEnd + 1
-				}
-
-				endStr := fmt.Sprintf("%d", displayEndYear)
-				if rangeEnd == currentSeasonYear {
-					endStr = "Present"
-				}
-				ranges = append(ranges, fmt.Sprintf("%d-%s", rangeStart, endStr))
-			}
-			rangeStart = yearInts[i]
-			rangeEnd = yearInts[i]
-		}
-	}
-
-	// Add the last range
-	if rangeStart == rangeEnd {
-		if rangeStart == currentSeasonYear {
-			ranges = append(ranges, "Present")
-		} else {
-			// For basketball single seasons, add 1 to show the ending year
-			if sport == "basketball" {
-				ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
-			} else {
-				ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
-			}
-		}
-	} else {
-		// For basketball, add 1 to the end year to show the actual ending year
-		displayEndYear := rangeEnd
-		if sport == "basketball" {
-			displayEndYear = rangeEnd + 1
-		}
-
-		endStr := fmt.Sprintf("%d", displayEndYear)
-		if rangeEnd == currentSeasonYear {
-			endStr = "Present"
-		}
-		ranges = append(ranges, fmt.Sprintf("%d-%s", rangeStart, endStr))
-	}
-
-	return strings.Join(ranges, ", ")
 }
