@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,7 +18,7 @@ import (
 // Global DB instance
 var db *DB
 
-// TODO  3) fix any bugs (years active for football) 4) create string of draft info 5) unit tests
+// TODO 5) unit tests
 
 // handleGetRound handles GET /v1/round
 func handleGetRound(w http.ResponseWriter, r *http.Request) {
@@ -426,13 +427,13 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 
 	// Log request
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Printf("Visiting: %s\n", r.URL.String())
+		// fmt.Printf("Visiting: %s\n", r.URL.String())
 	})
 
 	// Capture the response and final URL
 	c.OnResponse(func(r *colly.Response) {
 		finalURL = r.Request.URL.String()
-		fmt.Printf("Final URL after redirects: %s\n", finalURL)
+		// fmt.Printf("Final URL after redirects: %s\n", finalURL)
 	})
 
 	// Extract player search results from #players div
@@ -463,7 +464,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 		if len(playerSearchItems) == 1 {
 			// Use the single player result
 			finalURL = fmt.Sprintf("https://www.%s%s", hostname, playerSearchItems[0])
-			fmt.Printf("Found single player result, using URL: %s\n", finalURL)
+			// fmt.Printf("Found single player result, using URL: %s\n", finalURL)
 		} else if len(playerSearchItems) == 0 {
 			errorResponseWithCode(w, "Bad Request", "No players found with the name '"+name+"'. Please check the player name and sport again.", "NO_PLAYERS_FOUND", http.StatusBadRequest)
 			return			
@@ -474,7 +475,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Successfully redirected to a player page
-	fmt.Printf("Player page URL: %s\n", finalURL)
+	// fmt.Printf("Player page URL: %s\n", finalURL)
 
 	// Scrape player page data
 	player, err := scrapePlayerData(finalURL, hostname, sport)
@@ -571,11 +572,17 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	c.OnHTML("div#meta span[itemprop='height'], div#meta span[itemprop='weight']", func(e *colly.HTMLElement) {
 		text := strings.TrimSpace(e.Text)
 		if text != "" {
-			// Get the label (Height or Weight)
+			// Remove metric measurements in parentheses (e.g., "(193cm, 88kg)")
+			// Use regex to remove anything in parentheses
+			re := regexp.MustCompile(`\s*\([^)]*\)`)
+			text = re.ReplaceAllString(text, "")
+			text = strings.TrimSpace(text)
+
+			// Get the label (Height or Weight) with bullet separator
 			if e.Attr("itemprop") == "height" {
-				physicalAttrs = append(physicalAttrs, "Height: "+text)
+				physicalAttrs = append(physicalAttrs, " ▪ Height: "+text)
 			} else if e.Attr("itemprop") == "weight" {
-				physicalAttrs = append(physicalAttrs, "Weight: "+text)
+				physicalAttrs = append(physicalAttrs, " ▪ Weight: "+text)
 			}
 		}
 	})
@@ -588,7 +595,42 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			// This likely contains height and weight
 			text = strings.ReplaceAll(text, "\n", " ")
 			text = strings.Join(strings.Fields(text), " ")
-			physicalAttrs = append(physicalAttrs, text)
+
+			// Remove metric measurements in parentheses
+			re := regexp.MustCompile(`\s*\([^)]*\)`)
+			text = re.ReplaceAllString(text, "")
+			text = strings.TrimSpace(text)
+
+			physicalAttrs = append(physicalAttrs, "▪ "+text)
+		}
+	})
+
+	// Extract college information for football/basketball
+	// Prioritize college over high school
+	var college string
+	var highSchool string
+	c.OnHTML("div#meta p", func(e *colly.HTMLElement) {
+		text := strings.TrimSpace(e.Text)
+		if strings.Contains(text, "College:") || strings.Contains(text, "Colleges:") {
+			// Extract college name after the colon
+			parts := strings.SplitN(text, ":", 2)
+			if len(parts) == 2 {
+				college = strings.TrimSpace(parts[1])
+				// Remove "(College Stats)" suffix if present
+				college = strings.TrimSpace(strings.ReplaceAll(college, "(College Stats)", ""))
+
+				// If multiple colleges separated by comma, choose the latter (most recent)
+				if strings.Contains(college, ",") {
+					colleges := strings.Split(college, ",")
+					college = strings.TrimSpace(colleges[len(colleges)-1])
+				}
+			}
+		} else if strings.Contains(text, "High School:") {
+			// Extract high school name after the colon (as fallback)
+			parts := strings.SplitN(text, ":", 2)
+			if len(parts) == 2 {
+				highSchool = strings.TrimSpace(parts[1])
+			}
 		}
 	})
 
@@ -600,7 +642,16 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			text = strings.ReplaceAll(text, "\n", " ")
 			text = strings.ReplaceAll(text, "\t", " ")
 			text = strings.Join(strings.Fields(text), " ")
-			player.DraftInformation = text
+
+			// Use college if available, otherwise fall back to high school
+			school := college
+			if school == "" {
+				school = highSchool
+			}
+			school = strings.ReplaceAll(school, "\n", "")
+			school = strings.ReplaceAll(school, "\t", "")
+
+			player.DraftInformation = formatDraftInformation(text, sport, school)
 		}
 
 		// Set default for draft information if not found
@@ -614,6 +665,11 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	var injuredYears []string
 	var firstTableProcessed bool
 	c.OnHTML("table", func(e *colly.HTMLElement) {
+		// Skip tables with id="last5" (last 5 games tables)
+		if e.Attr("id") == "last5" {
+			return
+		}
+
 		// Only process the very first table on the page
 		if firstTableProcessed {
 			return
