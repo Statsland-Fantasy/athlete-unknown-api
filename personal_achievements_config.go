@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -120,7 +119,6 @@ func GetAchievementAbbreviation(sport, achievementName string) *ProcessedAchieve
 		}
 	}
 
-	fmt.Println("----------------------------------------------")
 	// If no mapping found, do not return achievement (ex: Bert Bell Award)
 	return nil
 }

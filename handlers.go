@@ -609,16 +609,25 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 		}
 	})
 
-	// Extract years active from career stats table - just get ALL td/th with year data
+	// Extract years active from the first table
 	var years []string
 	var injuredYears []string
-	c.OnHTML("th[data-stat='year_ID'], th[data-stat='year_id']", func(e *colly.HTMLElement) {
-		year := strings.TrimSpace(e.Text)
-		// Skip invalid years and duplicates
-		if isValidYear(year) && !contains(years, year) {
-			years = append(years, year)
+	var firstTableProcessed bool
+	c.OnHTML("table", func(e *colly.HTMLElement) {
+		// Only process the very first table on the page
+		if firstTableProcessed {
+			return
 		}
-	})
+		firstTableProcessed = true
+
+		// Extract all th elements from this table
+		e.ForEach("th[data-stat='year_id']", func(_ int, el *colly.HTMLElement) {
+			year := strings.TrimSpace(el.Text)
+			if isValidYear(year) && !contains(years, year) {
+				years = append(years, year)
+			}
+		})
+	})	
 
 	// Extract team information - just get ALL td with team data
 	var teams []string
