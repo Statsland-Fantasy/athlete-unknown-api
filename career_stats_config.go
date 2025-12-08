@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -21,7 +20,6 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 	// Normalize inputs to lowercase for case-insensitive matching
 	sport = strings.ToLower(sport)
 	playerInfo = strings.ToLower(playerInfo)
-	fmt.Println("pi", playerInfo)
 
 	switch sport {
 	case "baseball":

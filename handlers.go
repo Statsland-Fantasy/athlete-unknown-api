@@ -17,7 +17,7 @@ import (
 // Global DB instance
 var db *DB
 
-// TODO - 1) need career stats per sport/position, finish out with final checks, 2) curate personal achievements list 3) fix any bugs (years active for football) 4) create string of draft info 5) unit tests
+// TODO  3) fix any bugs (years active for football) 4) create string of draft info 5) unit tests
 
 // handleGetRound handles GET /v1/round
 func handleGetRound(w http.ResponseWriter, r *http.Request) {
@@ -809,7 +809,9 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 
 	c.OnScraped(func(r *colly.Response) {
 		if len(achievements) > 0 {
-			player.PersonalAchievements = strings.Join(achievements, ", ")
+			maxLength := 100
+			ttt := ProcessAchievements(sport, achievements, maxLength)
+			player.PersonalAchievements = ttt
 		}
 	})
 
