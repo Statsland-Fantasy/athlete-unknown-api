@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"time"
 )
 
 // Config holds application configuration
@@ -55,4 +57,23 @@ func GetCurrentSeasonYear(sport string) int {
 	default:
 		return 0
 	}
+}
+
+// FIRST_ROUND_DATE is the reference date for calculating round IDs
+var FIRST_ROUND_DATE = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+
+// GenerateRoundID generates a round ID by concatenating the sport and the number of days since FIRST_ROUND_DATE
+func GenerateRoundID(sport string, playDate string) (string, error) {
+	// Parse the playDate
+	date, err := time.Parse("2006-01-02", playDate)
+	if err != nil {
+		return "", fmt.Errorf("invalid playDate format: %w", err)
+	}
+
+	// Calculate the number of days since FIRST_ROUND_DATE
+	daysSince := int(date.Sub(FIRST_ROUND_DATE).Hours() / 24)
+
+	// Generate the round ID
+	roundID := fmt.Sprintf("%s%d", sport, daysSince)
+	return roundID, nil
 }

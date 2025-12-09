@@ -84,8 +84,25 @@ func handleCreateRound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set Created and LastUpdated timestamps if not provided
+	now := time.Now()
+	if round.Created.IsZero() {
+		round.Created = now
+	}
+	if round.LastUpdated.IsZero() {
+		round.LastUpdated = now
+	}
+
+	// Generate round ID
+	roundID, err := GenerateRoundID(round.Sport, round.PlayDate)
+	if err != nil {
+		errorResponseWithCode(w, "Bad Request", "Invalid playDate format: "+err.Error(), "INVALID_PLAY_DATE", http.StatusBadRequest)
+		return
+	}
+	round.RoundID = roundID
+
 	ctx := context.Background()
-	err := db.CreateRound(ctx, &round)
+	err = db.CreateRound(ctx, &round)
 	if err != nil {
 		if err.Error() == "round already exists" {
 			errorResponseWithCode(w, "Conflict", "Round already exists for sport '"+round.Sport+"' on playDate '"+round.PlayDate+"'", "ROUND_ALREADY_EXISTS", http.StatusConflict)
@@ -376,10 +393,20 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Create round with scraped player data
+		now := time.Now()
+		roundID, err := GenerateRoundID(sport, playDate)
+		if err != nil {
+			errorResponseWithCode(w, "Bad Request", "Invalid playDate format: "+err.Error(), "INVALID_PLAY_DATE", http.StatusBadRequest)
+			return
+		}
+
 		round := Round{
-			Sport:    sport,
-			PlayDate: playDate,
-			Player:   *player,
+			RoundID:     roundID,
+			Sport:       sport,
+			PlayDate:    playDate,
+			Player:      *player,
+			Created:     now,
+			LastUpdated: now,
 			Stats: RoundStats{
 				PlayDate: playDate,
 				Name:     player.Name,
@@ -483,15 +510,25 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create round with scraped player data
+	now := time.Now()
+	roundID, err := GenerateRoundID(sport, playDate)
+	if err != nil {
+		errorResponseWithCode(w, "Bad Request", "Invalid playDate format: "+err.Error(), "INVALID_PLAY_DATE", http.StatusBadRequest)
+		return
+	}
+
 	round := Round{
-		Sport:    sport,
-		PlayDate: playDate,
-		Player:   *player,
+		RoundID:     roundID,
+		Sport:       sport,
+		PlayDate:    playDate,
+		Player:      *player,
+		Created:     now,
+		LastUpdated: now,
 		Stats: RoundStats{
 			PlayDate: playDate,
 			Name:     player.Name,
 			Sport:    sport,
-		},		
+		},
 	}
 
 	// Store the round in DynamoDB

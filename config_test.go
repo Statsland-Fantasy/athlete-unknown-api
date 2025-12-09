@@ -256,3 +256,81 @@ func TestGetCurrentSeasonYear(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateRoundID(t *testing.T) {
+	tests := []struct {
+		name      string
+		sport     string
+		playDate  string
+		expected  string
+		expectErr bool
+	}{
+		{
+			name:      "baseball on first round date",
+			sport:     "baseball",
+			playDate:  "2025-01-01",
+			expected:  "baseball0",
+			expectErr: false,
+		},
+		{
+			name:      "basketball one day after first round date",
+			sport:     "basketball",
+			playDate:  "2025-01-02",
+			expected:  "basketball1",
+			expectErr: false,
+		},
+		{
+			name:      "football 30 days after first round date",
+			sport:     "football",
+			playDate:  "2025-01-31",
+			expected:  "football30",
+			expectErr: false,
+		},
+		{
+			name:      "baseball 365 days after first round date",
+			sport:     "baseball",
+			playDate:  "2026-01-01",
+			expected:  "baseball365",
+			expectErr: false,
+		},
+		{
+			name:      "date before first round date",
+			sport:     "basketball",
+			playDate:  "2024-12-31",
+			expected:  "basketball-1",
+			expectErr: false,
+		},
+		{
+			name:      "invalid date format",
+			sport:     "baseball",
+			playDate:  "2025/01/01",
+			expected:  "",
+			expectErr: true,
+		},
+		{
+			name:      "invalid date",
+			sport:     "football",
+			playDate:  "not-a-date",
+			expected:  "",
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateRoundID(tt.sport, tt.playDate)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("GenerateRoundID(%q, %q) expected error, got nil", tt.sport, tt.playDate)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("GenerateRoundID(%q, %q) unexpected error: %v", tt.sport, tt.playDate, err)
+				}
+				if got != tt.expected {
+					t.Errorf("GenerateRoundID(%q, %q) = %v, want %v", tt.sport, tt.playDate, got, tt.expected)
+				}
+			}
+		})
+	}
+}
