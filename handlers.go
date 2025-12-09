@@ -415,7 +415,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Store the round in DynamoDB
-		// err = db.CreateRound(r.Context(), &round)
+		err = db.CreateRound(r.Context(), &round)
 		if err != nil {
 			errorResponseWithCode(w, "Internal Server Error", "Failed to create round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
 			return
@@ -532,7 +532,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store the round in DynamoDB
-	// err = db.CreateRound(r.Context(), &round)
+	err = db.CreateRound(r.Context(), &round)
 	if err != nil {
 		errorResponseWithCode(w, "Internal Server Error", "Failed to create round: "+err.Error(), "DATABASE_ERROR", http.StatusInternalServerError)
 		return
