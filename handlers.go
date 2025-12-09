@@ -18,8 +18,6 @@ import (
 // Global DB instance
 var db *DB
 
-// TODO 5) unit tests
-
 // handleGetRound handles GET /v1/round
 func handleGetRound(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

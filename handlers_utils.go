@@ -141,11 +141,11 @@ func formatYearsAsRanges(years []string, sport string) string {
 }
 
 // formatDraftInformation transforms draft text from verbose format to concise format
-// Example: "Draft: Buffalo Bills in the 1st round (4th overall) of the 2014 NFL Draft." with college="Syracuse" -> "2014: 1st Rd (4th Ovr) from Syracuse"
-// Example: "Draft: Washington Wizards, 1st round (18th pick, 18th overall), 2025 NBA Draft" with college="Duke" -> "2025: 1st Rd (18th Ovr) from Duke"
+// Example: "Draft: Buffalo Bills in the 1st round (4th overall) of the 2014 NFL Draft." with draftSchool="Syracuse" -> "2014: 1st Rd (4th Ovr) from Syracuse"
+// Example: "Draft: Washington Wizards, 1st round (18th pick, 18th overall), 2025 NBA Draft" with draftSchool="Duke" -> "2025: 1st Rd (18th Ovr) from Duke"
 // Example: "Draft: Drafted by the Los Angeles Angels of Anaheim in the 1st round (25th) of the 2009 MLB June Amateur Draft from Vanderbilt University" -> "2009: 1st Rd (25th Ovr) from Vanderbilt University"
 // For multiple drafts, it selects the most recent year (the draft they actually signed with)
-func formatDraftInformation(draftText, sport, college string) string {
+func formatDraftInformation(draftText, sport, draftSchool string) string {
 	// Return "Undrafted" if the text indicates no draft
 	if strings.Contains(strings.ToLower(draftText), "undrafted") {
 		return "Undrafted"
@@ -315,9 +315,9 @@ func formatDraftInformation(draftText, sport, college string) string {
 	// Get the ordinal suffix for overall
 	overallSuffix := getOrdinalSuffix(overall)
 
-	// Format: "2014: 1st Rd (4th Ovr) from College" for football/basketball
-	if college != "" {
-		return fmt.Sprintf("%s: %s%s Rd (%s%s Ovr) from %s", year, round, roundSuffix, overall, overallSuffix, college)
+	// Format: "2014: 1st Rd (4th Ovr) from School" for football/basketball
+	if draftSchool != "" {
+		return fmt.Sprintf("%s: %s%s Rd (%s%s Ovr) from %s", year, round, roundSuffix, overall, overallSuffix, draftSchool)
 	}
 	return fmt.Sprintf("%s: %s%s Rd (%s%s Ovr)", year, round, roundSuffix, overall, overallSuffix)
 }
