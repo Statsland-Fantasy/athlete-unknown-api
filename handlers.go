@@ -912,8 +912,10 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	c.OnScraped(func(r *colly.Response) {
 		if len(achievements) > 0 {
 			maxLength := 100
-			ttt := ProcessAchievements(sport, achievements, maxLength)
-			player.PersonalAchievements = ttt
+			processedAchievements := ProcessAchievements(sport, achievements, maxLength) 
+			player.PersonalAchievements = processedAchievements
+		} else {
+			player.PersonalAchievements = "N/A"
 		}
 	})
 
