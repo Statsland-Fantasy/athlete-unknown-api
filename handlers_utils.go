@@ -348,3 +348,54 @@ func getOrdinalSuffix(numStr string) string {
 		return "th"
 	}
 }
+
+// abbreviatePositions abbreviates position names in the player information string
+// This function looks for "Position:" or "Positions:" and abbreviates the position names
+// Example: "Position: Shooting Guard" -> "Position: SG"
+// Example: "Positions: Shooting Guard and Point Guard" -> "Positions: SG and PG"
+func abbreviatePositions(playerInfo string) string {
+	// Position abbreviation map - add your specific abbreviations here
+	// Order matters: longer position names should be replaced first to avoid partial replacements
+	positionReplacements := []struct {
+		full  string
+		abbrev string
+	}{
+		// Basketball positions (ordered by length, longest first)
+		{"Shooting Guard", "SG"},
+		{"Point Guard", "PG"},
+		{"Small Forward", "SF"},
+		{"Power Forward", "PF"},
+		{"Forward", "F"},
+		{"Center", "C"},
+		{"Guard", "G"},
+
+		// Football positions
+		// Already abbreviated
+
+		// Baseball positions
+		{"Designated Hitter", "DH"},
+		{"Second Baseman", "2B"},
+		{"First Baseman", "1B"},
+		{"Third Baseman", "3B"},
+		{"Centerfielder", "CF"},
+		{"Rightfielder", "RF"},
+		{"Leftfielder", "LF"},
+		{"Outfielder", "OF"},
+		{"Shortstop", "SS"},
+		{"Catcher", "C"},
+		{"Pitcher", "P"},
+		
+	}
+
+	result := playerInfo
+
+	// Replace each position with its abbreviation in order (longest first)
+	for _, replacement := range positionReplacements {
+		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
+	}	
+
+	result = strings.ReplaceAll(result, "and", "") // no "ands", all comma separated
+	result = strings.ReplaceAll(result, "-", ", ") // football uses - instead of ,
+
+	return result
+}

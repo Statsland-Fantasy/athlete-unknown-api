@@ -816,6 +816,8 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 
 		if len(physicalAttrs) > 0 {
 			player.PlayerInformation = strings.Join(physicalAttrs, " ")
+			// Abbreviate positions in the player information
+			player.PlayerInformation = abbreviatePositions(player.PlayerInformation)
 		}
 
 		// Extract career stats using the config based on sport and position
