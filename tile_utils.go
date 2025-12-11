@@ -7,23 +7,23 @@ func incrementTileTracker(tracker *TileFlipTracker, tileName string) {
 	}
 
 	switch tileName {
-	case "bio":
+	case TileBio:
 		tracker.Bio++
-	case "playerInformation":
+	case TilePlayerInformation:
 		tracker.PlayerInformation++
-	case "draftInformation":
+	case TileDraftInformation:
 		tracker.DraftInformation++
-	case "teamsPlayedOn":
+	case TileTeamsPlayedOn:
 		tracker.TeamsPlayedOn++
-	case "jerseyNumbers":
+	case TileJerseyNumbers:
 		tracker.JerseyNumbers++
-	case "careerStats":
+	case TileCareerStats:
 		tracker.CareerStats++
-	case "personalAchievements":
+	case TilePersonalAchievements:
 		tracker.PersonalAchievements++
-	case "photo":
+	case TilePhoto:
 		tracker.Photo++
-	case "yearsActive":
+	case TileYearsActive:
 		tracker.YearsActive++
 	}
 }
@@ -38,15 +38,15 @@ func findMostCommonTile(tracker *TileFlipTracker) string {
 	mostCommon := ""
 
 	tiles := map[string]int{
-		"bio":                  tracker.Bio,
-		"playerInformation":    tracker.PlayerInformation,
-		"draftInformation":     tracker.DraftInformation,
-		"teamsPlayedOn":        tracker.TeamsPlayedOn,
-		"jerseyNumbers":        tracker.JerseyNumbers,
-		"careerStats":          tracker.CareerStats,
-		"personalAchievements": tracker.PersonalAchievements,
-		"photo":                tracker.Photo,
-		"yearsActive":          tracker.YearsActive,
+		TileBio:                  tracker.Bio,
+		TilePlayerInformation:    tracker.PlayerInformation,
+		TileDraftInformation:     tracker.DraftInformation,
+		TileTeamsPlayedOn:        tracker.TeamsPlayedOn,
+		TileJerseyNumbers:        tracker.JerseyNumbers,
+		TileCareerStats:          tracker.CareerStats,
+		TilePersonalAchievements: tracker.PersonalAchievements,
+		TilePhoto:                tracker.Photo,
+		TileYearsActive:          tracker.YearsActive,
 	}
 
 	for tileName, count := range tiles {
@@ -69,15 +69,15 @@ func findLeastCommonTile(tracker *TileFlipTracker) string {
 	leastCommon := ""
 
 	tiles := map[string]int{
-		"bio":                  tracker.Bio,
-		"playerInformation":    tracker.PlayerInformation,
-		"draftInformation":     tracker.DraftInformation,
-		"teamsPlayedOn":        tracker.TeamsPlayedOn,
-		"jerseyNumbers":        tracker.JerseyNumbers,
-		"careerStats":          tracker.CareerStats,
-		"personalAchievements": tracker.PersonalAchievements,
-		"photo":                tracker.Photo,
-		"yearsActive":          tracker.YearsActive,
+		TileBio:                  tracker.Bio,
+		TilePlayerInformation:    tracker.PlayerInformation,
+		TileDraftInformation:     tracker.DraftInformation,
+		TileTeamsPlayedOn:        tracker.TeamsPlayedOn,
+		TileJerseyNumbers:        tracker.JerseyNumbers,
+		TileCareerStats:          tracker.CareerStats,
+		TilePersonalAchievements: tracker.PersonalAchievements,
+		TilePhoto:                tracker.Photo,
+		TileYearsActive:          tracker.YearsActive,
 	}
 
 	for tileName, count := range tiles {
