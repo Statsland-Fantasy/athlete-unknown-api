@@ -394,9 +394,7 @@ func abbreviatePositions(playerInfo string) string {
 		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
 	}	
 
-	result = strings.ReplaceAll(result, "and", "") // no "ands", all comma separated
-	result = strings.ReplaceAll(result, "-", ", ") // football uses - instead of ,
-	result = strings.ReplaceAll(result, "  ", " ") // double space 
+	result = strings.ReplaceAll(result, " and ", ", ") // no "ands", all comma separated
 
 	return result
 }

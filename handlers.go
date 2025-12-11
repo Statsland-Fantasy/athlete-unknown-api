@@ -598,6 +598,10 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 		   strings.Contains(text, "Throws:") || strings.Contains(text, "Shoots:") {
 			// Remove newlines and extra spaces
 			text = strings.ReplaceAll(text, "\n", " ")
+			text = strings.ReplaceAll(text, "-", ", ") // football uses - instead of ,
+			if sport == "football" {
+				text = strings.ReplaceAll(text, "Throws:", " ▪ Throws:") // football has Throws in same line as position. Need extra separator
+			}
 			text = strings.Join(strings.Fields(text), " ")
 			physicalAttrs = append(physicalAttrs, text)
 		}
@@ -636,7 +640,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			text = re.ReplaceAllString(text, "")
 			text = strings.TrimSpace(text)
 
-			physicalAttrs = append(physicalAttrs, "▪ "+text)
+			physicalAttrs = append(physicalAttrs, text)
 		}
 	})
 
@@ -815,7 +819,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 		}
 
 		if len(physicalAttrs) > 0 {
-			player.PlayerInformation = strings.Join(physicalAttrs, " ")
+			player.PlayerInformation = strings.Join(physicalAttrs, " ▪ ")
 			// Abbreviate positions in the player information
 			player.PlayerInformation = abbreviatePositions(player.PlayerInformation)
 		}

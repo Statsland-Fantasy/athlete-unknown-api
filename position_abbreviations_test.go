@@ -18,17 +18,17 @@ func TestAbbreviatePositions(t *testing.T) {
 		{
 			name:     "Basketball - Multiple positions with 'and'",
 			input:    "Position: Shooting Guard and Point Guard",
-			expected: "Position: SG  PG", // "and" is removed by the function
+			expected: "Position: SG, PG", // " and " is replaced with ", "
 		},
 		{
 			name:     "Basketball - Position with other attributes",
 			input:    " ▪ Height: 6-3 ▪ Weight: 185lb Position: Small Forward Shoots: Right",
-			expected: " ▪ Height: 6, 3 ▪ Weight: 185lb Position: SF Shoots: Right", // "-" is replaced with ", "
+			expected: " ▪ Height: 6-3 ▪ Weight: 185lb Position: SF Shoots: Right", // "-" not replaced in abbreviatePositions
 		},
 		{
 			name:     "Basketball - Hyphenated position (Guard-Forward)",
 			input:    "Position: Guard-Forward",
-			expected: "Position: G, F", // "-" is replaced with ", "
+			expected: "Position: G-F", // "-" not replaced in abbreviatePositions
 		},
 		{
 			name:     "Basketball - Generic Guard position",
@@ -38,7 +38,7 @@ func TestAbbreviatePositions(t *testing.T) {
 		{
 			name:     "No position mentioned",
 			input:    " ▪ Height: 6-8 ▪ Weight: 220lb",
-			expected: " ▪ Height: 6, 8 ▪ Weight: 220lb", // "-" is replaced with ", "
+			expected: " ▪ Height: 6-8 ▪ Weight: 220lb", // "-" not replaced in abbreviatePositions
 		},
 		// Baseball position tests
 		{
@@ -99,12 +99,12 @@ func TestAbbreviatePositions(t *testing.T) {
 		{
 			name:     "Baseball - Multiple positions with 'and'",
 			input:    "Position: First Baseman and Outfielder",
-			expected: "Position: 1B  OF",
+			expected: "Position: 1B, OF", // " and " is replaced with ", "
 		},
 		{
 			name:     "Baseball - Position with other attributes",
 			input:    " ▪ Height: 6-2 ▪ Weight: 205lb Position: Pitcher Bats: Right Throws: Right",
-			expected: " ▪ Height: 6, 2 ▪ Weight: 205lb Position: P Bats: Right Throws: Right", // "-" is replaced with ", "
+			expected: " ▪ Height: 6-2 ▪ Weight: 205lb Position: P Bats: Right Throws: Right", // "-" not replaced in abbreviatePositions
 		},
 		// TODO: Add football position tests
 	}
