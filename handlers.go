@@ -365,6 +365,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 	// Get optional parameters
 	name := r.URL.Query().Get("name")
 	sportsReferencePath := r.URL.Query().Get("sportsReferencePath")
+	theme := r.URL.Query().Get("theme")
 
 	// Validate that at least one optional parameter is provided
 	if name == "" && sportsReferencePath == "" {
@@ -407,6 +408,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 			Player:      *player,
 			Created:     now,
 			LastUpdated: now,
+			Theme: theme,
 			Stats: RoundStats{
 				PlayDate: playDate,
 				Name:     player.Name,
@@ -524,6 +526,7 @@ func handleScrapeAndCreateRound(w http.ResponseWriter, r *http.Request) {
 		Player:      *player,
 		Created:     now,
 		LastUpdated: now,
+		Theme: theme,
 		Stats: RoundStats{
 			PlayDate: playDate,
 			Name:     player.Name,

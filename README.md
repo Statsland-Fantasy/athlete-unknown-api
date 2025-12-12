@@ -1,9 +1,11 @@
 # athlete-unknown-api
+
 Backend API to facilitate creation and playing of Athlete Unknown - a sports trivia game application
 
 ## Getting Started
 
 ### Prerequisites
+
 - Go 1.25 or higher
 - AWS DynamoDB (or DynamoDB Local for development)
 - AWS credentials configured (via AWS CLI, environment variables, or IAM role)
@@ -23,7 +25,9 @@ The API requires the following environment variables for DynamoDB configuration:
 The application uses two separate DynamoDB tables:
 
 #### 1. Rounds Table (AthleteUnknownRoundsDev)
+
 **Primary Key:**
+
 - `playDate` (String): Partition key in format `YYYY-MM-DD` (e.g., `2025-11-24`)
 - `sport` (String): Sort key (e.g., `basketball`, `baseball`, `football`)
 
@@ -31,6 +35,7 @@ The application uses two separate DynamoDB tables:
 The table stores Round objects with all their nested attributes (Player, Stats, etc.)
 
 **Example DynamoDB Local table creation:**
+
 ```bash
 aws dynamodb create-table \
     --table-name AthleteUnknownRoundsDev \
@@ -45,13 +50,16 @@ aws dynamodb create-table \
 ```
 
 #### 2. User Stats Table (AthleteUnknownUserStatsDev)
+
 **Primary Key:**
+
 - `userId` (String): Partition key (user's unique identifier)
 
 **Attributes:**
 The table stores UserStats objects with all their nested attributes (Sports, aggregate statistics, etc.)
 
 **Example DynamoDB Local table creation:**
+
 ```bash
 aws dynamodb create-table \
     --table-name AthleteUnknownUserStatsDev \
@@ -69,6 +77,7 @@ The `GetRoundsBySport` endpoint uses a Scan operation to filter by sport. For be
 ### Running the API
 
 1. **Using AWS DynamoDB:**
+
 ```bash
 export AWS_REGION=us-west-2
 export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
@@ -77,6 +86,7 @@ go run .
 ```
 
 2. **Using DynamoDB Local:**
+
 ```bash
 export DYNAMODB_ENDPOINT=http://localhost:8000
 export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
@@ -86,6 +96,7 @@ go run .
 ```
 
 3. **Change the server port:**
+
 ```bash
 PORT=3000 go run .
 ```
@@ -93,9 +104,11 @@ PORT=3000 go run .
 ## API Documentation
 
 ### Base URL
+
 All API endpoints are prefixed with `/v1`
 
 ### Supported Sports
+
 - `basketball`
 - `baseball`
 - `football`
@@ -105,12 +118,15 @@ All API endpoints are prefixed with `/v1`
 ## Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
+
 Returns the health status of the API.
 
 **Response:**
+
 ```json
 {
   "status": "healthy"
@@ -122,6 +138,7 @@ Returns the health status of the API.
 ### Game Rounds
 
 #### Get a Round
+
 ```
 GET /v1/round?sport={sport}&playDate={date}
 ```
@@ -129,15 +146,18 @@ GET /v1/round?sport={sport}&playDate={date}
 Retrieves a round containing player information for the trivia game.
 
 **Query Parameters:**
+
 - `sport` (required): The sport to retrieve (`basketball`, `baseball`, or `football`)
 - `playDate` (optional): The play date in `YYYY-MM-DD` format. Defaults to current date.
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "roundId": "Basketball100",
@@ -145,7 +165,7 @@ curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
   "playDate": "2025-11-15",
   "created": "2025-11-11T10:00:00Z",
   "lastUpdated": "2025-11-11T14:30:00Z",
-  "previouslyPlayedDates": ["2025-11-01", "2025-11-08"],
+  "theme": "GOAT",
   "player": {
     "sport": "basketball",
     "sportsReferenceURL": "https://www.basketball-reference.com/players/j/jamesle01.html",
@@ -179,6 +199,7 @@ curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
 ---
 
 #### Create a Round
+
 ```
 POST /v1/round
 ```
@@ -186,12 +207,13 @@ POST /v1/round
 Creates a new game round with player information. Admin access required.
 
 **Request Body:**
+
 ```json
 {
   "roundId": "Basketball100",
   "sport": "basketball",
   "playDate": "2025-11-15",
-  "previouslyPlayedDates": ["2025-11-01", "2025-11-08"],
+  "theme": "GOAT",
   "player": {
     "sport": "basketball",
     "sportsReferenceURL": "https://www.basketball-reference.com/players/j/jamesle01.html",
@@ -219,6 +241,7 @@ Creates a new game round with player information. Admin access required.
 ```
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:8080/v1/round \
   -H "Content-Type: application/json" \
@@ -230,6 +253,7 @@ curl -X POST http://localhost:8080/v1/round \
 ---
 
 #### Delete a Round
+
 ```
 DELETE /v1/round?sport={sport}&playDate={date}
 ```
@@ -237,10 +261,12 @@ DELETE /v1/round?sport={sport}&playDate={date}
 Deletes an existing round. Admin access required.
 
 **Query Parameters:**
+
 - `sport` (required): The sport of the round to delete
 - `playDate` (required): The play date in `YYYY-MM-DD` format
 
 **Example:**
+
 ```bash
 curl -X DELETE "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
 ```
@@ -250,6 +276,7 @@ curl -X DELETE "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11
 ---
 
 #### Get Upcoming Rounds
+
 ```
 GET /v1/upcoming-rounds?sport={sport}&startDate={date}&endDate={date}
 ```
@@ -257,11 +284,13 @@ GET /v1/upcoming-rounds?sport={sport}&startDate={date}&endDate={date}
 Retrieves upcoming rounds for a specific sport. Admin access required.
 
 **Query Parameters:**
+
 - `sport` (required): The sport to retrieve rounds for
 - `startDate` (optional): Start date for filtering in `YYYY-MM-DD` format
 - `endDate` (optional): End date for filtering in `YYYY-MM-DD` format
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/v1/upcoming-rounds?sport=basketball&startDate=2025-11-15&endDate=2025-11-30"
 ```
@@ -273,6 +302,7 @@ curl "http://localhost:8080/v1/upcoming-rounds?sport=basketball&startDate=2025-1
 ### Game Results
 
 #### Submit Results
+
 ```
 POST /v1/results?sport={sport}&playDate={date}
 ```
@@ -280,19 +310,32 @@ POST /v1/results?sport={sport}&playDate={date}
 Submits the results of a completed trivia round.
 
 **Query Parameters:**
+
 - `sport` (required): The sport for the results
 - `playDate` (required): The date of the round in `YYYY-MM-DD` format
 
 **Request Body:**
+
 ```json
 {
   "score": 9,
   "isCorrect": true,
-  "tilesFlipped": ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+  "tilesFlipped": [
+    "tile1",
+    "tile2",
+    "tile3",
+    "tile4",
+    "tile5",
+    "tile6",
+    "tile7",
+    "tile8",
+    "tile9"
+  ]
 }
 ```
 
 **Example:**
+
 ```bash
 curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11-15" \
   -H "Content-Type: application/json" \
@@ -306,6 +349,7 @@ curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11
 ### Statistics
 
 #### Get Round Statistics
+
 ```
 GET /v1/stats/round?sport={sport}&playDate={date}
 ```
@@ -313,15 +357,18 @@ GET /v1/stats/round?sport={sport}&playDate={date}
 Retrieves statistics for a specific round.
 
 **Query Parameters:**
+
 - `sport` (required): The sport
 - `playDate` (required): The play date in `YYYY-MM-DD` format
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/v1/stats/round?sport=basketball&playDate=2025-11-15"
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "playDate": "2025-11-15",
@@ -341,6 +388,7 @@ curl "http://localhost:8080/v1/stats/round?sport=basketball&playDate=2025-11-15"
 ---
 
 #### Get User Statistics
+
 ```
 GET /v1/stats/user?userId={userId}
 ```
@@ -348,9 +396,11 @@ GET /v1/stats/user?userId={userId}
 Retrieves comprehensive statistics for a specific user.
 
 **Query Parameters:**
+
 - `userId` (required): The user ID
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/v1/stats/user?userId=123e4567-e89b-12d3-a456-426614174000"
 ```
@@ -373,6 +423,7 @@ All error responses follow this format:
 ```
 
 ### Common Error Codes
+
 - `MISSING_REQUIRED_PARAMETER` - A required parameter is missing
 - `INVALID_PARAMETER` - A parameter has an invalid value
 - `ROUND_NOT_FOUND` - The requested round does not exist

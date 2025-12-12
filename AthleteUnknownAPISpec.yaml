@@ -62,12 +62,12 @@ paths:
             format: date
           example: "2025-11-15"
       responses:
-        '200':
+        "200":
           description: Successfully retrieved round
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Round'
+                $ref: "#/components/schemas/Round"
               examples:
                 basketballRound:
                   summary: Basketball player round
@@ -77,13 +77,13 @@ paths:
                     playDate: "2025-11-15"
                     created: "2025-11-11T10:00:00Z"
                     lastUpdated: "2025-11-11T14:30:00Z"
-                    previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                    theme: "GOAT"
                     player:
                       sport: "basketball"
                       sportsReferencePath: "/players/j/jamesle01.html"
                       name: "LeBron James"
                       bio: "DOB: December 30, 1984 in Akron, Ohio"
-                      playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                      playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
                       draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
                       yearsActive: "2003-Present"
                       teamsPlayedOn: "CLE, MIA, LAL"
@@ -111,13 +111,13 @@ paths:
                     playDate: "2025-11-12"
                     created: "2025-11-10T09:00:00Z"
                     lastUpdated: "2025-11-10T09:00:00Z"
-                    previouslyPlayedDates: []
+                    theme: ""
                     player:
                       sport: "baseball"
                       sportsReferencePath: "/players/j/jeterde01.shtml"
                       name: "Derek Jeter"
                       bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
-                      playerInformation: "6'3\", 195 lbs, Shortstop, Bats Right, Throws Right"
+                      playerInformation: '6''3", 195 lbs, Shortstop, Bats Right, Throws Right'
                       draftInformation: "Round 1 (6th overall) from Kalamazoo Central High School"
                       yearsActive: "1995-2014"
                       teamsPlayedOn: "NYY"
@@ -145,13 +145,13 @@ paths:
                     playDate: "2025-11-18"
                     created: "2025-11-09T08:00:00Z"
                     lastUpdated: "2025-11-09T08:00:00Z"
-                    previouslyPlayedDates: ["2025-11-04"]
+                    theme: ""
                     player:
                       sport: "football"
                       sportsReferencePath: "/players/B/BradTo00.htm"
                       name: "Tom Brady"
                       bio: "DOB: August 3, 1977 in San Mateo, California"
-                      playerInformation: "6'4\", 225 lbs, Quarterback, Throws Right"
+                      playerInformation: '6''4", 225 lbs, Quarterback, Throws Right'
                       draftInformation: "Round 6 (199th overall) from University of Michigan"
                       yearsActive: "2000-2023"
                       teamsPlayedOn: "NWE, TAM"
@@ -171,34 +171,34 @@ paths:
                       mostCommonLastTileFlipped: "tile9"
                       mostCommonTileFlipped: "tile4"
                       leastCommonTileFlipped: "tile6"
-        '400':
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Sport parameter is required"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:30:00Z"
-        '404':
+        "404":
           description: Round not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "No round found for the specified sport and playDate"
                 code: "ROUND_NOT_FOUND"
                 timestamp: "2025-11-11T10:30:00Z"
-        '429':
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Too Many Requests"
                 message: "Rate limit exceeded. Please try again in 60 seconds"
@@ -210,12 +210,12 @@ paths:
               schema:
                 type: integer
               example: 60
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     put:
       tags:
@@ -234,7 +234,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Round'
+              $ref: "#/components/schemas/Round"
             examples:
               basketballRound:
                 summary: Create basketball round
@@ -244,13 +244,13 @@ paths:
                   playDate: "2025-11-15"
                   created: "2025-11-11T10:00:00Z"
                   lastUpdated: "2025-11-11T10:00:00Z"
-                  previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                  theme: ""
                   player:
                     sport: "basketball"
                     sportsReferencePath: "/players/j/jamesle01.html"
                     name: "LeBron James"
                     bio: "DOB: December 30, 1984 in Akron, Ohio"
-                    playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                    playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
                     draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
                     yearsActive: "2003-Present"
                     teamsPlayedOn: "CLE, MIA, LAL"
@@ -278,13 +278,13 @@ paths:
                   playDate: "2025-11-12"
                   created: "2025-11-11T10:00:00Z"
                   lastUpdated: "2025-11-11T10:00:00Z"
-                  previouslyPlayedDates: []
+                  theme: ""
                   player:
                     sport: "baseball"
                     sportsReferencePath: "/players/j/jeterde01.shtml"
                     name: "Derek Jeter"
                     bio: "DOB: June 26, 1974 in Pequannock, New Jersey"
-                    playerInformation: "6'3\", 195 lbs, Shortstop, Bats Right, Throws Right"
+                    playerInformation: '6''3", 195 lbs, Shortstop, Bats Right, Throws Right'
                     draftInformation: "Round 1 (6th overall) from Kalamazoo Central High School"
                     yearsActive: "1995-2014"
                     teamsPlayedOn: "NYY"
@@ -305,25 +305,25 @@ paths:
                     mostCommonTileFlipped: ""
                     leastCommonTileFlipped: ""
       responses:
-        '201':
+        "201":
           description: Round successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Round'
+                $ref: "#/components/schemas/Round"
               example:
                 roundId: "Basketball100"
                 sport: "basketball"
                 playDate: "2025-11-15"
                 created: "2025-11-11T10:00:00Z"
                 lastUpdated: "2025-11-11T10:00:00Z"
-                previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                theme: ""
                 player:
                   sport: "basketball"
                   sportsReferencePath: "/players/j/jamesle01.html"
                   name: "LeBron James"
                   bio: "DOB: December 30, 1984 in Akron, Ohio"
-                  playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                  playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
                   draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
                   yearsActive: "2003-Present"
                   teamsPlayedOn: "CLE, MIA, LAL"
@@ -343,34 +343,34 @@ paths:
                   mostCommonLastTileFlipped: ""
                   mostCommonTileFlipped: ""
                   leastCommonTileFlipped: ""
-        '400':
+        "400":
           description: Invalid request data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Missing required field: sport"
                 code: "MISSING_REQUIRED_FIELD"
                 timestamp: "2025-11-11T10:00:00Z"
-        '409':
+        "409":
           description: Round already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Conflict"
                 message: "Round already exists for sport 'basketball' on playDate '2025-11-15'"
                 code: "ROUND_ALREADY_EXISTS"
                 timestamp: "2025-11-11T10:00:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     post:
       tags:
@@ -420,18 +420,18 @@ paths:
             type: string
           example: "/players/j/jamesle01.html"
       responses:
-        '201':
+        "201":
           description: Round successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Round'
-        '400':
+                $ref: "#/components/schemas/Round"
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               examples:
                 missingBothParams:
                   summary: Missing both optional parameters
@@ -447,23 +447,23 @@ paths:
                     message: "Sport parameter is required"
                     code: "MISSING_REQUIRED_PARAMETER"
                     timestamp: "2025-11-11T10:00:00Z"
-        '409':
+        "409":
           description: Round already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Conflict"
                 message: "Round already exists for sport 'basketball' on playDate '2025-11-15'"
                 code: "ROUND_ALREADY_EXISTS"
                 timestamp: "2025-11-11T10:00:00Z"
-        '500':
+        "500":
           description: Internal server error or scraping failure
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Internal Server Error"
                 message: "Failed to scrape player data"
@@ -502,36 +502,36 @@ paths:
             format: date
           example: "2025-11-15"
       responses:
-        '204':
+        "204":
           description: Round successfully deleted (no content returned)
-        '400':
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Missing required parameter: sport"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:00:00Z"
-        '404':
+        "404":
           description: Round not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "Round not found for sport 'basketball' on playDate '2025-11-15'"
                 code: "ROUND_NOT_FOUND"
                 timestamp: "2025-11-11T10:00:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /upcoming-rounds:
     get:
@@ -574,14 +574,14 @@ paths:
             format: date
           example: "2025-11-30"
       responses:
-        '200':
+        "200":
           description: Successfully retrieved upcoming rounds
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Round'
+                  $ref: "#/components/schemas/Round"
               examples:
                 basketballUpcomingRounds:
                   summary: Upcoming basketball rounds
@@ -591,13 +591,13 @@ paths:
                       playDate: "2025-11-15"
                       created: "2025-11-11T10:00:00Z"
                       lastUpdated: "2025-11-11T10:00:00Z"
-                      previouslyPlayedDates: ["2025-11-01", "2025-11-08"]
+                      theme: ""
                       player:
                         sport: "basketball"
                         sportsReferencePath: "/players/j/jamesle01.html"
                         name: "LeBron James"
                         bio: "DOB: December 30, 1984 in Akron, Ohio"
-                        playerInformation: "6'9\", 250 lbs, Forward, Shoots Right"
+                        playerInformation: '6''9", 250 lbs, Forward, Shoots Right'
                         draftInformation: "Round 1 (1st overall) from St. Vincent-St. Mary High School"
                         yearsActive: "2003-Present"
                         teamsPlayedOn: "CLE, MIA, LAL"
@@ -622,13 +622,13 @@ paths:
                       playDate: "2025-11-20"
                       created: "2025-11-12T09:00:00Z"
                       lastUpdated: "2025-11-12T09:00:00Z"
-                      previouslyPlayedDates: ["2025-11-05"]
+                      theme: ""
                       player:
                         sport: "basketball"
                         sportsReferencePath: "/players/c/curryst01.html"
                         name: "Stephen Curry"
                         bio: "DOB: March 14, 1988 in Akron, Ohio"
-                        playerInformation: "6'2\", 185 lbs, Guard, Shoots Right"
+                        playerInformation: '6''2", 185 lbs, Guard, Shoots Right'
                         draftInformation: "Round 1 (7th overall) from Davidson College"
                         yearsActive: "2009-Present"
                         teamsPlayedOn: "GSW"
@@ -653,13 +653,13 @@ paths:
                       playDate: "2025-11-25"
                       created: "2025-11-13T08:30:00Z"
                       lastUpdated: "2025-11-13T08:30:00Z"
-                      previouslyPlayedDates: []
+                      theme: ""
                       player:
                         sport: "basketball"
                         sportsReferencePath: "/players/d/duranke01.html"
                         name: "Kevin Durant"
                         bio: "DOB: September 29, 1988 in Washington, D.C."
-                        playerInformation: "6'10\", 240 lbs, Forward, Shoots Right"
+                        playerInformation: '6''10", 240 lbs, Forward, Shoots Right'
                         draftInformation: "Round 1 (2nd overall) from University of Texas"
                         yearsActive: "2007-Present"
                         teamsPlayedOn: "SEA, OKC, GSW, BRK, PHO"
@@ -679,34 +679,34 @@ paths:
                         mostCommonLastTileFlipped: ""
                         mostCommonTileFlipped: ""
                         leastCommonTileFlipped: ""
-        '400':
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Sport parameter is required"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:00:00Z"
-        '404':
+        "404":
           description: No upcoming rounds found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "No upcoming rounds found for sport 'basketball' in the specified date range"
                 code: "NO_UPCOMING_ROUNDS"
                 timestamp: "2025-11-11T10:00:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /results:
     post:
@@ -746,14 +746,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Result'
+              $ref: "#/components/schemas/Result"
             examples:
               basketballResult:
                 summary: Basketball game result
                 value:
                   score: 9
                   isCorrect: true
-                  tilesFlipped: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+                  tilesFlipped:
+                    [
+                      "tile1",
+                      "tile2",
+                      "tile3",
+                      "tile4",
+                      "tile5",
+                      "tile6",
+                      "tile7",
+                      "tile8",
+                      "tile9",
+                    ]
               partialResult:
                 summary: Partial game result
                 value:
@@ -761,44 +772,55 @@ paths:
                   isCorrect: false
                   tilesFlipped: ["tile1", "tile3", "tile5", "tile7"]
       responses:
-        '200':
+        "200":
           description: Results successfully processed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Result'
+                $ref: "#/components/schemas/Result"
               example:
                 score: 9
                 isCorrect: true
-                tilesFlipped: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
-        '400':
+                tilesFlipped:
+                  [
+                    "tile1",
+                    "tile2",
+                    "tile3",
+                    "tile4",
+                    "tile5",
+                    "tile6",
+                    "tile7",
+                    "tile8",
+                    "tile9",
+                  ]
+        "400":
           description: Invalid submission data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Sport and playDate parameters are required"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:45:00Z"
-        '404':
+        "404":
           description: Round not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "Round not found for sport 'basketball' on date '2025-11-15'"
                 code: "ROUND_NOT_FOUND"
                 timestamp: "2025-11-11T10:45:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /stats/round:
     get:
@@ -833,12 +855,12 @@ paths:
             format: date
           example: "2025-11-15"
       responses:
-        '200':
+        "200":
           description: Successfully retrieved round statistics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoundStats'
+                $ref: "#/components/schemas/RoundStats"
               examples:
                 basketballStats:
                   summary: Basketball round statistics
@@ -868,34 +890,34 @@ paths:
                     mostCommonLastTileFlipped: "tile8"
                     mostCommonTileFlipped: "tile4"
                     leastCommonTileFlipped: "tile7"
-        '400':
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "Sport and playDate parameters are required"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:50:00Z"
-        '404':
+        "404":
           description: Statistics not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "No statistics found for sport 'basketball' on date '2025-11-15'"
                 code: "STATS_NOT_FOUND"
                 timestamp: "2025-11-11T10:50:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /stats/user:
     get:
@@ -917,12 +939,12 @@ paths:
             type: string
           example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
-        '200':
+        "200":
           description: Successfully retrieved user statistics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserStats'
+                $ref: "#/components/schemas/UserStats"
               examples:
                 userStats:
                   summary: User statistics example
@@ -938,34 +960,34 @@ paths:
                     mostCommonLastTileFlipped: "tile9"
                     mostCommonTileFlipped: "tile5"
                     leastCommonTileFlipped: "tile3"
-        '400':
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Bad Request"
                 message: "userId parameter is required"
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:50:00Z"
-        '404':
+        "404":
           description: User statistics not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
                 message: "No statistics found for user '123e4567-e89b-12d3-a456-426614174000'"
                 code: "USER_STATS_NOT_FOUND"
                 timestamp: "2025-11-11T10:50:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -1008,7 +1030,7 @@ components:
         playerInformation:
           type: string
           description: Physical stats, position(s), and handedness/throwing preference
-          example: "6'9\", 250 lbs, Forward, Shoots Right"
+          example: '6''9", 250 lbs, Forward, Shoots Right'
         draftInformation:
           type: string
           description: Draft round, overall pick, and school/institution
@@ -1048,12 +1070,12 @@ components:
         - roundId
         - created
         - lastUpdated
-        - previouslyPlayedDates
+        - theme
       properties:
         player:
-          $ref: '#/components/schemas/Player'
+          $ref: "#/components/schemas/Player"
         stats:
-          $ref: '#/components/schemas/RoundStats'
+          $ref: "#/components/schemas/RoundStats"
         playDate:
           type: string
           format: date
@@ -1081,13 +1103,10 @@ components:
           format: date-time
           description: Timestamp when the round was last updated
           example: "2025-11-11T14:30:00Z"
-        previouslyPlayedDates:
-          type: array
-          items:
-            type: string
-            format: date
-          description: Array of historical dates when this round was previously played (format YYYY-MM-DD). Used for admin record-keeping purposes.
-          example: ["2025-11-01", "2025-11-08"]
+        theme:
+          type: string
+          description: On Sundays, each puzzle will have a unified theme. Otherwise, empty string and omit when displaying
+          example: "Playoff Heroes"
 
     Result:
       type: object
@@ -1113,7 +1132,18 @@ components:
           minItems: 0
           maxItems: 9
           description: Array of tile identifiers that were flipped during the game
-          example: ["tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9"]
+          example:
+            [
+              "tile1",
+              "tile2",
+              "tile3",
+              "tile4",
+              "tile5",
+              "tile6",
+              "tile7",
+              "tile8",
+              "tile9",
+            ]
 
     TileFlipTracker:
       type: object
@@ -1221,18 +1251,18 @@ components:
           description: The tile flipped least frequently overall
           example: "tile3"
         firstTileFlippedTracker:
-          $ref: '#/components/schemas/TileFlipTracker'
+          $ref: "#/components/schemas/TileFlipTracker"
           description: Tracks how many times each tile was flipped first
         lastTileFlippedTracker:
-          $ref: '#/components/schemas/TileFlipTracker'
+          $ref: "#/components/schemas/TileFlipTracker"
           description: Tracks how many times each tile was flipped last
         mostTileFlippedTracker:
-          $ref: '#/components/schemas/TileFlipTracker'
+          $ref: "#/components/schemas/TileFlipTracker"
           description: Tracks how many times each tile was flipped overall
 
     RoundStats:
       allOf:
-        - $ref: '#/components/schemas/Stats'
+        - $ref: "#/components/schemas/Stats"
         - type: object
           required:
             - playDate
@@ -1259,7 +1289,7 @@ components:
 
     SportStats:
       allOf:
-        - $ref: '#/components/schemas/Stats'
+        - $ref: "#/components/schemas/Stats"
         - type: object
           required:
             - sport
@@ -1303,7 +1333,7 @@ components:
           type: array
           description: Array of sport-specific statistics for the user
           items:
-            $ref: '#/components/schemas/SportStats'
+            $ref: "#/components/schemas/SportStats"
           example:
             - sport: "basketball"
               currentDailyStreak: 15
