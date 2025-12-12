@@ -1,0 +1,9 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and customize for your environment
+
+aws_region            = "us-west-2"
+environment           = "dev"
+function_name         = "athlete-unknown-api-dev"
+rounds_table_name     = "AthleteUnknownRoundsDev"
+user_stats_table_name = "AthleteUnknownUserStatsDev"
+log_retention_days    = 7
