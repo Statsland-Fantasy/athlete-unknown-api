@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	"athlete-unknown-api/middleware"
 	"log"
-	"net/http"
 	"os"
-	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -26,54 +26,66 @@ func main() {
 		port = "8080"
 	}
 
-	mux := http.NewServeMux()
+	// Set Gin mode based on environment
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	// Initialize Gin router
+	router := gin.Default()
+
+	// CORS middleware
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+
+		c.Next()
+	})
 
 	// API v1 routes
-	mux.HandleFunc("/v1/round", handleRoundRouter)
-	mux.HandleFunc("/v1/upcoming-rounds", handleGetUpcomingRounds)
-	mux.HandleFunc("/v1/results", handleSubmitResults)
-	mux.HandleFunc("/v1/stats/round", handleGetRoundStats)
-	mux.HandleFunc("/v1/stats/user", handleGetUserStats)
+	v1 := router.Group("/v1") 
+	// Public endpoints (with JWT auth for authenticated users)
+	public := v1.Group("")
+	public.Use(middleware.JWTMiddleware())
+	{
+		public.GET("/round", handleGetRound)
+		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
+		public.GET("/stats/round", handleGetRoundStats)
+		public.GET("/stats/user", handleGetUserStats)
+	}
+
+	// Admin endpoints (API key auth)
+	admin := v1.Group("")
+	admin.Use(middleware.APIKeyMiddleware())
+	{
+		admin.PUT("/round", handleCreateRound)
+		admin.POST("/round", handleScrapeAndCreateRound)
+		admin.DELETE("/round", handleDeleteRound)
+		admin.GET("/upcoming-rounds", handleGetUpcomingRounds)
+	}		
 
 	// Health check
-	mux.HandleFunc("/health", handleHealth)
+	router.GET("/health", handleHealth)
 
 	// Root endpoint
-	mux.HandleFunc("/", handleHome)
-
-	// Add CORS and logging middleware
-	handler := corsMiddleware(loggingMiddleware(mux))
+	router.GET("/", handleHome)
 
 	log.Printf("Server starting on port %s", port)
 	log.Printf("API endpoints available at /v1/*")
-	if err := http.ListenAndServe(":"+port, handler); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatal(err)
 	}
 }
 
-// handleRoundRouter routes /v1/round based on HTTP method
-func handleRoundRouter(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		handleGetRound(w, r)
-	case http.MethodPut:
-		handleCreateRound(w, r)
-	case http.MethodPost:
-		handleScrapeAndCreateRound(w, r)
-	case http.MethodDelete:
-		handleDeleteRound(w, r)
-	default:
-		errorResponseWithCode(w, "Method Not Allowed", "Method "+r.Method+" is not allowed for this endpoint", "METHOD_NOT_ALLOWED", http.StatusMethodNotAllowed)
-	}
-}
-
 // handleHome handles the root endpoint
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
+func handleHome(c *gin.Context) {
 	response := map[string]interface{}{
 		"message": "Welcome to the Athlete Unknown Trivia Game API",
 		"version": "1.0.0",
@@ -88,57 +100,10 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 			"GET /v1/stats/user?userId={userId}",
 		},
 	}
-	jsonResponse(w, response, http.StatusOK)
+	c.JSON(200, response)
 }
 
 // handleHealth handles health check endpoint
-func handleHealth(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		errorResponseWithCode(w, "Method Not Allowed", "Only GET method is allowed", "METHOD_NOT_ALLOWED", http.StatusMethodNotAllowed)
-		return
-	}
-
-	jsonResponse(w, map[string]string{"status": "healthy"}, http.StatusOK)
-}
-
-// Middleware for logging requests
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s", r.Method, r.URL.Path, r.URL.RawQuery)
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Middleware for CORS
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Response helper
-func jsonResponse(w http.ResponseWriter, data interface{}, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
-}
-
-// Error response helper with code
-func errorResponseWithCode(w http.ResponseWriter, error string, message string, code string, status int) {
-	errorResp := ErrorResponse{
-		Error:     error,
-		Message:   message,
-		Code:      code,
-		Timestamp: time.Now(),
-	}
-	jsonResponse(w, errorResp, status)
+func handleHealth(c *gin.Context) {
+	c.JSON(200, map[string]string{"status": "healthy"})
 }
