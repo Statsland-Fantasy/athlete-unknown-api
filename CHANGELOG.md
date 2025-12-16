@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-3](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/3)
+
+### Added
+
+- Authenticate API access via Bearer Token claims and Auth0 permissions
+
+### Changed
+
+- Changed net/http library to gin for convenience sake
+
 ## [PR-2](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/2)
 
 ### Added

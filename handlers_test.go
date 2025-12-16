@@ -6,34 +6,31 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
+
+func init() {
+	// Set Gin to test mode
+	gin.SetMode(gin.TestMode)
+}
 
 // TestHandleGetRound tests the handleGetRound function's input validation
 func TestHandleGetRound(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodPost,
-			queryParams:    "sport=basketball",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing sport parameter",
-			method:         http.MethodGet,
 			queryParams:    "",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
 		},
 		{
 			name:           "invalid sport parameter",
-			method:         http.MethodGet,
 			queryParams:    "sport=soccer",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "INVALID_PARAMETER",
@@ -42,20 +39,21 @@ func TestHandleGetRound(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/v1/round?"+tt.queryParams, nil)
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodGet, "/v1/round?"+tt.queryParams, nil)
 
-			handleGetRound(rec, req)
+			handleGetRound(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -66,28 +64,18 @@ func TestHandleGetRound(t *testing.T) {
 func TestHandleCreateRound(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		body           interface{}
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodGet,
-			body:           map[string]string{},
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "invalid request body",
-			method:         http.MethodPut,
 			body:           "invalid json",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "INVALID_REQUEST_BODY",
 		},
 		{
-			name:   "missing sport field",
-			method: http.MethodPut,
+			name: "missing sport field",
 			body: Round{
 				PlayDate: "2024-01-01",
 				Player: Player{
@@ -98,8 +86,7 @@ func TestHandleCreateRound(t *testing.T) {
 			expectedCode:   "MISSING_REQUIRED_FIELD",
 		},
 		{
-			name:   "missing playDate field",
-			method: http.MethodPut,
+			name: "missing playDate field",
 			body: Round{
 				Sport: "basketball",
 				Player: Player{
@@ -110,8 +97,7 @@ func TestHandleCreateRound(t *testing.T) {
 			expectedCode:   "MISSING_REQUIRED_FIELD",
 		},
 		{
-			name:   "missing player name field",
-			method: http.MethodPut,
+			name: "missing player name field",
 			body: Round{
 				Sport:    "basketball",
 				PlayDate: "2024-01-01",
@@ -131,20 +117,22 @@ func TestHandleCreateRound(t *testing.T) {
 				bodyBytes, _ = json.Marshal(tt.body)
 			}
 
-			req := httptest.NewRequest(tt.method, "/v1/round", bytes.NewReader(bodyBytes))
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodPut, "/v1/round", bytes.NewReader(bodyBytes))
+			c.Request.Header.Set("Content-Type", "application/json")
 
-			handleCreateRound(rec, req)
+			handleCreateRound(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -155,28 +143,18 @@ func TestHandleCreateRound(t *testing.T) {
 func TestHandleDeleteRound(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodGet,
-			queryParams:    "sport=basketball&playDate=2024-01-01",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing sport parameter",
-			method:         http.MethodDelete,
 			queryParams:    "playDate=2024-01-01",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
 		},
 		{
 			name:           "missing playDate parameter",
-			method:         http.MethodDelete,
 			queryParams:    "sport=basketball",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
@@ -185,20 +163,21 @@ func TestHandleDeleteRound(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/v1/round?"+tt.queryParams, nil)
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodDelete, "/v1/round?"+tt.queryParams, nil)
 
-			handleDeleteRound(rec, req)
+			handleDeleteRound(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -209,21 +188,12 @@ func TestHandleDeleteRound(t *testing.T) {
 func TestHandleGetUpcomingRounds(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodPost,
-			queryParams:    "sport=basketball",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing sport parameter",
-			method:         http.MethodGet,
 			queryParams:    "",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
@@ -232,20 +202,21 @@ func TestHandleGetUpcomingRounds(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/v1/upcoming-rounds?"+tt.queryParams, nil)
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodGet, "/v1/upcoming-rounds?"+tt.queryParams, nil)
 
-			handleGetUpcomingRounds(rec, req)
+			handleGetUpcomingRounds(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -256,21 +227,12 @@ func TestHandleGetUpcomingRounds(t *testing.T) {
 func TestHandleSubmitResults(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodGet,
-			queryParams:    "sport=basketball&playDate=2024-01-01",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing query parameters",
-			method:         http.MethodPost,
 			queryParams:    "sport=basketball",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
@@ -282,20 +244,22 @@ func TestHandleSubmitResults(t *testing.T) {
 			result := Result{Score: 100, IsCorrect: true}
 			bodyBytes, _ := json.Marshal(result)
 
-			req := httptest.NewRequest(tt.method, "/v1/results?"+tt.queryParams, bytes.NewReader(bodyBytes))
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodPost, "/v1/results?"+tt.queryParams, bytes.NewReader(bodyBytes))
+			c.Request.Header.Set("Content-Type", "application/json")
 
-			handleSubmitResults(rec, req)
+			handleSubmitResults(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -306,21 +270,12 @@ func TestHandleSubmitResults(t *testing.T) {
 func TestHandleGetRoundStats(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodPost,
-			queryParams:    "sport=basketball&playDate=2024-01-01",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing query parameters",
-			method:         http.MethodGet,
 			queryParams:    "sport=basketball",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
@@ -329,20 +284,21 @@ func TestHandleGetRoundStats(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/v1/stats/round?"+tt.queryParams, nil)
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodGet, "/v1/stats/round?"+tt.queryParams, nil)
 
-			handleGetRoundStats(rec, req)
+			handleGetRoundStats(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
@@ -353,21 +309,12 @@ func TestHandleGetRoundStats(t *testing.T) {
 func TestHandleGetUserStats(t *testing.T) {
 	tests := []struct {
 		name           string
-		method         string
 		queryParams    string
 		expectedStatus int
 		expectedCode   string
 	}{
 		{
-			name:           "method not allowed",
-			method:         http.MethodPost,
-			queryParams:    "userId=user123",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedCode:   "METHOD_NOT_ALLOWED",
-		},
-		{
 			name:           "missing userId parameter",
-			method:         http.MethodGet,
 			queryParams:    "",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "MISSING_REQUIRED_PARAMETER",
@@ -376,20 +323,21 @@ func TestHandleGetUserStats(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, "/v1/stats/user?"+tt.queryParams, nil)
-			rec := httptest.NewRecorder()
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodGet, "/v1/stats/user?"+tt.queryParams, nil)
 
-			handleGetUserStats(rec, req)
+			handleGetUserStats(c)
 
-			if rec.Code != tt.expectedStatus {
-				t.Errorf("Expected status %d, got %d", tt.expectedStatus, rec.Code)
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
 			}
 
 			if tt.expectedCode != "" {
-				var errResp ErrorResponse
-				json.NewDecoder(rec.Body).Decode(&errResp)
-				if errResp.Code != tt.expectedCode {
-					t.Errorf("Expected error code %s, got %s", tt.expectedCode, errResp.Code)
+				var errResp map[string]interface{}
+				json.NewDecoder(w.Body).Decode(&errResp)
+				if code, ok := errResp["code"].(string); !ok || code != tt.expectedCode {
+					t.Errorf("Expected error code %s, got %v", tt.expectedCode, errResp["code"])
 				}
 			}
 		})
