@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.53.1
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gocolly/colly/v2 v2.2.0
+	github.com/joho/godotenv v1.5.1
 )
 
 require (

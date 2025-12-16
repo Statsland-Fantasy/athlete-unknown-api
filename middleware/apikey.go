@@ -2,6 +2,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -19,6 +20,13 @@ func APIKeyMiddleware() gin.HandlerFunc {
 
         // In production, check against database or secure store
         validKey := os.Getenv("ADMIN_API_KEY")
+        if validKey == "" {
+            fmt.Println("Warning: ADMIN_API_KEY environment variable is not set")
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Server configuration error"})
+            c.Abort()
+            return
+        }
+
         if apiKey != validKey {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
             c.Abort()

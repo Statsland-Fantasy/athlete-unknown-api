@@ -6,9 +6,13 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file (ignore error if file doesn't exist, for production environments)
+	_ = godotenv.Load()
+
 	// Load configuration
 	cfg := LoadConfig()
 
@@ -51,14 +55,19 @@ func main() {
 
 	// API v1 routes
 	v1 := router.Group("/v1") 
-	// Public endpoints (with JWT auth for authenticated users)
+	
+	// Public endpoints (no auth. Available for guest users too)
 	public := v1.Group("")
-	public.Use(middleware.JWTMiddleware())
 	{
 		public.GET("/round", handleGetRound)
-		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
 		public.GET("/stats/round", handleGetRoundStats)
 		public.GET("/stats/user", handleGetUserStats)
+	}
+
+	// Public endpoints (with JWT auth for authenticated users)
+	public.Use(middleware.JWTMiddleware())
+	{
+		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
 	}
 
 	// Admin endpoints (API key auth)
