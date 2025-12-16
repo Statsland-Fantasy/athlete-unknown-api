@@ -61,13 +61,13 @@ func main() {
 	{
 		public.GET("/round", handleGetRound)
 		public.GET("/stats/round", handleGetRoundStats)
-		public.GET("/stats/user", handleGetUserStats)
 	}
-
+	
 	// Public endpoints (with JWT auth for authenticated users)
 	public.Use(middleware.JWTMiddleware())
 	{
 		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
+		public.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), handleGetUserStats)
 	}
 
 	// Admin endpoints (API key auth)
