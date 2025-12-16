@@ -89,7 +89,7 @@ func TestRoundMarshaling(t *testing.T) {
 		PlayDate:              "2024-01-01",
 		Created:               now,
 		LastUpdated:           now,
-		PreviouslyPlayedDates: []string{"2023-12-31", "2023-12-30"},
+		Theme: "GOAT",
 		Player: Player{
 			Sport:                "basketball",
 			SportsReferenceURL:   "http://example.com",

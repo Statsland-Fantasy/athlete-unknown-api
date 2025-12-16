@@ -80,14 +80,14 @@ func TestHandleCreateRound(t *testing.T) {
 		},
 		{
 			name:           "invalid request body",
-			method:         http.MethodPost,
+			method:         http.MethodPut,
 			body:           "invalid json",
 			expectedStatus: http.StatusBadRequest,
 			expectedCode:   "INVALID_REQUEST_BODY",
 		},
 		{
 			name:   "missing sport field",
-			method: http.MethodPost,
+			method: http.MethodPut,
 			body: Round{
 				PlayDate: "2024-01-01",
 				Player: Player{
@@ -99,7 +99,7 @@ func TestHandleCreateRound(t *testing.T) {
 		},
 		{
 			name:   "missing playDate field",
-			method: http.MethodPost,
+			method: http.MethodPut,
 			body: Round{
 				Sport: "basketball",
 				Player: Player{
@@ -111,7 +111,7 @@ func TestHandleCreateRound(t *testing.T) {
 		},
 		{
 			name:   "missing player name field",
-			method: http.MethodPost,
+			method: http.MethodPut,
 			body: Round{
 				Sport:    "basketball",
 				PlayDate: "2024-01-01",

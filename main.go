@@ -56,8 +56,10 @@ func handleRoundRouter(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleGetRound(w, r)
-	case http.MethodPost:
+	case http.MethodPut:
 		handleCreateRound(w, r)
+	case http.MethodPost:
+		handleScrapeAndCreateRound(w, r)
 	case http.MethodDelete:
 		handleDeleteRound(w, r)
 	default:

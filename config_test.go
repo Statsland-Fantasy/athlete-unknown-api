@@ -170,3 +170,167 @@ func TestConfigStruct(t *testing.T) {
 		t.Errorf("AWSRegion = %v, want %v", cfg.AWSRegion, "test-region")
 	}
 }
+
+func TestGetSportsReferenceHostname(t *testing.T) {
+	tests := []struct {
+		name     string
+		sport    string
+		expected string
+	}{
+		{
+			name:     "baseball hostname",
+			sport:    "baseball",
+			expected: "baseball-reference.com",
+		},
+		{
+			name:     "basketball hostname",
+			sport:    "basketball",
+			expected: "basketball-reference.com",
+		},
+		{
+			name:     "football hostname",
+			sport:    "football",
+			expected: "pro-football-reference.com",
+		},
+		{
+			name:     "unknown sport",
+			sport:    "soccer",
+			expected: "",
+		},
+		{
+			name:     "empty sport",
+			sport:    "",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetSportsReferenceHostname(tt.sport)
+			if got != tt.expected {
+				t.Errorf("GetSportsReferenceHostname(%q) = %v, want %v", tt.sport, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetCurrentSeasonYear(t *testing.T) {
+	tests := []struct {
+		name     string
+		sport    string
+		expected int
+	}{
+		{
+			name:     "baseball season year",
+			sport:    "baseball",
+			expected: 2025,
+		},
+		{
+			name:     "basketball season year",
+			sport:    "basketball",
+			expected: 2025,
+		},
+		{
+			name:     "football season year",
+			sport:    "football",
+			expected: 2025,
+		},
+		{
+			name:     "unknown sport",
+			sport:    "soccer",
+			expected: 0,
+		},
+		{
+			name:     "empty sport",
+			sport:    "",
+			expected: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetCurrentSeasonYear(tt.sport)
+			if got != tt.expected {
+				t.Errorf("GetCurrentSeasonYear(%q) = %v, want %v", tt.sport, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGenerateRoundID(t *testing.T) {
+	tests := []struct {
+		name      string
+		sport     string
+		playDate  string
+		expected  string
+		expectErr bool
+	}{
+		{
+			name:      "baseball on first round date",
+			sport:     "baseball",
+			playDate:  "2025-01-01",
+			expected:  "baseball0",
+			expectErr: false,
+		},
+		{
+			name:      "basketball one day after first round date",
+			sport:     "basketball",
+			playDate:  "2025-01-02",
+			expected:  "basketball1",
+			expectErr: false,
+		},
+		{
+			name:      "football 30 days after first round date",
+			sport:     "football",
+			playDate:  "2025-01-31",
+			expected:  "football30",
+			expectErr: false,
+		},
+		{
+			name:      "baseball 365 days after first round date",
+			sport:     "baseball",
+			playDate:  "2026-01-01",
+			expected:  "baseball365",
+			expectErr: false,
+		},
+		{
+			name:      "date before first round date",
+			sport:     "basketball",
+			playDate:  "2024-12-31",
+			expected:  "basketball-1",
+			expectErr: false,
+		},
+		{
+			name:      "invalid date format",
+			sport:     "baseball",
+			playDate:  "2025/01/01",
+			expected:  "",
+			expectErr: true,
+		},
+		{
+			name:      "invalid date",
+			sport:     "football",
+			playDate:  "not-a-date",
+			expected:  "",
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateRoundID(tt.sport, tt.playDate)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("GenerateRoundID(%q, %q) expected error, got nil", tt.sport, tt.playDate)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("GenerateRoundID(%q, %q) unexpected error: %v", tt.sport, tt.playDate, err)
+				}
+				if got != tt.expected {
+					t.Errorf("GenerateRoundID(%q, %q) = %v, want %v", tt.sport, tt.playDate, got, tt.expected)
+				}
+			}
+		})
+	}
+}
