@@ -18,7 +18,7 @@ import (
 type CustomClaims struct {
     Permissions []string `json:"permissions"`
     Roles       []string `json:"https://statslandfantasy.com/roles"`
-    UserID      string   `json:"https://statslandfantasy.com/user_id"`
+    UserId      string   `json:"https://statslandfantasy.com/user_id"`
 }
 
 func (c CustomClaims) Validate(ctx context.Context) error {
@@ -87,7 +87,7 @@ func JWTMiddleware() gin.HandlerFunc {
         }
 
         // Store user info in context
-        c.Set("userID", customClaims.UserID)
+        c.Set("userId", customClaims.UserId)
         c.Set("permissions", customClaims.Permissions)
         c.Set("roles", customClaims.Roles)
 

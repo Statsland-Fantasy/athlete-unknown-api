@@ -293,6 +293,17 @@ func handleSubmitResults(c *gin.Context) {
 		return
 	}
 
+	// potential hack catcher. Score cannot be higher than 100
+	if result.Score > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":     "Bad Request",
+			"message":   "Invalid request body: Score cannot be greater than 100",
+			"code":      "INVALID_REQUEST_BODY",
+			"timestamp": time.Now(),
+		})
+		return		
+	}
+
 	ctx := context.Background()
 
 	round, err := db.GetRound(ctx, sport, playDate)
@@ -331,12 +342,12 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Get user_id from bearer token (set by JWT middleware)
-	userID, exists := c.Get("userID")
-	if exists && userID != "" {
-		userIDStr, ok := userID.(string)
-		if ok && userIDStr != "" {
+	userId, exists := c.Get("userId")
+	if exists && userId != "" {
+		userIdStr, ok := userId.(string)
+		if ok && userIdStr != "" {
 			// Fetch existing user stats or create new ones
-			userStats, err := db.GetUserStats(ctx, userIDStr)
+			userStats, err := db.GetUserStats(ctx, userIdStr)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error":     "Internal Server Error",
@@ -350,7 +361,7 @@ func handleSubmitResults(c *gin.Context) {
 			// If user stats don't exist, create new user stats
 			if userStats == nil {
 				userStats = &UserStats{
-					UserID:  userIDStr,
+					UserId:  userIdStr,
 					Sports:  []SportStats{},
 				}
 			}
@@ -440,19 +451,30 @@ func handleGetRoundStats(c *gin.Context) {
 
 // handleGetUserStats handles GET /v1/stats/user
 func handleGetUserStats(c *gin.Context) {
-	userID := c.Query("userId")
-	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "userId parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
-		})
-		return
+	userId := c.Query("userId")
+	if userId == "" {
+		// if userId is not part in query param, extract from bearer token instead
+		userIdToken, exists := c.Get("userId")
+		if exists && userIdToken != "" {
+			userIdStr, ok := userIdToken.(string)
+			if ok && userIdStr != "" {
+				userId = userIdStr
+			}
+		}
+
+		if userId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":     "Bad Request",
+				"message":   "userId parameter is required",
+				"code":      "MISSING_REQUIRED_PARAMETER",
+				"timestamp": time.Now(),
+			})
+			return
+		}
 	}
 
 	ctx := context.Background()
-	stats, err := db.GetUserStats(ctx, userID)
+	stats, err := db.GetUserStats(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -466,7 +488,7 @@ func handleGetUserStats(c *gin.Context) {
 	if stats == nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":     "Not Found",
-			"message":   "No statistics found for user '" + userID + "'",
+			"message":   "No statistics found for user '" + userId + "'",
 			"code":      "USER_STATS_NOT_FOUND",
 			"timestamp": time.Now(),
 		})
