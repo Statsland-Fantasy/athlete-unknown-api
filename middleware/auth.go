@@ -17,8 +17,8 @@ import (
 
 type CustomClaims struct {
     Permissions []string `json:"permissions"`
-    Roles       []string `json:"https://statsland.com/roles"`
-    UserID      string   `json:"https://statsland.com/user_id"`
+    Roles       []string `json:"https://statslandfantasy.com/roles"`
+    UserID      string   `json:"https://statslandfantasy.com/user_id"`
 }
 
 func (c CustomClaims) Validate(ctx context.Context) error {

@@ -316,46 +316,7 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Update round statistics
-	round.Stats.TotalPlays++
-	if result.IsCorrect {
-		correctCount := int(round.Stats.PercentageCorrect * float64(round.Stats.TotalPlays-1) / 100)
-		correctCount++
-		round.Stats.PercentageCorrect = float64(correctCount) * 100 / float64(round.Stats.TotalPlays)
-
-		// Update average correct score
-		totalCorrectScore := round.Stats.AverageCorrectScore * float64(correctCount-1)
-		totalCorrectScore += float64(result.Score)
-		round.Stats.AverageCorrectScore = totalCorrectScore / float64(correctCount)
-	}
-
-	if result.Score > round.Stats.HighestScore {
-		round.Stats.HighestScore = result.Score
-	}
-
-	// Update average number of tile flips
-	totalTileFlips := round.Stats.AverageNumberOfTileFlips * float64(round.Stats.TotalPlays-1)
-	totalTileFlips += float64(len(result.TilesFlipped))
-	round.Stats.AverageNumberOfTileFlips = totalTileFlips / float64(round.Stats.TotalPlays)
-
-	// Track tile flips
-	if len(result.TilesFlipped) > 0 {
-		// Track first tile flipped
-		incrementTileTracker(&round.Stats.FirstTileFlippedTracker, result.TilesFlipped[0])
-
-		// Track last tile flipped
-		incrementTileTracker(&round.Stats.LastTileFlippedTracker, result.TilesFlipped[len(result.TilesFlipped)-1])
-
-		// Track all tiles flipped
-		for _, tile := range result.TilesFlipped {
-			incrementTileTracker(&round.Stats.MostTileFlippedTracker, tile)
-		}
-
-		// Recalculate most/least common tiles
-		round.Stats.MostCommonFirstTileFlipped = findMostCommonTile(&round.Stats.FirstTileFlippedTracker)
-		round.Stats.MostCommonLastTileFlipped = findMostCommonTile(&round.Stats.LastTileFlippedTracker)
-		round.Stats.MostCommonTileFlipped = findMostCommonTile(&round.Stats.MostTileFlippedTracker)
-		round.Stats.LeastCommonTileFlipped = findLeastCommonTile(&round.Stats.MostTileFlippedTracker)
-	}
+	updateStatsWithResult(&round.Stats.Stats, &result)
 
 	// Save the updated round
 	err = db.UpdateRound(ctx, round)
@@ -367,6 +328,71 @@ func handleSubmitResults(c *gin.Context) {
 			"timestamp": time.Now(),
 		})
 		return
+	}
+
+	// Get user_id from bearer token (set by JWT middleware)
+	userID, exists := c.Get("userID")
+	if exists && userID != "" {
+		userIDStr, ok := userID.(string)
+		if ok && userIDStr != "" {
+			// Fetch existing user stats or create new ones
+			userStats, err := db.GetUserStats(ctx, userIDStr)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":     "Internal Server Error",
+					"message":   "Failed to retrieve user stats: " + err.Error(),
+					"code":      "DATABASE_ERROR",
+					"timestamp": time.Now(),
+				})
+				return
+			}
+
+			// If user stats don't exist, create new user stats
+			if userStats == nil {
+				userStats = &UserStats{
+					UserID:  userIDStr,
+					Sports:  []SportStats{},
+				}
+			}
+
+			// Find or create specific sport stats
+			var sportStats *SportStats
+			for i := range userStats.Sports {
+				if userStats.Sports[i].Sport == sport {
+					sportStats = &userStats.Sports[i]
+					break
+				}
+			}
+
+			// If sport stats don't exist, create new entry
+			if sportStats == nil {
+				newSportStats := SportStats{
+					Sport: sport,
+				}
+				userStats.Sports = append(userStats.Sports, newSportStats)
+				sportStats = &userStats.Sports[len(userStats.Sports)-1]
+			}			
+
+			// Update sport-specific stats
+			updateStatsWithResult(&sportStats.Stats, &result)
+
+			// Save or update user stats in DynamoDB
+			if userStats.UserCreated.IsZero() {
+				err = db.CreateUserStats(ctx, userStats)
+			} else {
+				err = db.UpdateUserStats(ctx, userStats)
+			}
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":     "Internal Server Error",
+					"message":   "Failed to update user stats: " + err.Error(),
+					"code":      "DATABASE_ERROR",
+					"timestamp": time.Now(),
+				})
+				return
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, result)
