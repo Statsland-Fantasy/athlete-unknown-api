@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-4](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/4)
+
+### Added
+
+- Submitting results now also updates user's stats
+- Additional refactoring & safeguarding
+
 ## [PR-3](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/3)
 
 ### Added
