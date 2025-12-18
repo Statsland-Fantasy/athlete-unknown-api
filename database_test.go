@@ -158,7 +158,7 @@ func TestRoundMarshaling(t *testing.T) {
 func TestUserStatsMarshaling(t *testing.T) {
 	now := time.Now()
 	stats := &UserStats{
-		UserID:      "test-user-123",
+		UserId:      "test-user-123",
 		UserName:    "John Doe",
 		UserCreated: now,
 		Sports: []SportStats{
@@ -196,8 +196,8 @@ func TestUserStatsMarshaling(t *testing.T) {
 	}
 
 	// Verify all fields are set correctly
-	if stats.UserID != "test-user-123" {
-		t.Errorf("UserID = %v, want test-user-123", stats.UserID)
+	if stats.UserId != "test-user-123" {
+		t.Errorf("UserId = %v, want test-user-123", stats.UserId)
 	}
 	if stats.UserName != "John Doe" {
 		t.Errorf("UserName = %v, want John Doe", stats.UserName)
@@ -451,7 +451,7 @@ func TestRoundStatsWithAverageNumberOfTileFlips(t *testing.T) {
 func TestUserStatsWithUserName(t *testing.T) {
 	now := time.Now()
 	stats := UserStats{
-		UserID:      "user-123",
+		UserId:      "user-123",
 		UserName:    "Jane Smith",
 		UserCreated: now,
 		Sports: []SportStats{
@@ -470,8 +470,8 @@ func TestUserStatsWithUserName(t *testing.T) {
 	if stats.UserName != "Jane Smith" {
 		t.Errorf("UserName = %v, want Jane Smith", stats.UserName)
 	}
-	if stats.UserID != "user-123" {
-		t.Errorf("UserID = %v, want user-123", stats.UserID)
+	if stats.UserId != "user-123" {
+		t.Errorf("UserId = %v, want user-123", stats.UserId)
 	}
 	if stats.Sports[0].TotalPlays != 50 {
 		t.Errorf("Sports[0].TotalPlays = %v, want 50", stats.Sports[0].TotalPlays)

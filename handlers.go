@@ -363,6 +363,7 @@ func handleSubmitResults(c *gin.Context) {
 				userStats = &UserStats{
 					UserId:  userIdStr,
 					Sports:  []SportStats{},
+					UserName: "", // TODO: update with user's username as fetched from Auth0
 				}
 			}
 

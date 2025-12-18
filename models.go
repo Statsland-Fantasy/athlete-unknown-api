@@ -42,9 +42,9 @@ type Stats struct {
 	MostCommonLastTileFlipped   string          `json:"mostCommonLastTileFlipped" dynamodbav:"mostCommonLastTileFlipped"`
 	MostCommonTileFlipped       string          `json:"mostCommonTileFlipped" dynamodbav:"mostCommonTileFlipped"`
 	LeastCommonTileFlipped      string          `json:"leastCommonTileFlipped" dynamodbav:"leastCommonTileFlipped"`
-	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker,omitempty" dynamodbav:"firstTileFlippedTracker,omitempty"`
-	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker,omitempty" dynamodbav:"lastTileFlippedTracker,omitempty"`
-	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker,omitempty" dynamodbav:"mostTileFlippedTracker,omitempty"`
+	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker" dynamodbav:"firstTileFlippedTracker,omitempty"`
+	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker" dynamodbav:"lastTileFlippedTracker,omitempty"`
+	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker" dynamodbav:"mostTileFlippedTracker,omitempty"`
 }
 
 // RoundStats represents statistics for a specific round
