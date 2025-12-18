@@ -538,14 +538,14 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 
 	// Get optional parameters
 	name := c.Query("name")
-	sportsReferencePath := c.Query("sportsReferencePath")
+	sportsReferenceURL := c.Query("sportsReferenceURL")
 	theme := c.Query("theme")
 
 	// Validate that at least one optional parameter is provided
-	if name == "" && sportsReferencePath == "" {
+	if name == "" && sportsReferenceURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":     "Bad Request",
-			"message":   "Either 'name' or 'sportsReferencePath' parameter must be provided",
+			"message":   "Either 'name' or 'sportsReferenceURL' parameter must be provided",
 			"code":      "MISSING_REQUIRED_PARAMETER",
 			"timestamp": time.Now(),
 		})
@@ -564,10 +564,10 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 		return
 	}
 
-	// If sportsReferencePath is provided, go directly to the player page
-	if sportsReferencePath != "" {
-		// Use the direct path to the player page (always use www subdomain)
-		playerURL := fmt.Sprintf("https://www.%s%s", hostname, sportsReferencePath)
+	// If sportsReferenceURL is provided, go directly to the player page
+	if sportsReferenceURL != "" {
+		// Use the URL directly (it should be a full URL)
+		playerURL := sportsReferenceURL
 		fmt.Printf("Player page URL: %s\n", playerURL)
 
 		// Scrape player page data
@@ -712,7 +712,7 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":     "Bad Request",
-				"message":   "Multiple players found with the name '" + name + "'. Please provide the sportsReferencePath parameter to specify the exact player.",
+				"message":   "Multiple players found with the name '" + name + "'. Please provide the sportsReferenceURL parameter to specify the exact player.",
 				"code":      "MULTIPLE_PLAYERS_FOUND",
 				"timestamp": time.Now(),
 			})
