@@ -77,7 +77,6 @@ type Result struct {
 // SportStats represents statistics for a specific sport for all users
 type SportStats struct {
 	Sport              string `json:"sport" dynamodbav:"sport"`
-	CurrentDailyStreak int    `json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
 	Stats              `json:",inline" dynamodbav:",inline"`
 }
 
@@ -86,6 +85,8 @@ type UserStats struct {
 	UserId                      string          `json:"userId" dynamodbav:"userId"`
 	UserName                    string          `json:"userName" dynamodbav:"userName"`
 	UserCreated                 time.Time       `json:"userCreated" dynamodbav:"userCreated"`
+	CurrentDailyStreak 			int    			`json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
+	LastDayPlayed               string          `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
 	Sports                      []SportStats    `json:"sports" dynamodbav:"sports"`
 }
 

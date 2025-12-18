@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 )
 
 // contains checks if a string slice contains a specific string
@@ -397,4 +398,39 @@ func abbreviatePositions(playerInfo string) string {
 	result = strings.ReplaceAll(result, " and ", ", ") // no "ands", all comma separated
 
 	return result
+}
+
+// updateDailyStreak updates the user's daily streak and last day played based on the play date
+// For new users (userStats is nil), it initializes the streak to 1 and sets the last day played
+// For existing users, it:
+// - Increments the streak if the play date is exactly 1 day after the last day played
+// - Resets the streak to 1 if more than 1 day has passed since the last day played
+// - Keeps the streak unchanged if playing on the same day
+// Always updates lastDayPlayed to the current play date
+func updateDailyStreak(userStats *UserStats, playDate string) {
+	if userStats == nil {
+		return
+	}
+
+	// Check if we have a previous play date to compare against
+	if userStats.LastDayPlayed != "" {
+		lastPlayed, err := time.Parse("2006-01-02", userStats.LastDayPlayed)
+		currentPlay, err2 := time.Parse("2006-01-02", playDate)
+
+		if err == nil && err2 == nil {
+			daysDiff := int(currentPlay.Sub(lastPlayed).Hours() / 24)
+
+			if daysDiff == 1 {
+				// Consecutive day - increment streak
+				userStats.CurrentDailyStreak++
+			} else if daysDiff > 1 {
+				// Missed a day - reset streak to 1
+				userStats.CurrentDailyStreak = 1
+			}
+			// If daysDiff == 0, same day - don't change streak
+		}
+	}
+
+	// Update last day played
+	userStats.LastDayPlayed = playDate
 }

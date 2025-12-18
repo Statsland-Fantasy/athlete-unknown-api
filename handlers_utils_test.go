@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 func TestContains(t *testing.T) {
@@ -344,6 +345,155 @@ func TestFormatDraftInformation(t *testing.T) {
 			got := formatDraftInformation(tt.draftText, tt.sport, tt.draftSchool)
 			if got != tt.expected {
 				t.Errorf("formatDraftInformation() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+// TestUpdateDailyStreak tests the updateDailyStreak helper function
+func TestUpdateDailyStreak(t *testing.T) {
+	tests := []struct {
+		name                     string
+		existingUserStats        *UserStats
+		playDate                 string
+		expectedStreak           int
+		expectedLastDayPlayed    string
+	}{
+		{
+			name:                  "nil user stats - should do nothing",
+			existingUserStats:     nil,
+			playDate:              "2024-01-15",
+			expectedStreak:        0,
+			expectedLastDayPlayed: "",
+		},
+		{
+			name: "consecutive day - increment streak",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 5,
+				LastDayPlayed:      "2024-01-14",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-15",
+			expectedStreak:        6,
+			expectedLastDayPlayed: "2024-01-15",
+		},
+		{
+			name: "same day - keep streak unchanged",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 3,
+				LastDayPlayed:      "2024-01-15",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-15",
+			expectedStreak:        3,
+			expectedLastDayPlayed: "2024-01-15",
+		},
+		{
+			name: "missed one day - reset streak to 1",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 10,
+				LastDayPlayed:      "2024-01-13",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-15",
+			expectedStreak:        1,
+			expectedLastDayPlayed: "2024-01-15",
+		},
+		{
+			name: "missed multiple days - reset streak to 1",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 7,
+				LastDayPlayed:      "2024-01-10",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-20",
+			expectedStreak:        1,
+			expectedLastDayPlayed: "2024-01-20",
+		},
+		{
+			name: "streak continues after weekend - friday to saturday",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 4,
+				LastDayPlayed:      "2024-01-12",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-13",
+			expectedStreak:        5,
+			expectedLastDayPlayed: "2024-01-13",
+		},
+		{
+			name: "existing user with empty lastDayPlayed",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 2,
+				LastDayPlayed:      "",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-15",
+			expectedStreak:        2,
+			expectedLastDayPlayed: "2024-01-15",
+		},
+		{
+			name: "month transition - consecutive day",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 15,
+				LastDayPlayed:      "2024-01-31",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-02-01",
+			expectedStreak:        16,
+			expectedLastDayPlayed: "2024-02-01",
+		},
+		{
+			name: "year transition - consecutive day",
+			existingUserStats: &UserStats{
+				UserId:             "user123",
+				CurrentDailyStreak: 20,
+				LastDayPlayed:      "2023-12-31",
+				UserCreated:        time.Now(),
+			},
+			playDate:              "2024-01-01",
+			expectedStreak:        21,
+			expectedLastDayPlayed: "2024-01-01",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Make a copy of the user stats if not nil
+			var userStats *UserStats
+			if tt.existingUserStats != nil {
+				userStats = &UserStats{
+					UserId:             tt.existingUserStats.UserId,
+					CurrentDailyStreak: tt.existingUserStats.CurrentDailyStreak,
+					LastDayPlayed:      tt.existingUserStats.LastDayPlayed,
+					UserCreated:        tt.existingUserStats.UserCreated,
+					Sports:             tt.existingUserStats.Sports,
+				}
+			}
+
+			// Call the function
+			updateDailyStreak(userStats, tt.playDate)
+
+			// Verify the results
+			if userStats == nil {
+				if tt.expectedStreak != 0 || tt.expectedLastDayPlayed != "" {
+					t.Errorf("Expected nil userStats to remain nil")
+				}
+			} else {
+				if userStats.CurrentDailyStreak != tt.expectedStreak {
+					t.Errorf("Expected streak %d, got %d", tt.expectedStreak, userStats.CurrentDailyStreak)
+				}
+
+				if userStats.LastDayPlayed != tt.expectedLastDayPlayed {
+					t.Errorf("Expected lastDayPlayed %s, got %s", tt.expectedLastDayPlayed, userStats.LastDayPlayed)
+				}
 			}
 		})
 	}

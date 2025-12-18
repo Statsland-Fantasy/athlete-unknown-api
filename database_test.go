@@ -161,10 +161,11 @@ func TestUserStatsMarshaling(t *testing.T) {
 		UserId:      "test-user-123",
 		UserName:    "John Doe",
 		UserCreated: now,
+		CurrentDailyStreak: 5,
+		LastDayPlayed: "2025-12-10",
 		Sports: []SportStats{
 			{
 				Sport:              "basketball",
-				CurrentDailyStreak: 5,
 				Stats: Stats{
 					TotalPlays:                 200,
 					PercentageCorrect:          75.0,
@@ -179,7 +180,6 @@ func TestUserStatsMarshaling(t *testing.T) {
 			},
 			{
 				Sport:              "baseball",
-				CurrentDailyStreak: 3,
 				Stats: Stats{
 					TotalPlays:                 150,
 					PercentageCorrect:          80.0,

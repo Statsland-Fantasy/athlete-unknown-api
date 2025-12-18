@@ -363,8 +363,13 @@ func handleSubmitResults(c *gin.Context) {
 				userStats = &UserStats{
 					UserId:  userIdStr,
 					Sports:  []SportStats{},
+					CurrentDailyStreak: 1,
+					LastDayPlayed: playDate,
 					UserName: "", // TODO: update with user's username as fetched from Auth0
 				}
+			} else {
+				// Update daily streak based on play date
+				updateDailyStreak(userStats, playDate)
 			}
 
 			// Find or create specific sport stats
