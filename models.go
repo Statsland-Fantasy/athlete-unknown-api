@@ -31,11 +31,8 @@ type TileFlipTracker struct {
 	YearsActive          int `json:"yearsActive" dynamodbav:"yearsActive"`
 }
 
-// RoundStats represents statistics for a specific round
-type RoundStats struct {
-	PlayDate                    string          `json:"playDate" dynamodbav:"playDate"`
-	Name                        string          `json:"name" dynamodbav:"name"`
-	Sport                       string          `json:"sport" dynamodbav:"sport"`
+// Stats represents common statistics fields shared across different stat types
+type Stats struct {
 	TotalPlays                  int             `json:"totalPlays" dynamodbav:"totalPlays"`
 	PercentageCorrect           float64         `json:"percentageCorrect" dynamodbav:"percentageCorrect"`
 	HighestScore                int             `json:"highestScore" dynamodbav:"highestScore"`
@@ -45,9 +42,17 @@ type RoundStats struct {
 	MostCommonLastTileFlipped   string          `json:"mostCommonLastTileFlipped" dynamodbav:"mostCommonLastTileFlipped"`
 	MostCommonTileFlipped       string          `json:"mostCommonTileFlipped" dynamodbav:"mostCommonTileFlipped"`
 	LeastCommonTileFlipped      string          `json:"leastCommonTileFlipped" dynamodbav:"leastCommonTileFlipped"`
-	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker,omitempty" dynamodbav:"firstTileFlippedTracker,omitempty"`
-	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker,omitempty" dynamodbav:"lastTileFlippedTracker,omitempty"`
-	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker,omitempty" dynamodbav:"mostTileFlippedTracker,omitempty"`
+	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker" dynamodbav:"firstTileFlippedTracker"`
+	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker" dynamodbav:"lastTileFlippedTracker"`
+	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker" dynamodbav:"mostTileFlippedTracker"`
+}
+
+// RoundStats represents statistics for a specific round
+type RoundStats struct {
+	PlayDate string `json:"playDate" dynamodbav:"playDate"`
+	Name     string `json:"name" dynamodbav:"name"`
+	Sport    string `json:"sport" dynamodbav:"sport"`
+	Stats           `json:",inline" dynamodbav:",inline"`
 }
 
 // Round represents a complete game round
@@ -71,39 +76,18 @@ type Result struct {
 
 // SportStats represents statistics for a specific sport for all users
 type SportStats struct {
-	Sport                       string          `json:"sport" dynamodbav:"sport"`
-	CurrentDailyStreak          int             `json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
-	TotalPlays                  int             `json:"totalPlays" dynamodbav:"totalPlays"`
-	PercentageCorrect           float64         `json:"percentageCorrect" dynamodbav:"percentageCorrect"`
-	HighestScore                int             `json:"highestScore" dynamodbav:"highestScore"`
-	AverageCorrectScore         float64         `json:"averageCorrectScore" dynamodbav:"averageCorrectScore"`
-	AverageNumberOfTileFlips    float64         `json:"averageNumberOfTileFlips" dynamodbav:"averageNumberOfTileFlips"`
-	MostCommonFirstTileFlipped  string          `json:"mostCommonFirstTileFlipped" dynamodbav:"mostCommonFirstTileFlipped"`
-	MostCommonLastTileFlipped   string          `json:"mostCommonLastTileFlipped" dynamodbav:"mostCommonLastTileFlipped"`
-	MostCommonTileFlipped       string          `json:"mostCommonTileFlipped" dynamodbav:"mostCommonTileFlipped"`
-	LeastCommonTileFlipped      string          `json:"leastCommonTileFlipped" dynamodbav:"leastCommonTileFlipped"`
-	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker,omitempty" dynamodbav:"firstTileFlippedTracker,omitempty"`
-	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker,omitempty" dynamodbav:"lastTileFlippedTracker,omitempty"`
-	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker,omitempty" dynamodbav:"mostTileFlippedTracker,omitempty"`
+	Sport              string `json:"sport" dynamodbav:"sport"`
+	Stats              `json:",inline" dynamodbav:",inline"`
 }
 
 // UserStats represents comprehensive statistics for a user
 type UserStats struct {
-	UserID                      string          `json:"userId" dynamodbav:"userId"`
+	UserId                      string          `json:"userId" dynamodbav:"userId"`
 	UserName                    string          `json:"userName" dynamodbav:"userName"`
 	UserCreated                 time.Time       `json:"userCreated" dynamodbav:"userCreated"`
+	CurrentDailyStreak 			int    			`json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
+	LastDayPlayed               string          `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
 	Sports                      []SportStats    `json:"sports" dynamodbav:"sports"`
-	TotalPlays                  int             `json:"totalPlays" dynamodbav:"totalPlays"`
-	PercentageCorrect           float64         `json:"percentageCorrect" dynamodbav:"percentageCorrect"`
-	HighestScore                int             `json:"highestScore" dynamodbav:"highestScore"`
-	AverageCorrectScore         float64         `json:"averageCorrectScore" dynamodbav:"averageCorrectScore"`
-	MostCommonFirstTileFlipped  string          `json:"mostCommonFirstTileFlipped" dynamodbav:"mostCommonFirstTileFlipped"`
-	MostCommonLastTileFlipped   string          `json:"mostCommonLastTileFlipped" dynamodbav:"mostCommonLastTileFlipped"`
-	MostCommonTileFlipped       string          `json:"mostCommonTileFlipped" dynamodbav:"mostCommonTileFlipped"`
-	LeastCommonTileFlipped      string          `json:"leastCommonTileFlipped" dynamodbav:"leastCommonTileFlipped"`
-	FirstTileFlippedTracker     TileFlipTracker `json:"firstTileFlippedTracker,omitempty" dynamodbav:"firstTileFlippedTracker,omitempty"`
-	LastTileFlippedTracker      TileFlipTracker `json:"lastTileFlippedTracker,omitempty" dynamodbav:"lastTileFlippedTracker,omitempty"`
-	MostTileFlippedTracker      TileFlipTracker `json:"mostTileFlippedTracker,omitempty" dynamodbav:"mostTileFlippedTracker,omitempty"`
 }
 
 // ErrorResponse represents an error response

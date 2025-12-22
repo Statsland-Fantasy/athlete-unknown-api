@@ -293,6 +293,17 @@ func handleSubmitResults(c *gin.Context) {
 		return
 	}
 
+	// potential hack catcher. Score cannot be higher than 100
+	if result.Score > 100 || result.Score < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":     "Bad Request",
+			"message":   "Invalid request body: Score cannot be greater than 100 or less than 0",
+			"code":      "INVALID_REQUEST_BODY",
+			"timestamp": time.Now(),
+		})
+		return		
+	}
+
 	ctx := context.Background()
 
 	round, err := db.GetRound(ctx, sport, playDate)
@@ -316,46 +327,7 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Update round statistics
-	round.Stats.TotalPlays++
-	if result.IsCorrect {
-		correctCount := int(round.Stats.PercentageCorrect * float64(round.Stats.TotalPlays-1) / 100)
-		correctCount++
-		round.Stats.PercentageCorrect = float64(correctCount) * 100 / float64(round.Stats.TotalPlays)
-
-		// Update average correct score
-		totalCorrectScore := round.Stats.AverageCorrectScore * float64(correctCount-1)
-		totalCorrectScore += float64(result.Score)
-		round.Stats.AverageCorrectScore = totalCorrectScore / float64(correctCount)
-	}
-
-	if result.Score > round.Stats.HighestScore {
-		round.Stats.HighestScore = result.Score
-	}
-
-	// Update average number of tile flips
-	totalTileFlips := round.Stats.AverageNumberOfTileFlips * float64(round.Stats.TotalPlays-1)
-	totalTileFlips += float64(len(result.TilesFlipped))
-	round.Stats.AverageNumberOfTileFlips = totalTileFlips / float64(round.Stats.TotalPlays)
-
-	// Track tile flips
-	if len(result.TilesFlipped) > 0 {
-		// Track first tile flipped
-		incrementTileTracker(&round.Stats.FirstTileFlippedTracker, result.TilesFlipped[0])
-
-		// Track last tile flipped
-		incrementTileTracker(&round.Stats.LastTileFlippedTracker, result.TilesFlipped[len(result.TilesFlipped)-1])
-
-		// Track all tiles flipped
-		for _, tile := range result.TilesFlipped {
-			incrementTileTracker(&round.Stats.MostTileFlippedTracker, tile)
-		}
-
-		// Recalculate most/least common tiles
-		round.Stats.MostCommonFirstTileFlipped = findMostCommonTile(&round.Stats.FirstTileFlippedTracker)
-		round.Stats.MostCommonLastTileFlipped = findMostCommonTile(&round.Stats.LastTileFlippedTracker)
-		round.Stats.MostCommonTileFlipped = findMostCommonTile(&round.Stats.MostTileFlippedTracker)
-		round.Stats.LeastCommonTileFlipped = findLeastCommonTile(&round.Stats.MostTileFlippedTracker)
-	}
+	updateStatsWithResult(&round.Stats.Stats, &result)
 
 	// Save the updated round
 	err = db.UpdateRound(ctx, round)
@@ -367,6 +339,77 @@ func handleSubmitResults(c *gin.Context) {
 			"timestamp": time.Now(),
 		})
 		return
+	}
+
+	// Get user_id from bearer token (set by JWT middleware)
+	userId, exists := c.Get("userId")
+	if exists && userId != "" {
+		userIdStr, ok := userId.(string)
+		if ok && userIdStr != "" {
+			// Fetch existing user stats or create new ones
+			userStats, err := db.GetUserStats(ctx, userIdStr)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":     "Internal Server Error",
+					"message":   "Failed to retrieve user stats: " + err.Error(),
+					"code":      "DATABASE_ERROR",
+					"timestamp": time.Now(),
+				})
+				return
+			}
+
+			// If user stats don't exist, create new user stats
+			if userStats == nil {
+				userStats = &UserStats{
+					UserId:  userIdStr,
+					Sports:  []SportStats{},
+					CurrentDailyStreak: 1,
+					LastDayPlayed: playDate,
+					UserName: "", // TODO: update with user's username as fetched from Auth0
+				}
+			} else {
+				// Update daily streak based on play date
+				updateDailyStreak(userStats, playDate)
+			}
+
+			// Find or create specific sport stats
+			var sportStats *SportStats
+			for i := range userStats.Sports {
+				if userStats.Sports[i].Sport == sport {
+					sportStats = &userStats.Sports[i]
+					break
+				}
+			}
+
+			// If sport stats don't exist, create new entry
+			if sportStats == nil {
+				newSportStats := SportStats{
+					Sport: sport,
+				}
+				userStats.Sports = append(userStats.Sports, newSportStats)
+				sportStats = &userStats.Sports[len(userStats.Sports)-1]
+			}			
+
+			// Update sport-specific stats
+			updateStatsWithResult(&sportStats.Stats, &result)
+
+			// Save or update user stats in DynamoDB
+			if userStats.UserCreated.IsZero() {
+				err = db.CreateUserStats(ctx, userStats)
+			} else {
+				err = db.UpdateUserStats(ctx, userStats)
+			}
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":     "Internal Server Error",
+					"message":   "Failed to update user stats: " + err.Error(),
+					"code":      "DATABASE_ERROR",
+					"timestamp": time.Now(),
+				})
+				return
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, result)
@@ -414,19 +457,30 @@ func handleGetRoundStats(c *gin.Context) {
 
 // handleGetUserStats handles GET /v1/stats/user
 func handleGetUserStats(c *gin.Context) {
-	userID := c.Query("userId")
-	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "userId parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
-		})
-		return
+	userId := c.Query("userId")
+	if userId == "" {
+		// if userId is not part in query param, extract from bearer token instead
+		userIdToken, exists := c.Get("userId")
+		if exists && userIdToken != "" {
+			userIdStr, ok := userIdToken.(string)
+			if ok && userIdStr != "" {
+				userId = userIdStr
+			}
+		}
+
+		if userId == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":     "Bad Request",
+				"message":   "userId parameter is required",
+				"code":      "MISSING_REQUIRED_PARAMETER",
+				"timestamp": time.Now(),
+			})
+			return
+		}
 	}
 
 	ctx := context.Background()
-	stats, err := db.GetUserStats(ctx, userID)
+	stats, err := db.GetUserStats(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -440,7 +494,7 @@ func handleGetUserStats(c *gin.Context) {
 	if stats == nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":     "Not Found",
-			"message":   "No statistics found for user '" + userID + "'",
+			"message":   "No statistics found for user '" + userId + "'",
 			"code":      "USER_STATS_NOT_FOUND",
 			"timestamp": time.Now(),
 		})
@@ -489,14 +543,14 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 
 	// Get optional parameters
 	name := c.Query("name")
-	sportsReferencePath := c.Query("sportsReferencePath")
+	sportsReferenceURL := c.Query("sportsReferenceURL")
 	theme := c.Query("theme")
 
 	// Validate that at least one optional parameter is provided
-	if name == "" && sportsReferencePath == "" {
+	if name == "" && sportsReferenceURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":     "Bad Request",
-			"message":   "Either 'name' or 'sportsReferencePath' parameter must be provided",
+			"message":   "Either 'name' or 'sportsReferenceURL' parameter must be provided",
 			"code":      "MISSING_REQUIRED_PARAMETER",
 			"timestamp": time.Now(),
 		})
@@ -515,10 +569,10 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 		return
 	}
 
-	// If sportsReferencePath is provided, go directly to the player page
-	if sportsReferencePath != "" {
-		// Use the direct path to the player page (always use www subdomain)
-		playerURL := fmt.Sprintf("https://www.%s%s", hostname, sportsReferencePath)
+	// If sportsReferenceURL is provided, go directly to the player page
+	if sportsReferenceURL != "" {
+		// Use the URL directly (it should be a full URL)
+		playerURL := sportsReferenceURL
 		fmt.Printf("Player page URL: %s\n", playerURL)
 
 		// Scrape player page data
@@ -663,7 +717,7 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":     "Bad Request",
-				"message":   "Multiple players found with the name '" + name + "'. Please provide the sportsReferencePath parameter to specify the exact player.",
+				"message":   "Multiple players found with the name '" + name + "'. Please provide the sportsReferenceURL parameter to specify the exact player.",
 				"code":      "MULTIPLE_PLAYERS_FOUND",
 				"timestamp": time.Now(),
 			})

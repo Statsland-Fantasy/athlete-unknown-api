@@ -206,11 +206,11 @@ func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate st
 }
 
 // GetUserStats retrieves user statistics by userId
-func (db *DB) GetUserStats(ctx context.Context, userID string) (*UserStats, error) {
+func (db *DB) GetUserStats(ctx context.Context, userId string) (*UserStats, error) {
 	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(db.userStatsTableName),
 		Key: map[string]types.AttributeValue{
-			"userId": &types.AttributeValueMemberS{Value: userID},
+			"userId": &types.AttributeValueMemberS{Value: userId},
 		},
 	})
 	if err != nil {

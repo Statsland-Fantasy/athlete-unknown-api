@@ -105,28 +105,30 @@ func TestRoundMarshaling(t *testing.T) {
 			Photo:                "http://example.com/photo.jpg",
 		},
 		Stats: RoundStats{
-			PlayDate:                   "2024-01-01",
-			Name:                       "Test Player",
-			Sport:                      "basketball",
-			TotalPlays:                 100,
-			PercentageCorrect:          75.5,
-			HighestScore:               200,
-			AverageCorrectScore:        150.0,
-			AverageNumberOfTileFlips:   4.5,
-			MostCommonFirstTileFlipped: "bio",
-			MostCommonLastTileFlipped:  "photo",
-			MostCommonTileFlipped:      "careerStats",
-			LeastCommonTileFlipped:     "jerseyNumbers",
-			FirstTileFlippedTracker: TileFlipTracker{
-				Bio:                  50,
-				PlayerInformation:    30,
-				DraftInformation:     10,
-				TeamsPlayedOn:        5,
-				JerseyNumbers:        2,
-				CareerStats:          1,
-				PersonalAchievements: 1,
-				Photo:                1,
-				YearsActive:          0,
+			PlayDate: "2024-01-01",
+			Name:     "Test Player",
+			Sport:    "basketball",
+			Stats: Stats{
+				TotalPlays:                 100,
+				PercentageCorrect:          75.5,
+				HighestScore:               200,
+				AverageCorrectScore:        150.0,
+				AverageNumberOfTileFlips:   4.5,
+				MostCommonFirstTileFlipped: "bio",
+				MostCommonLastTileFlipped:  "photo",
+				MostCommonTileFlipped:      "careerStats",
+				LeastCommonTileFlipped:     "jerseyNumbers",
+				FirstTileFlippedTracker: TileFlipTracker{
+					Bio:                  50,
+					PlayerInformation:    30,
+					DraftInformation:     10,
+					TeamsPlayedOn:        5,
+					JerseyNumbers:        2,
+					CareerStats:          1,
+					PersonalAchievements: 1,
+					Photo:                1,
+					YearsActive:          0,
+				},
 			},
 		},
 	}
@@ -156,70 +158,49 @@ func TestRoundMarshaling(t *testing.T) {
 func TestUserStatsMarshaling(t *testing.T) {
 	now := time.Now()
 	stats := &UserStats{
-		UserID:                     "test-user-123",
-		UserName:                   "John Doe",
-		UserCreated:                now,
-		TotalPlays:                 500,
-		PercentageCorrect:          80.0,
-		HighestScore:               250,
-		AverageCorrectScore:        175.0,
-		MostCommonFirstTileFlipped: "bio",
-		MostCommonLastTileFlipped:  "photo",
-		MostCommonTileFlipped:      "careerStats",
-		LeastCommonTileFlipped:     "jerseyNumbers",
+		UserId:      "test-user-123",
+		UserName:    "John Doe",
+		UserCreated: now,
+		CurrentDailyStreak: 5,
+		LastDayPlayed: "2025-12-10",
 		Sports: []SportStats{
 			{
-				Sport:                      "basketball",
-				CurrentDailyStreak:         5,
-				TotalPlays:                 200,
-				PercentageCorrect:          75.0,
-				HighestScore:               200,
-				AverageCorrectScore:        150.0,
-				AverageNumberOfTileFlips:   5.2,
-				MostCommonFirstTileFlipped: "bio",
-				MostCommonLastTileFlipped:  "photo",
-				MostCommonTileFlipped:      "careerStats",
-				LeastCommonTileFlipped:     "jerseyNumbers",
+				Sport:              "basketball",
+				Stats: Stats{
+					TotalPlays:                 200,
+					PercentageCorrect:          75.0,
+					HighestScore:               200,
+					AverageCorrectScore:        150.0,
+					AverageNumberOfTileFlips:   5.2,
+					MostCommonFirstTileFlipped: "bio",
+					MostCommonLastTileFlipped:  "photo",
+					MostCommonTileFlipped:      "careerStats",
+					LeastCommonTileFlipped:     "jerseyNumbers",
+				},
 			},
 			{
-				Sport:                      "baseball",
-				CurrentDailyStreak:         3,
-				TotalPlays:                 150,
-				PercentageCorrect:          80.0,
-				HighestScore:               180,
-				AverageCorrectScore:        140.0,
-				AverageNumberOfTileFlips:   6.1,
-				MostCommonFirstTileFlipped: "playerInformation",
-				MostCommonLastTileFlipped:  "careerStats",
-				MostCommonTileFlipped:      "bio",
-				LeastCommonTileFlipped:     "photo",
+				Sport:              "baseball",
+				Stats: Stats{
+					TotalPlays:                 150,
+					PercentageCorrect:          80.0,
+					HighestScore:               180,
+					AverageCorrectScore:        140.0,
+					AverageNumberOfTileFlips:   6.1,
+					MostCommonFirstTileFlipped: "playerInformation",
+					MostCommonLastTileFlipped:  "careerStats",
+					MostCommonTileFlipped:      "bio",
+					LeastCommonTileFlipped:     "photo",
+				},
 			},
-		},
-		FirstTileFlippedTracker: TileFlipTracker{
-			Bio:                  100,
-			PlayerInformation:    80,
-			DraftInformation:     50,
-			TeamsPlayedOn:        30,
-			JerseyNumbers:        20,
-			CareerStats:          40,
-			PersonalAchievements: 60,
-			Photo:                70,
-			YearsActive:          50,
 		},
 	}
 
 	// Verify all fields are set correctly
-	if stats.UserID != "test-user-123" {
-		t.Errorf("UserID = %v, want test-user-123", stats.UserID)
+	if stats.UserId != "test-user-123" {
+		t.Errorf("UserId = %v, want test-user-123", stats.UserId)
 	}
 	if stats.UserName != "John Doe" {
 		t.Errorf("UserName = %v, want John Doe", stats.UserName)
-	}
-	if stats.TotalPlays != 500 {
-		t.Errorf("TotalPlays = %v, want 500", stats.TotalPlays)
-	}
-	if stats.PercentageCorrect != 80.0 {
-		t.Errorf("PercentageCorrect = %v, want 80.0", stats.PercentageCorrect)
 	}
 	if len(stats.Sports) != 2 {
 		t.Errorf("len(Sports) = %v, want 2", len(stats.Sports))
@@ -227,14 +208,17 @@ func TestUserStatsMarshaling(t *testing.T) {
 	if stats.Sports[0].Sport != "basketball" {
 		t.Errorf("Sports[0].Sport = %v, want basketball", stats.Sports[0].Sport)
 	}
+	if stats.Sports[0].TotalPlays != 200 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 200", stats.Sports[0].TotalPlays)
+	}
+	if stats.Sports[0].PercentageCorrect != 75.0 {
+		t.Errorf("Sports[0].PercentageCorrect = %v, want 75.0", stats.Sports[0].PercentageCorrect)
+	}
 	if stats.Sports[0].AverageNumberOfTileFlips != 5.2 {
 		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", stats.Sports[0].AverageNumberOfTileFlips)
 	}
 	if stats.Sports[1].AverageNumberOfTileFlips != 6.1 {
 		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", stats.Sports[1].AverageNumberOfTileFlips)
-	}
-	if stats.FirstTileFlippedTracker.Bio != 100 {
-		t.Errorf("FirstTileFlippedTracker.Bio = %v, want 100", stats.FirstTileFlippedTracker.Bio)
 	}
 }
 
@@ -442,18 +426,20 @@ func TestAverageNumberOfTileFlipsCalculation(t *testing.T) {
 // Test RoundStats with AverageNumberOfTileFlips
 func TestRoundStatsWithAverageNumberOfTileFlips(t *testing.T) {
 	stats := RoundStats{
-		PlayDate:                   "2024-01-01",
-		Name:                       "Test Player",
-		Sport:                      "basketball",
-		TotalPlays:                 100,
-		PercentageCorrect:          75.5,
-		HighestScore:               200,
-		AverageCorrectScore:        150.0,
-		AverageNumberOfTileFlips:   5.7,
-		MostCommonFirstTileFlipped: "bio",
-		MostCommonLastTileFlipped:  "photo",
-		MostCommonTileFlipped:      "careerStats",
-		LeastCommonTileFlipped:     "jerseyNumbers",
+		PlayDate: "2024-01-01",
+		Name:     "Test Player",
+		Sport:    "basketball",
+		Stats: Stats{
+			TotalPlays:                 100,
+			PercentageCorrect:          75.5,
+			HighestScore:               200,
+			AverageCorrectScore:        150.0,
+			AverageNumberOfTileFlips:   5.7,
+			MostCommonFirstTileFlipped: "bio",
+			MostCommonLastTileFlipped:  "photo",
+			MostCommonTileFlipped:      "careerStats",
+			LeastCommonTileFlipped:     "jerseyNumbers",
+		},
 	}
 
 	if stats.AverageNumberOfTileFlips != 5.7 {
@@ -465,19 +451,29 @@ func TestRoundStatsWithAverageNumberOfTileFlips(t *testing.T) {
 func TestUserStatsWithUserName(t *testing.T) {
 	now := time.Now()
 	stats := UserStats{
-		UserID:              "user-123",
-		UserName:            "Jane Smith",
-		UserCreated:         now,
-		TotalPlays:          50,
-		PercentageCorrect:   85.0,
-		HighestScore:        9,
-		AverageCorrectScore: 7.5,
+		UserId:      "user-123",
+		UserName:    "Jane Smith",
+		UserCreated: now,
+		Sports: []SportStats{
+			{
+				Sport: "basketball",
+				Stats: Stats{
+					TotalPlays:          50,
+					PercentageCorrect:   85.0,
+					HighestScore:        9,
+					AverageCorrectScore: 7.5,
+				},
+			},
+		},
 	}
 
 	if stats.UserName != "Jane Smith" {
 		t.Errorf("UserName = %v, want Jane Smith", stats.UserName)
 	}
-	if stats.UserID != "user-123" {
-		t.Errorf("UserID = %v, want user-123", stats.UserID)
+	if stats.UserId != "user-123" {
+		t.Errorf("UserId = %v, want user-123", stats.UserId)
+	}
+	if stats.Sports[0].TotalPlays != 50 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 50", stats.Sports[0].TotalPlays)
 	}
 }
