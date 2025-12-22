@@ -294,10 +294,10 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// potential hack catcher. Score cannot be higher than 100
-	if result.Score > 100 {
+	if result.Score > 100 || result.Score < 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":     "Bad Request",
-			"message":   "Invalid request body: Score cannot be greater than 100",
+			"message":   "Invalid request body: Score cannot be greater than 100 or less than 0",
 			"code":      "INVALID_REQUEST_BODY",
 			"timestamp": time.Now(),
 		})
