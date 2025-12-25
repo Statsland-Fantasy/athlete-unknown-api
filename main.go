@@ -54,20 +54,21 @@ func main() {
 	})
 
 	// API v1 routes
-	v1 := router.Group("/v1") 
-	
+	v1 := router.Group("/v1")
+
 	// Public endpoints (no auth. Available for guest users too)
 	public := v1.Group("")
 	{
 		public.GET("/round", handleGetRound)
 		public.GET("/stats/round", handleGetRoundStats)
 	}
-	
+
 	// Public endpoints (with JWT auth for authenticated users)
 	public.Use(middleware.JWTMiddleware())
 	{
 		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
 		public.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), handleGetUserStats)
+		public.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), handleGetUpcomingRounds)
 	}
 
 	// Admin endpoints (API key auth)
@@ -77,8 +78,7 @@ func main() {
 		admin.PUT("/round", handleCreateRound)
 		admin.POST("/round", handleScrapeAndCreateRound)
 		admin.DELETE("/round", handleDeleteRound)
-		admin.GET("/upcoming-rounds", handleGetUpcomingRounds)
-	}		
+	}
 
 	// Health check
 	router.GET("/health", handleHealth)
