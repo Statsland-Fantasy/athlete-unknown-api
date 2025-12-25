@@ -783,6 +783,49 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 	c.JSON(http.StatusCreated, round)
 }
 
+// tryGetHigherResImage attempts to get a higher resolution version of the image
+// Sports Reference sites often have larger versions available by modifying the URL
+func tryGetHigherResImage(originalURL string) string {
+	if originalURL == "" {
+		return originalURL
+	}
+
+	// Common patterns to try for higher resolution:
+	// 1. Replace thumbnail indicators like "_thumb" or "_small" with "_full" or remove them
+	// 2. Replace size parameters in URL (e.g., 200x200 -> 600x600)
+
+	// Remove common thumbnail suffixes
+	replacements := []struct {
+		old string
+		new string
+	}{
+		{"_thumb", ""},
+		{"_small", ""},
+		{"-thumb", ""},
+		{"-small", ""},
+		{"thumb_", ""},
+		{"small_", ""},
+		// Try to replace size parameters
+		{"200.jpg", "600.jpg"},
+		{"120.jpg", "600.jpg"},
+		{"150.jpg", "600.jpg"},
+		{"/t/", "/f/"}, // thumbnail to full
+	}
+
+	modifiedURL := originalURL
+	for _, r := range replacements {
+		if strings.Contains(modifiedURL, r.old) {
+			modifiedURL = strings.Replace(modifiedURL, r.old, r.new, -1)
+			// Return first successful modification
+			// In production, you might want to validate the URL exists
+			return modifiedURL
+		}
+	}
+
+	// If no modifications worked, return original
+	return originalURL
+}
+
 // scrapePlayerData scrapes player information from a sports reference page
 func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	player := &Player{
@@ -1171,7 +1214,8 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			src := e.Attr("src")
 			// Only capture actual image URLs, not placeholder icons
 			if src != "" && (strings.Contains(src, ".jpg") || strings.Contains(src, ".png") || strings.Contains(src, ".jpeg")) {
-				player.Photo = src
+				// Try to get higher resolution version by modifying URL
+				player.Photo = tryGetHigherResImage(src)
 			}
 		}
 	})
@@ -1179,14 +1223,16 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	// Alternative photo selector
 	c.OnHTML("img[itemProp='image']", func(e *colly.HTMLElement) {
 		if player.Photo == "" {
-			player.Photo = e.Attr("src")
+			src := e.Attr("src")
+			player.Photo = tryGetHigherResImage(src)
 		}
 	})
 
 	// Another alternative - media-item class
 	c.OnHTML("img.media-item", func(e *colly.HTMLElement) {
 		if player.Photo == "" {
-			player.Photo = e.Attr("src")
+			src := e.Attr("src")
+			player.Photo = tryGetHigherResImage(src)
 		}
 	})
 
