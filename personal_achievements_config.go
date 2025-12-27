@@ -20,7 +20,7 @@ type ProcessedAchievement struct {
 
 // GetAchievementMappings returns all achievement mappings
 func GetAchievementMappings(sport string) []AchievementMapping {
-	if sport == "baseball" {
+	if sport == SportBaseball {
 		return []AchievementMapping{
 			// baseball - more specific matches first
 			{FullName: "ws mvp", Abbreviation: "", Tier: 1},
@@ -42,7 +42,7 @@ func GetAchievementMappings(sport string) []AchievementMapping {
 			{FullName: "clemente", Abbreviation: "", Tier: 4},
 			// exclude: TSN Major League Player of the Year, Wilson Overall Def Player
 		}
-	} else if sport == "basketball" {
+	} else if sport == SportBasketball {
 		return []AchievementMapping{
 			// basketball - more specific matches first
 			{FullName: "finals mvp", Abbreviation: "", Tier: 1},
@@ -66,7 +66,7 @@ func GetAchievementMappings(sport string) []AchievementMapping {
 			{FullName: "stl champ", Abbreviation: "", Tier: 3},
 			{FullName: "blk champ", Abbreviation: "", Tier: 3},
 		}
-	} else if sport == "football" {
+	} else if sport == SportFootball {
 		return []AchievementMapping{
 			// football
 			{FullName: "hall of fame", Abbreviation: "HOF", Tier: 1},

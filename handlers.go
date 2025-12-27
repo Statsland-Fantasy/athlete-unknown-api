@@ -32,7 +32,7 @@ func handleGetRound(c *gin.Context) {
 	}
 
 	// Validate sport
-	if sport != "basketball" && sport != "baseball" && sport != "football" {
+	if !IsValidSport(sport) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":     "Bad Request",
 			"message":   "Invalid sport parameter. Must be basketball, baseball, or football",
@@ -342,7 +342,7 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Get user_id from bearer token (set by JWT middleware)
-	userIdToken, exists := c.Get("userId")
+	userIdToken, exists := c.Get(ConstantUserId)
 	if exists && userIdToken != "" {
 		userId, ok := userIdToken.(string)
 		if ok && userId != "" {
@@ -464,10 +464,10 @@ func handleGetRoundStats(c *gin.Context) {
 
 // handleGetUserStats handles GET /v1/stats/user
 func handleGetUserStats(c *gin.Context) {
-	userId := c.Query("userId")
+	userId := c.Query(ConstantUserId)
 	if userId == "" {
 		// if userId is not part in query param, extract from bearer token instead
-		userIdToken, exists := c.Get("userId")
+		userIdToken, exists := c.Get(ConstantUserId)
 		if exists && userIdToken != "" {
 			userIdStr, ok := userIdToken.(string)
 			if ok && userIdStr != "" {
@@ -538,7 +538,7 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 	}
 
 	// Validate sport
-	if sport != "basketball" && sport != "baseball" && sport != "football" {
+	if !IsValidSport(sport) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":     "Bad Request",
 			"message":   "Invalid sport parameter. Must be basketball, baseball, or football",
@@ -830,7 +830,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			text = strings.ReplaceAll(text, "\n", " ")
 			text = strings.Join(strings.Fields(text), " ")
 			// Remove country code (last 3 characters: space + 2-char code)
-			if sport != "football" && len(text) > 3 {
+			if sport != SportFootball && len(text) > 3 {
 				text = strings.TrimSpace(text[:len(text)-3])
 			}
 			player.Bio = text
@@ -848,7 +848,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 			// Remove newlines and extra spaces
 			text = strings.ReplaceAll(text, "\n", " ")
 			text = strings.ReplaceAll(text, "-", ", ") // football uses - instead of ,
-			if sport == "football" {
+			if sport == SportFootball {
 				text = strings.ReplaceAll(text, "Throws:", " ▪ Throws:") // football has Throws in same line as position. Need extra separator
 			}
 			text = strings.Join(strings.Fields(text), " ")
@@ -1119,7 +1119,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	})
 
 	// Extract career stats based on sport
-	if sport == "baseball" {
+	if sport == SportBaseball {
 		// For baseball, we need to determine if hitter or pitcher
 		c.OnHTML("div#info strong", func(e *colly.HTMLElement) {
 			text := strings.TrimSpace(e.Text)
@@ -1135,7 +1135,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 				player.CareerStats = text
 			}
 		})
-	} else if sport == "basketball" {
+	} else if sport == SportBasketball {
 		// For basketball, look for career stats
 		c.OnHTML("div#info div", func(e *colly.HTMLElement) {
 			text := strings.TrimSpace(e.Text)
@@ -1143,7 +1143,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 				player.CareerStats = text
 			}
 		})
-	} else if sport == "football" {
+	} else if sport == SportFootball {
 		// For football, look for career stats
 		c.OnHTML("div#meta div", func(e *colly.HTMLElement) {
 			text := strings.TrimSpace(e.Text)

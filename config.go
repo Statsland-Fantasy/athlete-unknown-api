@@ -34,11 +34,11 @@ func getEnv(key, defaultValue string) string {
 // GetSportsReferenceHostname returns the hostname for the given sport
 func GetSportsReferenceHostname(sport string) string {
 	switch sport {
-	case "baseball":
+	case SportBaseball:
 		return "baseball-reference.com"
-	case "basketball":
+	case SportBasketball:
 		return "basketball-reference.com"
-	case "football":
+	case SportFootball:
 		return "pro-football-reference.com"
 	default:
 		return ""
@@ -48,11 +48,11 @@ func GetSportsReferenceHostname(sport string) string {
 // GetCurrentSeasonYear returns the current season year for the given sport
 func GetCurrentSeasonYear(sport string) int {
 	switch sport {
-	case "baseball":
+	case SportBaseball:
 		return 2025 // MLB season begins in March/April & ends in October
-	case "basketball":
+	case SportBasketball:
 		return 2025 // NBA season begins in October & ends in June
-	case "football":
+	case SportFootball:
 		return 2025 // NFL season begins in September & ends in February
 	default:
 		return 0

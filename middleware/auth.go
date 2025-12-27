@@ -58,7 +58,7 @@ func JWTMiddleware() gin.HandlerFunc {
 
         tokenString := strings.TrimPrefix(authHeader, "Bearer ")
         if tokenString == authHeader {
-            c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format"})
+            c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format. Token did not start with 'Bearer '"})
             c.Abort()
             return
         }

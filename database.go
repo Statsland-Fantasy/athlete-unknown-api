@@ -210,7 +210,7 @@ func (db *DB) GetUserStats(ctx context.Context, userId string) (*UserStats, erro
 	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(db.userStatsTableName),
 		Key: map[string]types.AttributeValue{
-			"userId": &types.AttributeValueMemberS{Value: userId},
+			ConstantUserId: &types.AttributeValueMemberS{Value: userId},
 		},
 	})
 	if err != nil {

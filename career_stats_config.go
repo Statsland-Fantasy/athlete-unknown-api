@@ -22,7 +22,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 	playerInfo = strings.ToLower(playerInfo)
 
 	switch sport {
-	case "baseball":
+	case SportBaseball:
 		// Check if pitcher or hitter
 		if strings.Contains(playerInfo, "pitcher") {
 			return StatsConfig{
@@ -45,7 +45,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 			},
 		}
 
-	case "basketball":
+	case SportBasketball:
 		return StatsConfig{
 			Stats: []CareerStatsConfig{
 				{HTMLPath: "div.p1 > :nth-of-type(2) > p:last-of-type", StatLabel: "PPG"},
@@ -55,7 +55,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 			},
 		}
 
-	case "football":
+	case SportFootball:
 		if strings.Contains(playerInfo, "qb") || strings.Contains(playerInfo, "quarterback") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{

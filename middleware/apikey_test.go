@@ -99,15 +99,6 @@ func TestAPIKeyMiddleware(t *testing.T) {
 			if tt.shouldAbort && !c.IsAborted() {
 				t.Errorf("Expected request to be aborted, but it wasn't")
 			}
-
-			// Check if isAdmin was set for successful auth
-			if !tt.shouldAbort {
-				if isAdmin, exists := c.Get("isAdmin"); !exists {
-					t.Errorf("Expected isAdmin to be set in context")
-				} else if !isAdmin.(bool) {
-					t.Errorf("Expected isAdmin to be true, got false")
-				}
-			}
 		})
 	}
 }

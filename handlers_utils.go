@@ -47,7 +47,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 		var yearInt int
 
 		// For basketball, handle season format like "2024-25"
-		if sport == "basketball" && strings.Contains(y, "-") {
+		if sport == SportBasketball && strings.Contains(y, "-") {
 			// Extract the first year from the season range (e.g., "2024" from "2024-25")
 			parts := strings.Split(y, "-")
 			if len(parts) > 0 {
@@ -88,7 +88,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 					ranges = append(ranges, "Present")
 				} else {
 					// For basketball single seasons, add 1 to show the ending year
-					if sport == "basketball" {
+					if sport == SportBasketball {
 						ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
 					} else {
 						ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
@@ -97,7 +97,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 			} else {
 				// For basketball, add 1 to the end year to show the actual ending year
 				displayEndYear := rangeEnd
-				if sport == "basketball" {
+				if sport == SportBasketball {
 					displayEndYear = rangeEnd + 1
 				}
 
@@ -118,7 +118,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 			ranges = append(ranges, "Present")
 		} else {
 			// For basketball single seasons, add 1 to show the ending year
-			if sport == "basketball" {
+			if sport == SportBasketball {
 				ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
 			} else {
 				ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
@@ -127,7 +127,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 	} else {
 		// For basketball, add 1 to the end year to show the actual ending year
 		displayEndYear := rangeEnd
-		if sport == "basketball" {
+		if sport == SportBasketball {
 			displayEndYear = rangeEnd + 1
 		}
 
@@ -152,7 +152,7 @@ func formatDraftInformation(draftText, sport, draftSchool string) string {
 		return "Undrafted"
 	}
 
-	if sport == "baseball" {
+	if sport == SportBaseball {
 		// Baseball-specific pattern with multiple variations:
 		// 1. "Xth round (Yth) of the YYYY MLB ... Draft from [School] (City, State)" - with pick number
 		// 2. "Xth round of the YYYY MLB ... Draft from [School] (City, State)" - without pick number
