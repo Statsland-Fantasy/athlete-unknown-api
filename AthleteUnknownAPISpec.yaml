@@ -1108,6 +1108,7 @@ components:
         - score
         - isCorrect
         - tilesFlipped
+        - incorrectGuesses
       properties:
         score:
           type: integer
@@ -1138,6 +1139,10 @@ components:
               "tile8",
               "tile9",
             ]
+        score:
+          type: integer
+          description: The score achieved in the game
+          example: 2
 
     TileFlipTracker:
       type: object
@@ -1281,21 +1286,77 @@ components:
               description: The sport for this round
               example: "basketball"
 
-    SportStats:
-      allOf:
-        - $ref: "#/components/schemas/Stats"
-        - type: object
-          required:
-            - sport
-          properties:
-            sport:
-              type: string
-              enum:
-                - basketball
-                - baseball
-                - football
-              description: The sport for these statistics
-              example: "basketball"
+    RoundHistory:
+      type: object
+      required:
+        - playDate
+        - score
+        - isCorrect
+        - tilesFlipped
+        - incorrectGuesses
+      properties:
+        playDate:
+          type: string
+          format: date
+          description: The date when this round was played (format YYYY-MM-DD)
+          example: "2025-11-15"
+        score:
+          type: integer
+          description: The score achieved in the round
+          minimum: 0
+          maximum: 100
+          example: 9
+        isCorrect:
+          type: boolean
+          description: Whether the player answered correctly
+          example: true
+        tilesFlipped:
+          type: array
+          items:
+            type: string
+          minItems: 0
+          maxItems: 9
+          description: Array of tile identifiers that were flipped during the game
+          example:
+            [
+              "tile1",
+              "tile2",
+              "tile3",
+              "tile4",
+              "tile5",
+              "tile6",
+              "tile7",
+              "tile8",
+              "tile9",
+            ]
+        incorrectGuesses:
+          type: integer
+          description: Number of incorrect guesses made during the round
+          minimum: 0
+          example: 2
+
+    UserSportStats:
+      type: object
+      required:
+        - sport
+        - stats
+      properties:
+        sport:
+          type: string
+          enum:
+            - basketball
+            - baseball
+            - football
+          description: The sport for these statistics
+          example: "basketball"
+        stats:
+          $ref: "#/components/schemas/Stats"
+          description: Aggregated statistics for this sport
+        history:
+          type: array
+          description: Historical record of rounds played for this sport
+          items:
+            $ref: "#/components/schemas/RoundHistory"
 
     UserStats:
       type: object
@@ -1304,6 +1365,7 @@ components:
         - userName
         - userCreated
         - currentDailyStreak
+        - lastDayPlayed
         - sports
       properties:
         userId:
@@ -1319,30 +1381,74 @@ components:
           format: date-time
           description: Timestamp when the user account was created
           example: "2025-10-01T08:00:00Z"
+        lastDayPlayed:
+          type: string
+          description: Used to calculate daily streak
+          example: "2025-12-25"
         sports:
           type: array
           description: Array of sport-specific statistics for the user
           items:
-            $ref: "#/components/schemas/SportStats"
+            $ref: "#/components/schemas/UserSportStats"
           example:
             - sport: "basketball"
-              totalPlays: 450
-              percentageCorrect: 72.5
-              highestScore: 9
-              averageCorrectScore: 8.2
-              mostCommonFirstTileFlipped: "playerInformation"
-              mostCommonLastTileFlipped: "photo"
-              mostCommonTileFlipped: "careerStats"
-              leastCommonTileFlipped: "bio"
-            - sport: "baseball"
-              totalPlays: 230
-              percentageCorrect: 68.0
-              highestScore: 9
-              averageCorrectScore: 7.9
-              mostCommonFirstTileFlipped: "teamsPlayedOn"
-              mostCommonLastTileFlipped: "photo"
-              mostCommonTileFlipped: "jerseyNumbers"
-              leastCommonTileFlipped: "draftInformation"
+              stats:
+                totalPlays: 450
+                percentageCorrect: 72.5
+                highestScore: 9
+                averageCorrectScore: 8.2
+                averageNumberOfTileFlips: 5.1
+                mostCommonFirstTileFlipped: "playerInformation"
+                mostCommonLastTileFlipped: "photo"
+                mostCommonTileFlipped: "careerStats"
+                leastCommonTileFlipped: "bio"
+                firstTileFlippedTracker:
+                  bio: 45
+                  playerInformation: 203
+                  draftInformation: 38
+                  teamsPlayedOn: 67
+                  jerseyNumbers: 21
+                  careerStats: 31
+                  personalAchievements: 28
+                  photo: 12
+                  yearsActive: 5
+                lastTileFlippedTracker:
+                  bio: 23
+                  playerInformation: 12
+                  draftInformation: 31
+                  teamsPlayedOn: 45
+                  jerseyNumbers: 67
+                  careerStats: 89
+                  personalAchievements: 76
+                  photo: 98
+                  yearsActive: 9
+                mostTileFlippedTracker:
+                  bio: 145
+                  playerInformation: 203
+                  draftInformation: 98
+                  teamsPlayedOn: 312
+                  jerseyNumbers: 167
+                  careerStats: 421
+                  personalAchievements: 289
+                  photo: 134
+                  yearsActive: 156
+              history:
+                - playDate: "2025-11-15"
+                  score: 9
+                  isCorrect: true
+                  tilesFlipped:
+                    [
+                      "tile1",
+                      "tile2",
+                      "tile3",
+                      "tile4",
+                      "tile5",
+                      "tile6",
+                      "tile7",
+                      "tile8",
+                      "tile9",
+                    ]
+                  incorrectGuesses: 0
 
     Error:
       type: object

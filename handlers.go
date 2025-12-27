@@ -342,12 +342,12 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Get user_id from bearer token (set by JWT middleware)
-	userId, exists := c.Get("userId")
-	if exists && userId != "" {
-		userIdStr, ok := userId.(string)
-		if ok && userIdStr != "" {
+	userIdToken, exists := c.Get("userId")
+	if exists && userIdToken != "" {
+		userId, ok := userIdToken.(string)
+		if ok && userId != "" {
 			// Fetch existing user stats or create new ones
-			userStats, err := db.GetUserStats(ctx, userIdStr)
+			userStats, err := db.GetUserStats(ctx, userId)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error":     "Internal Server Error",
@@ -361,8 +361,8 @@ func handleSubmitResults(c *gin.Context) {
 			// If user stats don't exist, create new user stats
 			if userStats == nil {
 				userStats = &UserStats{
-					UserId:  userIdStr,
-					Sports:  []SportStats{},
+					UserId:  userId,
+					Sports:  []UserSportStats{},
 					CurrentDailyStreak: 1,
 					LastDayPlayed: playDate,
 					UserName: "", // TODO: update with user's username as fetched from Auth0
@@ -373,7 +373,7 @@ func handleSubmitResults(c *gin.Context) {
 			}
 
 			// Find or create specific sport stats
-			var sportStats *SportStats
+			var sportStats *UserSportStats
 			for i := range userStats.Sports {
 				if userStats.Sports[i].Sport == sport {
 					sportStats = &userStats.Sports[i]
@@ -383,7 +383,7 @@ func handleSubmitResults(c *gin.Context) {
 
 			// If sport stats don't exist, create new entry
 			if sportStats == nil {
-				newSportStats := SportStats{
+				newSportStats := UserSportStats{
 					Sport: sport,
 				}
 				userStats.Sports = append(userStats.Sports, newSportStats)
@@ -392,6 +392,13 @@ func handleSubmitResults(c *gin.Context) {
 
 			// Update sport-specific stats
 			updateStatsWithResult(&sportStats.Stats, &result)
+
+			// Create round history entry
+			roundHistory := RoundHistory{
+				PlayDate: playDate,
+				Result:   result,
+			}
+			sportStats.History = append(sportStats.History, roundHistory)
 
 			// Save or update user stats in DynamoDB
 			if userStats.UserCreated.IsZero() {
