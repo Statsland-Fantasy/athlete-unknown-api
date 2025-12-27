@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-5](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/5)
+
+### Added
+
+- User History field to user stats model
+- Subsequent updates to input payload and userId extraction from token
+
 ## [PR-4](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/4)
 
 ### Added
