@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -76,4 +77,37 @@ func GenerateRoundID(sport string, playDate string) (string, error) {
 	// Generate the round ID
 	roundID := fmt.Sprintf("%s%d", sport, daysSince)
 	return roundID, nil
+}
+
+// GetAllowedCORSOrigins returns the list of allowed CORS origins from environment or defaults
+func GetAllowedCORSOrigins() []string {
+	// Get from environment variable (comma-separated list)
+	originsEnv := os.Getenv("ALLOWED_ORIGINS")
+	if originsEnv != "" {
+		origins := strings.Split(originsEnv, ",")
+		// Trim whitespace from each origin
+		for i, origin := range origins {
+			origins[i] = strings.TrimSpace(origin)
+		}
+		return origins
+	}
+
+	// Default origins for development
+	// In production, ALLOWED_ORIGINS environment variable should be set
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "release" {
+		// In production with no ALLOWED_ORIGINS set, return empty slice
+		// This will effectively block all CORS requests, which is safer than wildcard
+		return []string{}
+	}
+
+	// Development defaults
+	return []string{
+		"http://localhost:3000",     // React default
+		"http://localhost:5173",     // Vite default
+		"http://localhost:4200",     // Angular default
+		"http://localhost:8080",     // Various frameworks
+		"http://127.0.0.1:3000",     // Localhost IP variant
+		"http://127.0.0.1:5173",     // Localhost IP variant
+	}
 }
