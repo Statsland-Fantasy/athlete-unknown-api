@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"sort"
 	"time"
@@ -48,8 +47,7 @@ func (s *Server) GetRound(c *gin.Context) {
 		playDate = time.Now().Format(DateFormatYYYYMMDD)
 	}
 
-	ctx := context.Background()
-	round, err := s.db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(c.Request.Context(), sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -137,8 +135,7 @@ func (s *Server) CreateRound(c *gin.Context) {
 	}
 	round.RoundID = roundID
 
-	ctx := context.Background()
-	err = s.db.CreateRound(ctx, &round)
+	err = s.db.CreateRound(c.Request.Context(), &round)
 	if err != nil {
 		if err.Error() == "round already exists" {
 			c.JSON(http.StatusConflict, gin.H{
@@ -185,10 +182,8 @@ func (s *Server) DeleteRound(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-
 	// Check if the round exists first
-	round, err := s.db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(c.Request.Context(), sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -208,7 +203,7 @@ func (s *Server) DeleteRound(c *gin.Context) {
 		return
 	}
 
-	err = s.db.DeleteRound(ctx, sport, playDate)
+	err = s.db.DeleteRound(c.Request.Context(), sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -238,8 +233,7 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 	startDate := c.Query(QueryParamStartDate)
 	endDate := c.Query(QueryParamEndDate)
 
-	ctx := context.Background()
-	upcomingRounds, err := s.db.GetRoundsBySport(ctx, sport, startDate, endDate)
+	upcomingRounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -305,9 +299,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-
-	round, err := s.db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(c.Request.Context(), sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -331,7 +323,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	updateStatsWithResult(&round.Stats.Stats, &result)
 
 	// Save the updated round
-	err = s.db.UpdateRound(ctx, round)
+	err = s.db.UpdateRound(c.Request.Context(), round)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -348,7 +340,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		userId, ok := userIdToken.(string)
 		if ok && userId != "" {
 			// Fetch existing user stats or create new ones
-			userStats, err := s.db.GetUserStats(ctx, userId)
+			userStats, err := s.db.GetUserStats(c.Request.Context(), userId)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					JSONFieldError:     StatusInternalServerError,
@@ -403,9 +395,9 @@ func (s *Server) SubmitResults(c *gin.Context) {
 
 			// Save or update user stats in DynamoDB
 			if userStats.UserCreated.IsZero() {
-				err = s.db.CreateUserStats(ctx, userStats)
+				err = s.db.CreateUserStats(c.Request.Context(), userStats)
 			} else {
-				err = s.db.UpdateUserStats(ctx, userStats)
+				err = s.db.UpdateUserStats(c.Request.Context(), userStats)
 			}
 
 			if err != nil {
@@ -438,8 +430,7 @@ func (s *Server) GetRoundStats(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-	round, err := s.db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(c.Request.Context(), sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -487,8 +478,7 @@ func (s *Server) GetUserStats(c *gin.Context) {
 		}
 	}
 
-	ctx := context.Background()
-	stats, err := s.db.GetUserStats(ctx, userId)
+	stats, err := s.db.GetUserStats(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
