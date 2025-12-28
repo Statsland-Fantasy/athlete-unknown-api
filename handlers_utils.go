@@ -107,7 +107,7 @@ func isValidYear(year string) bool {
 	}
 	invalidValues := []string{"Season", "Career", "Yr", "Avg", "Average"}
 	for _, invalid := range invalidValues {
-		if year == invalid || strings.Contains(year, invalid) {
+		if strings.EqualFold(year, invalid) || strings.Contains(strings.ToLower(year), strings.ToLower(invalid)) {
 			return false
 		}
 	}
@@ -443,17 +443,6 @@ func abbreviatePositions(playerInfo string) string {
 		full  string
 		abbrev string
 	}{
-		// Basketball positions (ordered by length, longest first)
-		{"Shooting Guard", "SG"},
-		{"Point Guard", "PG"},
-		{"Small Forward", "SF"},
-		{"Power Forward", "PF"},
-		{"Forward", "F"},
-		{"Center", "C"},
-		{"Guard", "G"},
-
-		// Football positions
-		// Already abbreviated
 
 		// Baseball positions
 		{"Designated Hitter", "DH"},
@@ -468,6 +457,17 @@ func abbreviatePositions(playerInfo string) string {
 		{"Catcher", "C"},
 		{"Pitcher", "P"},
 		
+		// Basketball positions (ordered by length, longest first)
+		{"Shooting Guard", "SG"},
+		{"Point Guard", "PG"},
+		{"Small Forward", "SF"},
+		{"Power Forward", "PF"},
+		{"Forward", "F"},
+		{"Center", "C"},
+		{"Guard", "G"},
+
+		// Football positions
+		// Already abbreviated
 	}
 
 	result := playerInfo
@@ -477,6 +477,7 @@ func abbreviatePositions(playerInfo string) string {
 		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
 	}	
 
+	result = strings.ReplaceAll(result, ", and ", ", ") // no "ands", all comma separated
 	result = strings.ReplaceAll(result, " and ", ", ") // no "ands", all comma separated
 
 	return result
