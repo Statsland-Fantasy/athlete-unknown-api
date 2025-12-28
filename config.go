@@ -66,7 +66,7 @@ var FIRST_ROUND_DATE = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 // GenerateRoundID generates a round ID by concatenating the sport and the number of days since FIRST_ROUND_DATE
 func GenerateRoundID(sport string, playDate string) (string, error) {
 	// Parse the playDate
-	date, err := time.Parse("2006-01-02", playDate)
+	date, err := time.Parse(DateFormatYYYYMMDD, playDate)
 	if err != nil {
 		return "", fmt.Errorf("invalid playDate format: %w", err)
 	}

@@ -84,6 +84,61 @@ var AllowedScrapingDomains = []string{
 	"www.pro-football-reference.com",
 }
 
+// HTTP Status reason phrases
+const (
+	StatusBadRequest          = "Bad Request"
+	StatusInternalServerError = "Internal Server Error"
+	StatusNotFound            = "Not Found"
+	StatusConflict            = "Conflict"
+)
+
+// Error codes
+const (
+	ErrorMissingRequiredParameter = "MISSING_REQUIRED_PARAMETER"
+	ErrorInvalidParameter         = "INVALID_PARAMETER"
+	ErrorDatabaseError            = "DATABASE_ERROR"
+	ErrorRoundNotFound            = "ROUND_NOT_FOUND"
+	ErrorInvalidRequestBody       = "INVALID_REQUEST_BODY"
+	ErrorMissingRequiredField     = "MISSING_REQUIRED_FIELD"
+	ErrorInvalidPlayDate          = "INVALID_PLAY_DATE"
+	ErrorRoundAlreadyExists       = "ROUND_ALREADY_EXISTS"
+	ErrorNoUpcomingRounds         = "NO_UPCOMING_ROUNDS"
+	ErrorStatsNotFound            = "STATS_NOT_FOUND"
+	ErrorUserStatsNotFound        = "USER_STATS_NOT_FOUND"
+	ErrorConfigurationError       = "CONFIGURATION_ERROR"
+	ErrorInvalidURL               = "INVALID_URL"
+	ErrorScrapingError            = "SCRAPING_ERROR"
+	ErrorNoPlayersFound           = "NO_PLAYERS_FOUND"
+	ErrorMultiplePlayersFound     = "MULTIPLE_PLAYERS_FOUND"
+	ErrorInvalidSearchResultURL   = "INVALID_SEARCH_RESULT_URL"
+)
+
+// Date format constants
+const (
+	DateFormatYYYYMMDD = "2006-01-02"
+)
+
+// Query parameter names
+const (
+	QueryParamSport              = "sport"
+	QueryParamPlayDate           = "playDate"
+	QueryParamStartDate          = "startDate"
+	QueryParamEndDate            = "endDate"
+	QueryParamUserId             = "userId"
+	QueryParamName               = "name"
+	QueryParamSportsReferenceURL = "sportsReferenceURL"
+	QueryParamTheme              = "theme"
+)
+
+// JSON response field names
+const (
+	JSONFieldError     = "error"
+	JSONFieldMessage   = "message"
+	JSONFieldCode      = "code"
+	JSONFieldTimestamp = "timestamp"
+	JSONFieldDetails   = "details"
+)
+
 // IsValidSport checks if a sport is valid
 func IsValidSport(sport string) bool {
 	switch sport {

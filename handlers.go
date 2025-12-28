@@ -27,13 +27,13 @@ func NewServer(db *DB) *Server {
 
 // GetRound handles GET /v1/round
 func (s *Server) GetRound(c *gin.Context) {
-	sport := c.Query("sport")
+	sport := c.Query(QueryParamSport)
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Sport parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Sport parameter is required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -41,37 +41,37 @@ func (s *Server) GetRound(c *gin.Context) {
 	// Validate sport
 	if !IsValidSport(sport) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid sport parameter. Must be basketball, baseball, or football",
-			"code":      "INVALID_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid sport parameter. Must be basketball, baseball, or football",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	playDate := c.Query("playDate")
+	playDate := c.Query(QueryParamPlayDate)
 	if playDate == "" {
-		playDate = time.Now().Format("2006-01-02")
+		playDate = time.Now().Format(DateFormatYYYYMMDD)
 	}
 
 	ctx := context.Background()
 	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to retrieve round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to retrieve round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	if round == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "No round found for the specified sport and playDate",
-			"code":      "ROUND_NOT_FOUND",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "No round found for the specified sport and playDate",
+			JSONFieldCode:      ErrorRoundNotFound,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -84,10 +84,10 @@ func (s *Server) CreateRound(c *gin.Context) {
 	var round Round
 	if err := c.ShouldBindJSON(&round); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid request body: " + err.Error(),
-			"code":      "INVALID_REQUEST_BODY",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidRequestBody,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -95,28 +95,28 @@ func (s *Server) CreateRound(c *gin.Context) {
 	// Validate required fields
 	if round.Sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Missing required field: sport",
-			"code":      "MISSING_REQUIRED_FIELD",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required field: sport",
+			JSONFieldCode:      ErrorMissingRequiredField,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 	if round.PlayDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Missing required field: playDate",
-			"code":      "MISSING_REQUIRED_FIELD",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required field: playDate",
+			JSONFieldCode:      ErrorMissingRequiredField,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 	if round.Player.Name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Missing required field: player.name",
-			"code":      "MISSING_REQUIRED_FIELD",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required field: player.name",
+			JSONFieldCode:      ErrorMissingRequiredField,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -134,10 +134,10 @@ func (s *Server) CreateRound(c *gin.Context) {
 	roundID, err := GenerateRoundID(round.Sport, round.PlayDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid playDate format: " + err.Error(),
-			"code":      "INVALID_PLAY_DATE",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid playDate format: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidPlayDate,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -148,18 +148,18 @@ func (s *Server) CreateRound(c *gin.Context) {
 	if err != nil {
 		if err.Error() == "round already exists" {
 			c.JSON(http.StatusConflict, gin.H{
-				"error":     "Conflict",
-				"message":   "Round already exists for sport '" + round.Sport + "' on playDate '" + round.PlayDate + "'",
-				"code":      "ROUND_ALREADY_EXISTS",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusConflict,
+				JSONFieldMessage:   "Round already exists for sport '" + round.Sport + "' on playDate '" + round.PlayDate + "'",
+				JSONFieldCode:      ErrorRoundAlreadyExists,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to create round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to create round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -169,24 +169,24 @@ func (s *Server) CreateRound(c *gin.Context) {
 
 // DeleteRound handles DELETE /v1/round
 func (s *Server) DeleteRound(c *gin.Context) {
-	sport := c.Query("sport")
+	sport := c.Query(QueryParamSport)
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Missing required parameter: sport",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required parameter: sport",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	playDate := c.Query("playDate")
+	playDate := c.Query(QueryParamPlayDate)
 	if playDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Missing required parameter: playDate",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required parameter: playDate",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -197,19 +197,19 @@ func (s *Server) DeleteRound(c *gin.Context) {
 	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to check round existence: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to check round existence: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 	if round == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "Round not found for sport '" + sport + "' on playDate '" + playDate + "'",
-			"code":      "ROUND_NOT_FOUND",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "Round not found for sport '" + sport + "' on playDate '" + playDate + "'",
+			JSONFieldCode:      ErrorRoundNotFound,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -217,10 +217,10 @@ func (s *Server) DeleteRound(c *gin.Context) {
 	err = s.db.DeleteRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to delete round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to delete round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -230,38 +230,38 @@ func (s *Server) DeleteRound(c *gin.Context) {
 
 // GetUpcomingRounds handles GET /v1/upcoming-rounds
 func (s *Server) GetUpcomingRounds(c *gin.Context) {
-	sport := c.Query("sport")
+	sport := c.Query(QueryParamSport)
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Sport parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Sport parameter is required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	startDate := c.Query("startDate")
-	endDate := c.Query("endDate")
+	startDate := c.Query(QueryParamStartDate)
+	endDate := c.Query(QueryParamEndDate)
 
 	ctx := context.Background()
 	upcomingRounds, err := s.db.GetRoundsBySport(ctx, sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to retrieve rounds: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to retrieve rounds: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	if len(upcomingRounds) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "No upcoming rounds found for sport '" + sport + "' in the specified date range",
-			"code":      "NO_UPCOMING_ROUNDS",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "No upcoming rounds found for sport '" + sport + "' in the specified date range",
+			JSONFieldCode:      ErrorNoUpcomingRounds,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -276,15 +276,15 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 
 // SubmitResults handles POST /v1/results
 func (s *Server) SubmitResults(c *gin.Context) {
-	sport := c.Query("sport")
-	playDate := c.Query("playDate")
+	sport := c.Query(QueryParamSport)
+	playDate := c.Query(QueryParamPlayDate)
 
 	if sport == "" || playDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Sport and playDate parameters are required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Sport and playDate parameters are required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -292,10 +292,10 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	var result Result
 	if err := c.ShouldBindJSON(&result); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid request body: " + err.Error(),
-			"code":      "INVALID_REQUEST_BODY",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidRequestBody,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -303,12 +303,12 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	// potential hack catcher. Score cannot be higher than 100
 	if result.Score > 100 || result.Score < 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid request body: Score cannot be greater than 100 or less than 0",
-			"code":      "INVALID_REQUEST_BODY",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: Score cannot be greater than 100 or less than 0",
+			JSONFieldCode:      ErrorInvalidRequestBody,
+			JSONFieldTimestamp: time.Now(),
 		})
-		return		
+		return
 	}
 
 	ctx := context.Background()
@@ -316,19 +316,19 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to retrieve round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to retrieve round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 	if round == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "Round not found for sport '" + sport + "' on date '" + playDate + "'",
-			"code":      "ROUND_NOT_FOUND",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "Round not found for sport '" + sport + "' on date '" + playDate + "'",
+			JSONFieldCode:      ErrorRoundNotFound,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -340,16 +340,16 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	err = s.db.UpdateRound(ctx, round)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to update round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to update round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	// Get user_id from bearer token (set by JWT middleware)
-	userIdToken, exists := c.Get("userId")
+	userIdToken, exists := c.Get(ConstantUserId)
 	if exists && userIdToken != "" {
 		userId, ok := userIdToken.(string)
 		if ok && userId != "" {
@@ -357,10 +357,10 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			userStats, err := s.db.GetUserStats(ctx, userId)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":     "Internal Server Error",
-					"message":   "Failed to retrieve user stats: " + err.Error(),
-					"code":      "DATABASE_ERROR",
-					"timestamp": time.Now(),
+					JSONFieldError:     StatusInternalServerError,
+					JSONFieldMessage:   "Failed to retrieve user stats: " + err.Error(),
+					JSONFieldCode:      ErrorDatabaseError,
+					JSONFieldTimestamp: time.Now(),
 				})
 				return
 			}
@@ -416,10 +416,10 @@ func (s *Server) SubmitResults(c *gin.Context) {
 
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":     "Internal Server Error",
-					"message":   "Failed to update user stats: " + err.Error(),
-					"code":      "DATABASE_ERROR",
-					"timestamp": time.Now(),
+					JSONFieldError:     StatusInternalServerError,
+					JSONFieldMessage:   "Failed to update user stats: " + err.Error(),
+					JSONFieldCode:      ErrorDatabaseError,
+					JSONFieldTimestamp: time.Now(),
 				})
 				return
 			}
@@ -431,15 +431,15 @@ func (s *Server) SubmitResults(c *gin.Context) {
 
 // GetRoundStats handles GET /v1/stats/round
 func (s *Server) GetRoundStats(c *gin.Context) {
-	sport := c.Query("sport")
-	playDate := c.Query("playDate")
+	sport := c.Query(QueryParamSport)
+	playDate := c.Query(QueryParamPlayDate)
 
 	if sport == "" || playDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Sport and playDate parameters are required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Sport and playDate parameters are required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -448,20 +448,20 @@ func (s *Server) GetRoundStats(c *gin.Context) {
 	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to retrieve round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to retrieve round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	if round == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "No statistics found for sport '" + sport + "' on date '" + playDate + "'",
-			"code":      "STATS_NOT_FOUND",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "No statistics found for sport '" + sport + "' on date '" + playDate + "'",
+			JSONFieldCode:      ErrorStatsNotFound,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -471,10 +471,10 @@ func (s *Server) GetRoundStats(c *gin.Context) {
 
 // GetUserStats handles GET /v1/stats/user
 func (s *Server) GetUserStats(c *gin.Context) {
-	userId := c.Query("userId")
+	userId := c.Query(QueryParamUserId)
 	if userId == "" {
 		// if userId is not part in query param, extract from bearer token instead
-		userIdToken, exists := c.Get("userId")
+		userIdToken, exists := c.Get(ConstantUserId)
 		if exists && userIdToken != "" {
 			userIdStr, ok := userIdToken.(string)
 			if ok && userIdStr != "" {
@@ -484,10 +484,10 @@ func (s *Server) GetUserStats(c *gin.Context) {
 
 		if userId == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":     "Bad Request",
-				"message":   "userId parameter is required",
-				"code":      "MISSING_REQUIRED_PARAMETER",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusBadRequest,
+				JSONFieldMessage:   "userId parameter is required",
+				JSONFieldCode:      ErrorMissingRequiredParameter,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -497,20 +497,20 @@ func (s *Server) GetUserStats(c *gin.Context) {
 	stats, err := s.db.GetUserStats(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to retrieve user stats: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to retrieve user stats: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	if stats == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error":     "Not Found",
-			"message":   "No statistics found for user '" + userId + "'",
-			"code":      "USER_STATS_NOT_FOUND",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusNotFound,
+			JSONFieldMessage:   "No statistics found for user '" + userId + "'",
+			JSONFieldCode:      ErrorUserStatsNotFound,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -521,25 +521,25 @@ func (s *Server) GetUserStats(c *gin.Context) {
 // ScrapeAndCreateRound handles POST /v1/round - scrapes player data and creates a round
 func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Get required parameters
-	sport := c.Query("sport")
-	playDate := c.Query("playDate")
+	sport := c.Query(QueryParamSport)
+	playDate := c.Query(QueryParamPlayDate)
 
 	// Validate required parameters
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Sport parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Sport parameter is required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 	if playDate == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "playDate parameter is required",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "playDate parameter is required",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -547,26 +547,26 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Validate sport
 	if !IsValidSport(sport) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid sport parameter. Must be basketball, baseball, or football",
-			"code":      "INVALID_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid sport parameter. Must be basketball, baseball, or football",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
 	// Get optional parameters
-	name := c.Query("name")
-	sportsReferenceURL := c.Query("sportsReferenceURL")
-	theme := c.Query("theme")
+	name := c.Query(QueryParamName)
+	sportsReferenceURL := c.Query(QueryParamSportsReferenceURL)
+	theme := c.Query(QueryParamTheme)
 
 	// Validate that at least one optional parameter is provided
 	if name == "" && sportsReferenceURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Either 'name' or 'sportsReferenceURL' parameter must be provided",
-			"code":      "MISSING_REQUIRED_PARAMETER",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Either 'name' or 'sportsReferenceURL' parameter must be provided",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -575,10 +575,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	hostname := GetSportsReferenceHostname(sport)
 	if hostname == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Unable to determine hostname for sport: " + sport,
-			"code":      "CONFIGURATION_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Unable to determine hostname for sport: " + sport,
+			JSONFieldCode:      ErrorConfigurationError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -588,10 +588,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 		// Validate the URL before scraping
 		if err := ValidateSportsReferenceURL(sportsReferenceURL); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":     "Bad Request",
-				"message":   "Invalid sportsReferenceURL: " + err.Error(),
-				"code":      "INVALID_URL",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusBadRequest,
+				JSONFieldMessage:   "Invalid sportsReferenceURL: " + err.Error(),
+				JSONFieldCode:      ErrorInvalidURL,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -604,10 +604,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 		player, err := scrapePlayerData(playerURL, hostname, sport)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":     "Internal Server Error",
-				"message":   "Failed to scrape player data: " + err.Error(),
-				"code":      "SCRAPING_ERROR",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusInternalServerError,
+				JSONFieldMessage:   "Failed to scrape player data: " + err.Error(),
+				JSONFieldCode:      ErrorScrapingError,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -617,10 +617,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 		roundID, err := GenerateRoundID(sport, playDate)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":     "Bad Request",
-				"message":   "Invalid playDate format: " + err.Error(),
-				"code":      "INVALID_PLAY_DATE",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusBadRequest,
+				JSONFieldMessage:   "Invalid playDate format: " + err.Error(),
+				JSONFieldCode:      ErrorInvalidPlayDate,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -644,10 +644,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 		err = s.db.CreateRound(c.Request.Context(), &round)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":     "Internal Server Error",
-				"message":   "Failed to create round: " + err.Error(),
-				"code":      "DATABASE_ERROR",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusInternalServerError,
+				JSONFieldMessage:   "Failed to create round: " + err.Error(),
+				JSONFieldCode:      ErrorDatabaseError,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -705,10 +705,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	err := collector.Visit(searchURL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to initiate scraping: " + err.Error(),
-			"code":      "SCRAPING_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to initiate scraping: " + err.Error(),
+			JSONFieldCode:      ErrorScrapingError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -716,10 +716,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Check if there was a scraping error
 	if scrapeError != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to scrape player data: " + scrapeError.Error(),
-			"code":      "SCRAPING_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to scrape player data: " + scrapeError.Error(),
+			JSONFieldCode:      ErrorScrapingError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -733,18 +733,18 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 			// fmt.Printf("Found single player result, using URL: %s\n", finalURL)
 		} else if len(playerSearchItems) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":     "Bad Request",
-				"message":   "No players found with the name '" + name + "'. Please check the player name and sport again.",
-				"code":      "NO_PLAYERS_FOUND",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusBadRequest,
+				JSONFieldMessage:   "No players found with the name '" + name + "'. Please check the player name and sport again.",
+				JSONFieldCode:      ErrorNoPlayersFound,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":     "Bad Request",
-				"message":   "Multiple players found with the name '" + name + "'. Please provide the sportsReferenceURL parameter to specify the exact player.",
-				"code":      "MULTIPLE_PLAYERS_FOUND",
-				"timestamp": time.Now(),
+				JSONFieldError:     StatusBadRequest,
+				JSONFieldMessage:   "Multiple players found with the name '" + name + "'. Please provide the sportsReferenceURL parameter to specify the exact player.",
+				JSONFieldCode:      ErrorMultiplePlayersFound,
+				JSONFieldTimestamp: time.Now(),
 			})
 			return
 		}
@@ -756,10 +756,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Validate the URL before scraping (finalURL comes from redirect/search results)
 	if err := ValidateSportsReferenceURL(finalURL); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Invalid player URL from search results: " + err.Error(),
-			"code":      "INVALID_SEARCH_RESULT_URL",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Invalid player URL from search results: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidSearchResultURL,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -768,10 +768,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	player, err := scrapePlayerData(finalURL, hostname, sport)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to scrape player data: " + err.Error(),
-			"code":      "SCRAPING_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to scrape player data: " + err.Error(),
+			JSONFieldCode:      ErrorScrapingError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -781,10 +781,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	roundID, err := GenerateRoundID(sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":     "Bad Request",
-			"message":   "Invalid playDate format: " + err.Error(),
-			"code":      "INVALID_PLAY_DATE",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid playDate format: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidPlayDate,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
@@ -808,10 +808,10 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	err = s.db.CreateRound(c.Request.Context(), &round)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":     "Internal Server Error",
-			"message":   "Failed to create round: " + err.Error(),
-			"code":      "DATABASE_ERROR",
-			"timestamp": time.Now(),
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to create round: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
