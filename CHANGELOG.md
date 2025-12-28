@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-8](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/8)
+
+### Changed
+
+- Fixed lots of poor AI generated scraping logic
+- DB dependency injection into handler
+- Secured and validated web scraping URLs
+- Refactored large handlers.go file to be more readable and organized
+
 ## [PR-5](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/5)
 
 ### Added
