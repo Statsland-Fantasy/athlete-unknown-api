@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"regexp"
 	"sort"
 	"strings"
@@ -15,6 +17,86 @@ func contains(slice []string, item string) bool {
 			return true
 		}
 	}
+	return false
+}
+
+// ValidateSportsReferenceURL validates that a URL is safe to scrape
+// Returns an error if the URL is invalid or not whitelisted
+func ValidateSportsReferenceURL(urlStr string) error {
+	// Parse the URL
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return fmt.Errorf("invalid URL format: %w", err)
+	}
+
+	// Ensure URL has a scheme (http or https)
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("URL must use http or https protocol, got: %s", parsedURL.Scheme)
+	}
+
+	// Ensure URL has a host
+	if parsedURL.Host == "" {
+		return fmt.Errorf("URL must have a hostname")
+	}
+
+	// Extract hostname (without port)
+	hostname := parsedURL.Hostname()
+
+	// Check if hostname is in the whitelist
+	isAllowed := false
+	for _, allowedDomain := range AllowedScrapingDomains {
+		if hostname == allowedDomain {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return fmt.Errorf("URL hostname '%s' is not in the allowed whitelist. Allowed domains: %v", hostname, AllowedScrapingDomains)
+	}
+
+	// Prevent SSRF by ensuring the hostname doesn't resolve to a private IP
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		return fmt.Errorf("failed to resolve hostname: %w", err)
+	}
+
+	for _, ip := range ips {
+		if isPrivateIP(ip) {
+			return fmt.Errorf("URL resolves to a private IP address: %s", ip.String())
+		}
+	}
+
+	return nil
+}
+
+// isPrivateIP checks if an IP address is private/internal
+func isPrivateIP(ip net.IP) bool {
+	// Check for loopback
+	if ip.IsLoopback() {
+		return true
+	}
+
+	// Check for private networks
+	privateNetworks := []string{
+		"10.0.0.0/8",
+		"172.16.0.0/12",
+		"192.168.0.0/16",
+		"169.254.0.0/16", // Link-local
+		"fc00::/7",       // IPv6 unique local
+		"fe80::/10",      // IPv6 link-local
+	}
+
+	for _, cidr := range privateNetworks {
+		_, network, err := net.ParseCIDR(cidr)
+		if err != nil {
+			continue
+		}
+		if network.Contains(ip) {
+			return true
+		}
+	}
+
 	return false
 }
 

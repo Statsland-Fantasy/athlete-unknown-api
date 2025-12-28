@@ -585,6 +585,17 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 
 	// If sportsReferenceURL is provided, go directly to the player page
 	if sportsReferenceURL != "" {
+		// Validate the URL before scraping
+		if err := ValidateSportsReferenceURL(sportsReferenceURL); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":     "Bad Request",
+				"message":   "Invalid sportsReferenceURL: " + err.Error(),
+				"code":      "INVALID_URL",
+				"timestamp": time.Now(),
+			})
+			return
+		}
+
 		// Use the URL directly (it should be a full URL)
 		playerURL := sportsReferenceURL
 		fmt.Printf("Player page URL: %s\n", playerURL)
@@ -742,6 +753,17 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Successfully redirected to a player page
 	// fmt.Printf("Player page URL: %s\n", finalURL)
 
+	// Validate the URL before scraping (finalURL comes from redirect/search results)
+	if err := ValidateSportsReferenceURL(finalURL); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":     "Internal Server Error",
+			"message":   "Invalid player URL from search results: " + err.Error(),
+			"code":      "INVALID_SEARCH_RESULT_URL",
+			"timestamp": time.Now(),
+		})
+		return
+	}
+
 	// Scrape player page data
 	player, err := scrapePlayerData(finalURL, hostname, sport)
 	if err != nil {
@@ -799,6 +821,11 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 
 // scrapePlayerData scrapes player information from a sports reference page
 func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
+	// Validate URL as an additional safety layer
+	if err := ValidateSportsReferenceURL(playerURL); err != nil {
+		return nil, fmt.Errorf("invalid player URL: %w", err)
+	}
+
 	player := &Player{
 		Sport:              sport,
 		SportsReferenceURL: playerURL,

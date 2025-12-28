@@ -74,6 +74,16 @@ func AllSports() []string {
 	}
 }
 
+// Allowed domains for web scraping (whitelist)
+var AllowedScrapingDomains = []string{
+	"baseball-reference.com",
+	"www.baseball-reference.com",
+	"basketball-reference.com",
+	"www.basketball-reference.com",
+	"pro-football-reference.com",
+	"www.pro-football-reference.com",
+}
+
 // IsValidSport checks if a sport is valid
 func IsValidSport(sport string) bool {
 	switch sport {
