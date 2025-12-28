@@ -18,12 +18,15 @@ func main() {
 
 	// Initialize DynamoDB client
 	var err error
-	db, err = NewDB(cfg)
+	db, err := NewDB(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize DynamoDB client: %v", err)
 	}
 	log.Printf("DynamoDB client initialized (Rounds Table: %s, User Stats Table: %s, Region: %s)",
 		cfg.RoundsTableName, cfg.UserStatsTableName, cfg.AWSRegion)
+
+	// Create server with database dependency injection
+	server := NewServer(db)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -60,26 +63,26 @@ func main() {
 	public := v1.Group("")
 	public.Use(middleware.OptionalJWTMiddleware())
 	{
-		public.GET("/round", handleGetRound)
-		public.GET("/stats/round", handleGetRoundStats)
-		public.POST("/results", handleSubmitResults)
+		public.GET("/round", server.GetRound)
+		public.GET("/stats/round", server.GetRoundStats)
+		public.POST("/results", server.SubmitResults)
 	}
 
 	// Public endpoints (with required JWT auth for authenticated users)
 	publicAuth := v1.Group("")
 	publicAuth.Use(middleware.JWTMiddleware())
 	{
-		publicAuth.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), handleGetUserStats)
-		publicAuth.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), handleGetUpcomingRounds)
+		publicAuth.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), server.GetUserStats)
+		publicAuth.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), server.GetUpcomingRounds)
 	}
 
 	// Admin endpoints (API key auth)
 	admin := v1.Group("")
 	admin.Use(middleware.APIKeyMiddleware())
 	{
-		admin.PUT("/round", handleCreateRound)
-		admin.POST("/round", handleScrapeAndCreateRound)
-		admin.DELETE("/round", handleDeleteRound)
+		admin.PUT("/round", server.CreateRound)
+		admin.POST("/round", server.ScrapeAndCreateRound)
+		admin.DELETE("/round", server.DeleteRound)
 	}
 
 	// Health check

@@ -15,11 +15,18 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-// Global DB instance
-var db *DB
+// Server holds dependencies for HTTP handlers
+type Server struct {
+	db *DB
+}
 
-// handleGetRound handles GET /v1/round
-func handleGetRound(c *gin.Context) {
+// NewServer creates a new Server with the given database
+func NewServer(db *DB) *Server {
+	return &Server{db: db}
+}
+
+// GetRound handles GET /v1/round
+func (s *Server) GetRound(c *gin.Context) {
 	sport := c.Query("sport")
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -48,7 +55,7 @@ func handleGetRound(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	round, err := db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -72,8 +79,8 @@ func handleGetRound(c *gin.Context) {
 	c.JSON(http.StatusOK, round)
 }
 
-// handleCreateRound handles PUT /v1/round
-func handleCreateRound(c *gin.Context) {
+// CreateRound handles PUT /v1/round
+func (s *Server) CreateRound(c *gin.Context) {
 	var round Round
 	if err := c.ShouldBindJSON(&round); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -137,7 +144,7 @@ func handleCreateRound(c *gin.Context) {
 	round.RoundID = roundID
 
 	ctx := context.Background()
-	err = db.CreateRound(ctx, &round)
+	err = s.db.CreateRound(ctx, &round)
 	if err != nil {
 		if err.Error() == "round already exists" {
 			c.JSON(http.StatusConflict, gin.H{
@@ -160,8 +167,8 @@ func handleCreateRound(c *gin.Context) {
 	c.JSON(http.StatusCreated, round)
 }
 
-// handleDeleteRound handles DELETE /v1/round
-func handleDeleteRound(c *gin.Context) {
+// DeleteRound handles DELETE /v1/round
+func (s *Server) DeleteRound(c *gin.Context) {
 	sport := c.Query("sport")
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -187,7 +194,7 @@ func handleDeleteRound(c *gin.Context) {
 	ctx := context.Background()
 
 	// Check if the round exists first
-	round, err := db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -207,7 +214,7 @@ func handleDeleteRound(c *gin.Context) {
 		return
 	}
 
-	err = db.DeleteRound(ctx, sport, playDate)
+	err = s.db.DeleteRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -221,8 +228,8 @@ func handleDeleteRound(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// handleGetUpcomingRounds handles GET /v1/upcoming-rounds
-func handleGetUpcomingRounds(c *gin.Context) {
+// GetUpcomingRounds handles GET /v1/upcoming-rounds
+func (s *Server) GetUpcomingRounds(c *gin.Context) {
 	sport := c.Query("sport")
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -238,7 +245,7 @@ func handleGetUpcomingRounds(c *gin.Context) {
 	endDate := c.Query("endDate")
 
 	ctx := context.Background()
-	upcomingRounds, err := db.GetRoundsBySport(ctx, sport, startDate, endDate)
+	upcomingRounds, err := s.db.GetRoundsBySport(ctx, sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -267,8 +274,8 @@ func handleGetUpcomingRounds(c *gin.Context) {
 	c.JSON(http.StatusOK, upcomingRounds)
 }
 
-// handleSubmitResults handles POST /v1/results
-func handleSubmitResults(c *gin.Context) {
+// SubmitResults handles POST /v1/results
+func (s *Server) SubmitResults(c *gin.Context) {
 	sport := c.Query("sport")
 	playDate := c.Query("playDate")
 
@@ -306,7 +313,7 @@ func handleSubmitResults(c *gin.Context) {
 
 	ctx := context.Background()
 
-	round, err := db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -330,7 +337,7 @@ func handleSubmitResults(c *gin.Context) {
 	updateStatsWithResult(&round.Stats.Stats, &result)
 
 	// Save the updated round
-	err = db.UpdateRound(ctx, round)
+	err = s.db.UpdateRound(ctx, round)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -342,12 +349,12 @@ func handleSubmitResults(c *gin.Context) {
 	}
 
 	// Get user_id from bearer token (set by JWT middleware)
-	userIdToken, exists := c.Get(ConstantUserId)
+	userIdToken, exists := c.Get("userId")
 	if exists && userIdToken != "" {
 		userId, ok := userIdToken.(string)
 		if ok && userId != "" {
 			// Fetch existing user stats or create new ones
-			userStats, err := db.GetUserStats(ctx, userId)
+			userStats, err := s.db.GetUserStats(ctx, userId)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error":     "Internal Server Error",
@@ -402,9 +409,9 @@ func handleSubmitResults(c *gin.Context) {
 
 			// Save or update user stats in DynamoDB
 			if userStats.UserCreated.IsZero() {
-				err = db.CreateUserStats(ctx, userStats)
+				err = s.db.CreateUserStats(ctx, userStats)
 			} else {
-				err = db.UpdateUserStats(ctx, userStats)
+				err = s.db.UpdateUserStats(ctx, userStats)
 			}
 
 			if err != nil {
@@ -422,8 +429,8 @@ func handleSubmitResults(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// handleGetRoundStats handles GET /v1/stats/round
-func handleGetRoundStats(c *gin.Context) {
+// GetRoundStats handles GET /v1/stats/round
+func (s *Server) GetRoundStats(c *gin.Context) {
 	sport := c.Query("sport")
 	playDate := c.Query("playDate")
 
@@ -438,7 +445,7 @@ func handleGetRoundStats(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	round, err := db.GetRound(ctx, sport, playDate)
+	round, err := s.db.GetRound(ctx, sport, playDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -462,12 +469,12 @@ func handleGetRoundStats(c *gin.Context) {
 	c.JSON(http.StatusOK, round.Stats)
 }
 
-// handleGetUserStats handles GET /v1/stats/user
-func handleGetUserStats(c *gin.Context) {
-	userId := c.Query(ConstantUserId)
+// GetUserStats handles GET /v1/stats/user
+func (s *Server) GetUserStats(c *gin.Context) {
+	userId := c.Query("userId")
 	if userId == "" {
 		// if userId is not part in query param, extract from bearer token instead
-		userIdToken, exists := c.Get(ConstantUserId)
+		userIdToken, exists := c.Get("userId")
 		if exists && userIdToken != "" {
 			userIdStr, ok := userIdToken.(string)
 			if ok && userIdStr != "" {
@@ -487,7 +494,7 @@ func handleGetUserStats(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	stats, err := db.GetUserStats(ctx, userId)
+	stats, err := s.db.GetUserStats(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",
@@ -511,8 +518,8 @@ func handleGetUserStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
-// handleScrapeAndCreateRound handles POST /v1/round - scrapes player data and creates a round
-func handleScrapeAndCreateRound(c *gin.Context) {
+// ScrapeAndCreateRound handles POST /v1/round - scrapes player data and creates a round
+func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// Get required parameters
 	sport := c.Query("sport")
 	playDate := c.Query("playDate")
@@ -623,7 +630,7 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 		}
 
 		// Store the round in DynamoDB
-		err = db.CreateRound(c.Request.Context(), &round)
+		err = s.db.CreateRound(c.Request.Context(), &round)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":     "Internal Server Error",
@@ -776,7 +783,7 @@ func handleScrapeAndCreateRound(c *gin.Context) {
 	}
 
 	// Store the round in DynamoDB
-	err = db.CreateRound(c.Request.Context(), &round)
+	err = s.db.CreateRound(c.Request.Context(), &round)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":     "Internal Server Error",

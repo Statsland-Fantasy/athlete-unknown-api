@@ -15,6 +15,12 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
+// getTestServer creates a Server instance for testing
+// Note: This uses nil for the DB since these tests only validate input parameters
+func getTestServer() *Server {
+	return &Server{db: nil}
+}
+
 // TestHandleGetRound tests the handleGetRound function's input validation
 func TestHandleGetRound(t *testing.T) {
 	tests := []struct {
@@ -43,7 +49,7 @@ func TestHandleGetRound(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodGet, "/v1/round?"+tt.queryParams, nil)
 
-			handleGetRound(c)
+			getTestServer().GetRound(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -122,7 +128,7 @@ func TestHandleCreateRound(t *testing.T) {
 			c.Request = httptest.NewRequest(http.MethodPut, "/v1/round", bytes.NewReader(bodyBytes))
 			c.Request.Header.Set("Content-Type", "application/json")
 
-			handleCreateRound(c)
+			getTestServer().CreateRound(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -167,7 +173,7 @@ func TestHandleDeleteRound(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodDelete, "/v1/round?"+tt.queryParams, nil)
 
-			handleDeleteRound(c)
+			getTestServer().DeleteRound(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -206,7 +212,7 @@ func TestHandleGetUpcomingRounds(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodGet, "/v1/upcoming-rounds?"+tt.queryParams, nil)
 
-			handleGetUpcomingRounds(c)
+			getTestServer().GetUpcomingRounds(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -249,7 +255,7 @@ func TestHandleSubmitResults(t *testing.T) {
 			c.Request = httptest.NewRequest(http.MethodPost, "/v1/results?"+tt.queryParams, bytes.NewReader(bodyBytes))
 			c.Request.Header.Set("Content-Type", "application/json")
 
-			handleSubmitResults(c)
+			getTestServer().SubmitResults(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -288,7 +294,7 @@ func TestHandleGetRoundStats(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodGet, "/v1/stats/round?"+tt.queryParams, nil)
 
-			handleGetRoundStats(c)
+			getTestServer().GetRoundStats(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
@@ -327,7 +333,7 @@ func TestHandleGetUserStats(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodGet, "/v1/stats/user?"+tt.queryParams, nil)
 
-			handleGetUserStats(c)
+			getTestServer().GetUserStats(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
