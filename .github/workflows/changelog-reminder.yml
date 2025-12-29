@@ -1,0 +1,221 @@
+name: Changelog Reminder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-changelog:
+    name: Check and Suggest Changelog Update
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Fetch all history to analyze commits
+
+      - name: Check if CHANGELOG.md was modified
+        id: changelog-check
+        run: |
+          # Check if CHANGELOG.md is in the list of changed files
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
+            echo "changelog_updated=true" >> $GITHUB_OUTPUT
+            echo "✅ CHANGELOG.md has been updated"
+          else
+            echo "changelog_updated=false" >> $GITHUB_OUTPUT
+            echo "⚠️ CHANGELOG.md has not been updated"
+          fi
+
+      - name: Generate suggested changelog entry
+        if: steps.changelog-check.outputs.changelog_updated == 'false'
+        id: suggest-entry
+        run: |
+          # Get PR title and body
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+
+          # Get list of commits
+          COMMITS=$(git log --oneline origin/${{ github.base_ref }}..HEAD --pretty=format:"- %s" | head -10)
+
+          # Generate suggested entry
+          SUGGESTED_ENTRY=$(cat <<EOF
+          ## Suggested Changelog Entry
+
+          \`\`\`markdown
+          ### [$PR_TITLE](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)
+
+          **Type:** [Feature/Bug Fix/Enhancement/Refactor/Security]
+          **Date:** $(date +%Y-%m-%d)
+          **Author:** @$PR_AUTHOR
+
+          #### Changes:
+          $COMMITS
+
+          #### Impact:
+          - [Describe the impact of these changes]
+
+          #### Breaking Changes:
+          - None / [List any breaking changes]
+
+          #### API Changes:
+          - None / [List any API endpoint or schema changes]
+          \`\`\`
+          EOF
+          )
+
+          # Save to output (escape newlines)
+          echo "entry<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUGGESTED_ENTRY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR if changelog not updated
+        if: steps.changelog-check.outputs.changelog_updated == 'false'
+        uses: actions/github-script@v8
+        env:
+          SUGGESTED_ENTRY: ${{ steps.suggest-entry.outputs.entry }}
+        with:
+          script: |
+            const suggestedEntry = process.env.SUGGESTED_ENTRY;
+
+            const body = `## 📝 Changelog Reminder
+
+            This PR does not include an update to \`CHANGELOG.md\`.
+
+            **Is a changelog entry needed?**
+            - ✅ Yes, if this PR includes API changes, new features, bug fixes, or breaking changes
+            - ❌ No, if this is internal refactoring, documentation, or tests only
+
+            ${suggestedEntry}
+
+            <details>
+            <summary>How to update CHANGELOG.md</summary>
+
+            1. Edit \`CHANGELOG.md\` in your branch
+            2. Add your changes under the appropriate section:
+               - **Features** - New functionality or API endpoints
+               - **Bug Fixes** - Corrections to existing functionality
+               - **Enhancements** - Improvements to existing features
+               - **Security** - Security-related changes
+               - **Breaking Changes** - Changes that break backward compatibility
+               - **Internal** - Refactoring, tests, documentation
+            3. Commit and push the changes
+            4. This comment will automatically update ✅
+
+            Example format:
+            \`\`\`markdown
+            ## [Unreleased]
+
+            ### Features
+            - Add user stats API endpoint (#7) @username
+            - Implement JWT authentication (#8) @username
+
+            ### Bug Fixes
+            - Fix streak calculation logic (#9) @username
+
+            ### Security
+            - Add SSRF protection to scraping (#10) @username
+            \`\`\`
+            </details>
+
+            ---
+            **Note:** This is a reminder, not a blocker. You can merge without updating the changelog if these changes don't require documentation.`;
+
+            // Check if we already commented
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📝 Changelog Reminder')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+      - name: Update comment if changelog was added
+        if: steps.changelog-check.outputs.changelog_updated == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Check if we previously commented
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📝 Changelog Reminder')
+            );
+
+            if (botComment) {
+              // Update to show changelog was added
+              const body = `## ✅ Changelog Updated
+
+              Thank you for updating \`CHANGELOG.md\`!
+
+              The changelog has been successfully updated in this PR.`;
+
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            }
+
+      - name: Add label if changelog not updated
+        if: steps.changelog-check.outputs.changelog_updated == 'false'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-changelog']
+            });
+
+      - name: Remove label if changelog was updated
+        if: steps.changelog-check.outputs.changelog_updated == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: 'needs-changelog'
+              });
+            } catch (error) {
+              // Label might not exist, ignore error
+              console.log('Label does not exist or already removed');
+            }

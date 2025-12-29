@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Actions CI/CD workflows for automated testing, security scanning, and deployment
+  - **ci.yml**: Runs on merge to main - builds, tests, lints, and performs security scans
+  - **pr-checks.yml**: Validates pull requests with comprehensive checks and posts status comments
+  - **deploy-dev.yml**: Automatically deploys to dev environment when release branches are created
+  - **changelog-reminder.yml**: Reminds contributors to update changelog for PRs
+
 ## [PR-8](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/8)
 
 ### Changed
