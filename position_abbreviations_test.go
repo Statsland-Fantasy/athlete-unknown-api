@@ -79,7 +79,7 @@ func TestAbbreviatePositions(t *testing.T) {
 		{
 			name:     "Baseball - Centerfielder",
 			input:    "Position: Centerfielder",
-			expected: "Position: Cfielder", // "Catcher" → "C" replacement affects this
+			expected: "Position: CF",
 		},
 		{
 			name:     "Baseball - Rightfielder",

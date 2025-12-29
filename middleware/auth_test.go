@@ -191,3 +191,87 @@ func TestRequireRole(t *testing.T) {
 		})
 	}
 }
+
+// TestOptionalJWTMiddleware tests the optional JWT authentication middleware
+func TestOptionalJWTMiddleware(t *testing.T) {
+	tests := []struct {
+		name                 string
+		authHeader           string
+		expectedStatus       int
+		shouldAbort          bool
+		shouldHaveUserContext bool
+	}{
+		{
+			name:                 "missing authorization header - allows through",
+			authHeader:           "",
+			expectedStatus:       http.StatusOK,
+			shouldAbort:          false,
+			shouldHaveUserContext: false,
+		},
+		{
+			name:                 "invalid authorization format - allows through",
+			authHeader:           "InvalidToken",
+			expectedStatus:       http.StatusOK,
+			shouldAbort:          false,
+			shouldHaveUserContext: false,
+		},
+		{
+			name:                 "invalid JWT token - allows through",
+			authHeader:           "Bearer invalid.jwt.token",
+			expectedStatus:       http.StatusOK,
+			shouldAbort:          false,
+			shouldHaveUserContext: false,
+		},
+		{
+			name:                 "malformed JWT - allows through",
+			authHeader:           "Bearer notajwt",
+			expectedStatus:       http.StatusOK,
+			shouldAbort:          false,
+			shouldHaveUserContext: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create test context with a handler that returns 200 OK
+			w := httptest.NewRecorder()
+			c, router := gin.CreateTestContext(w)
+
+			// Add a test endpoint that the middleware will protect
+			router.Use(OptionalJWTMiddleware())
+			router.GET("/test", func(c *gin.Context) {
+				c.Status(http.StatusOK)
+			})
+
+			// Create request
+			c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+
+			// Set authorization header if provided
+			if tt.authHeader != "" {
+				c.Request.Header.Set("Authorization", tt.authHeader)
+			}
+
+			// Execute the request through the router
+			router.ServeHTTP(w, c.Request)
+
+			// Check status code
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)
+			}
+
+			// Check if request was aborted (should never abort for optional middleware)
+			if tt.shouldAbort && !c.IsAborted() {
+				t.Errorf("Expected request to be aborted, but it wasn't")
+			}
+
+			// Check if user context was set
+			_, hasUserId := c.Get("userId")
+			if tt.shouldHaveUserContext && !hasUserId {
+				t.Errorf("Expected userId to be set in context, but it wasn't")
+			}
+			if !tt.shouldHaveUserContext && hasUserId {
+				t.Errorf("Expected userId NOT to be set in context, but it was")
+			}
+		})
+	}
+}

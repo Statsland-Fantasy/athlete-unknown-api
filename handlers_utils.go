@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"regexp"
 	"sort"
 	"strings"
@@ -18,6 +20,86 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+// ValidateSportsReferenceURL validates that a URL is safe to scrape
+// Returns an error if the URL is invalid or not whitelisted
+func ValidateSportsReferenceURL(urlStr string) error {
+	// Parse the URL
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return fmt.Errorf("invalid URL format: %w", err)
+	}
+
+	// Ensure URL has a scheme (http or https)
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("URL must use http or https protocol, got: %s", parsedURL.Scheme)
+	}
+
+	// Ensure URL has a host
+	if parsedURL.Host == "" {
+		return fmt.Errorf("URL must have a hostname")
+	}
+
+	// Extract hostname (without port)
+	hostname := parsedURL.Hostname()
+
+	// Check if hostname is in the whitelist
+	isAllowed := false
+	for _, allowedDomain := range AllowedScrapingDomains {
+		if hostname == allowedDomain {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return fmt.Errorf("URL hostname '%s' is not in the allowed whitelist. Allowed domains: %v", hostname, AllowedScrapingDomains)
+	}
+
+	// Prevent SSRF by ensuring the hostname doesn't resolve to a private IP
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		return fmt.Errorf("failed to resolve hostname: %w", err)
+	}
+
+	for _, ip := range ips {
+		if isPrivateIP(ip) {
+			return fmt.Errorf("URL resolves to a private IP address: %s", ip.String())
+		}
+	}
+
+	return nil
+}
+
+// isPrivateIP checks if an IP address is private/internal
+func isPrivateIP(ip net.IP) bool {
+	// Check for loopback
+	if ip.IsLoopback() {
+		return true
+	}
+
+	// Check for private networks
+	privateNetworks := []string{
+		"10.0.0.0/8",
+		"172.16.0.0/12",
+		"192.168.0.0/16",
+		"169.254.0.0/16", // Link-local
+		"fc00::/7",       // IPv6 unique local
+		"fe80::/10",      // IPv6 link-local
+	}
+
+	for _, cidr := range privateNetworks {
+		_, network, err := net.ParseCIDR(cidr)
+		if err != nil {
+			continue
+		}
+		if network.Contains(ip) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // isValidYear checks if a year string is valid (not empty and not a summary row label)
 func isValidYear(year string) bool {
 	if year == "" {
@@ -25,7 +107,7 @@ func isValidYear(year string) bool {
 	}
 	invalidValues := []string{"Season", "Career", "Yr", "Avg", "Average"}
 	for _, invalid := range invalidValues {
-		if year == invalid || strings.Contains(year, invalid) {
+		if strings.EqualFold(year, invalid) || strings.Contains(strings.ToLower(year), strings.ToLower(invalid)) {
 			return false
 		}
 	}
@@ -47,7 +129,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 		var yearInt int
 
 		// For basketball, handle season format like "2024-25"
-		if sport == "basketball" && strings.Contains(y, "-") {
+		if sport == SportBasketball && strings.Contains(y, "-") {
 			// Extract the first year from the season range (e.g., "2024" from "2024-25")
 			parts := strings.Split(y, "-")
 			if len(parts) > 0 {
@@ -88,7 +170,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 					ranges = append(ranges, "Present")
 				} else {
 					// For basketball single seasons, add 1 to show the ending year
-					if sport == "basketball" {
+					if sport == SportBasketball {
 						ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
 					} else {
 						ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
@@ -97,7 +179,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 			} else {
 				// For basketball, add 1 to the end year to show the actual ending year
 				displayEndYear := rangeEnd
-				if sport == "basketball" {
+				if sport == SportBasketball {
 					displayEndYear = rangeEnd + 1
 				}
 
@@ -118,7 +200,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 			ranges = append(ranges, "Present")
 		} else {
 			// For basketball single seasons, add 1 to show the ending year
-			if sport == "basketball" {
+			if sport == SportBasketball {
 				ranges = append(ranges, fmt.Sprintf("%d-%d", rangeStart, rangeStart+1))
 			} else {
 				ranges = append(ranges, fmt.Sprintf("%d", rangeStart))
@@ -127,7 +209,7 @@ func formatYearsAsRanges(years []string, sport string) string {
 	} else {
 		// For basketball, add 1 to the end year to show the actual ending year
 		displayEndYear := rangeEnd
-		if sport == "basketball" {
+		if sport == SportBasketball {
 			displayEndYear = rangeEnd + 1
 		}
 
@@ -152,7 +234,7 @@ func formatDraftInformation(draftText, sport, draftSchool string) string {
 		return "Undrafted"
 	}
 
-	if sport == "baseball" {
+	if sport == SportBaseball {
 		// Baseball-specific pattern with multiple variations:
 		// 1. "Xth round (Yth) of the YYYY MLB ... Draft from [School] (City, State)" - with pick number
 		// 2. "Xth round of the YYYY MLB ... Draft from [School] (City, State)" - without pick number
@@ -361,17 +443,6 @@ func abbreviatePositions(playerInfo string) string {
 		full  string
 		abbrev string
 	}{
-		// Basketball positions (ordered by length, longest first)
-		{"Shooting Guard", "SG"},
-		{"Point Guard", "PG"},
-		{"Small Forward", "SF"},
-		{"Power Forward", "PF"},
-		{"Forward", "F"},
-		{"Center", "C"},
-		{"Guard", "G"},
-
-		// Football positions
-		// Already abbreviated
 
 		// Baseball positions
 		{"Designated Hitter", "DH"},
@@ -386,6 +457,17 @@ func abbreviatePositions(playerInfo string) string {
 		{"Catcher", "C"},
 		{"Pitcher", "P"},
 		
+		// Basketball positions (ordered by length, longest first)
+		{"Shooting Guard", "SG"},
+		{"Point Guard", "PG"},
+		{"Small Forward", "SF"},
+		{"Power Forward", "PF"},
+		{"Forward", "F"},
+		{"Center", "C"},
+		{"Guard", "G"},
+
+		// Football positions
+		// Already abbreviated
 	}
 
 	result := playerInfo
@@ -395,6 +477,7 @@ func abbreviatePositions(playerInfo string) string {
 		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
 	}	
 
+	result = strings.ReplaceAll(result, ", and ", ", ") // no "ands", all comma separated
 	result = strings.ReplaceAll(result, " and ", ", ") // no "ands", all comma separated
 
 	return result

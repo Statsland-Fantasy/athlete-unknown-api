@@ -498,3 +498,64 @@ func TestUpdateDailyStreak(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateSportsReferenceURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		url       string
+		shouldErr bool
+	}{
+		{
+			name:      "valid baseball reference URL",
+			url:       "https://www.baseball-reference.com/players/t/troutmi01.shtml",
+			shouldErr: false,
+		},
+		{
+			name:      "valid basketball reference URL",
+			url:       "https://www.basketball-reference.com/players/j/jamesle01.html",
+			shouldErr: false,
+		},
+		{
+			name:      "valid pro-football reference URL",
+			url:       "https://www.pro-football-reference.com/players/M/MahoPa00.htm",
+			shouldErr: false,
+		},
+		{
+			name:      "valid URL without www",
+			url:       "https://baseball-reference.com/players/t/troutmi01.shtml",
+			shouldErr: false,
+		},
+		{
+			name:      "invalid domain",
+			url:       "https://malicious-site.com/players/test",
+			shouldErr: true,
+		},
+		{
+			name:      "missing scheme",
+			url:       "baseball-reference.com/players/test",
+			shouldErr: true,
+		},
+		{
+			name:      "invalid scheme",
+			url:       "ftp://baseball-reference.com/players/test",
+			shouldErr: true,
+		},
+		{
+			name:      "empty URL",
+			url:       "",
+			shouldErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateSportsReferenceURL(tt.url)
+			if tt.shouldErr && err == nil {
+				t.Errorf("Expected error for URL %s, but got none", tt.url)
+			}
+			if !tt.shouldErr && err != nil {
+				t.Errorf("Expected no error for URL %s, but got: %v", tt.url, err)
+			}
+		})
+	}
+}

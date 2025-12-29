@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -34,11 +35,11 @@ func getEnv(key, defaultValue string) string {
 // GetSportsReferenceHostname returns the hostname for the given sport
 func GetSportsReferenceHostname(sport string) string {
 	switch sport {
-	case "baseball":
+	case SportBaseball:
 		return "baseball-reference.com"
-	case "basketball":
+	case SportBasketball:
 		return "basketball-reference.com"
-	case "football":
+	case SportFootball:
 		return "pro-football-reference.com"
 	default:
 		return ""
@@ -48,11 +49,11 @@ func GetSportsReferenceHostname(sport string) string {
 // GetCurrentSeasonYear returns the current season year for the given sport
 func GetCurrentSeasonYear(sport string) int {
 	switch sport {
-	case "baseball":
+	case SportBaseball:
 		return 2025 // MLB season begins in March/April & ends in October
-	case "basketball":
+	case SportBasketball:
 		return 2025 // NBA season begins in October & ends in June
-	case "football":
+	case SportFootball:
 		return 2025 // NFL season begins in September & ends in February
 	default:
 		return 0
@@ -65,7 +66,7 @@ var FIRST_ROUND_DATE = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 // GenerateRoundID generates a round ID by concatenating the sport and the number of days since FIRST_ROUND_DATE
 func GenerateRoundID(sport string, playDate string) (string, error) {
 	// Parse the playDate
-	date, err := time.Parse("2006-01-02", playDate)
+	date, err := time.Parse(DateFormatYYYYMMDD, playDate)
 	if err != nil {
 		return "", fmt.Errorf("invalid playDate format: %w", err)
 	}
@@ -76,4 +77,37 @@ func GenerateRoundID(sport string, playDate string) (string, error) {
 	// Generate the round ID
 	roundID := fmt.Sprintf("%s%d", sport, daysSince)
 	return roundID, nil
+}
+
+// GetAllowedCORSOrigins returns the list of allowed CORS origins from environment or defaults
+func GetAllowedCORSOrigins() []string {
+	// Get from environment variable (comma-separated list)
+	originsEnv := os.Getenv("ALLOWED_ORIGINS")
+	if originsEnv != "" {
+		origins := strings.Split(originsEnv, ",")
+		// Trim whitespace from each origin
+		for i, origin := range origins {
+			origins[i] = strings.TrimSpace(origin)
+		}
+		return origins
+	}
+
+	// Default origins for development
+	// In production, ALLOWED_ORIGINS environment variable should be set
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "release" {
+		// In production with no ALLOWED_ORIGINS set, return empty slice
+		// This will effectively block all CORS requests, which is safer than wildcard
+		return []string{}
+	}
+
+	// Development defaults
+	return []string{
+		"http://localhost:3000",     // React default
+		"http://localhost:5173",     // Vite default
+		"http://localhost:4200",     // Angular default
+		"http://localhost:8080",     // Various frameworks
+		"http://127.0.0.1:3000",     // Localhost IP variant
+		"http://127.0.0.1:5173",     // Localhost IP variant
+	}
 }
