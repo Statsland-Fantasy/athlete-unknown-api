@@ -58,17 +58,19 @@ func main() {
 
 	// Public endpoints (no auth. Available for guest users too)
 	public := v1.Group("")
+	public.Use(middleware.OptionalJWTMiddleware())
 	{
 		public.GET("/round", handleGetRound)
 		public.GET("/stats/round", handleGetRoundStats)
+		public.POST("/results", handleSubmitResults)
 	}
 
-	// Public endpoints (with JWT auth for authenticated users)
-	public.Use(middleware.JWTMiddleware())
+	// Public endpoints (with required JWT auth for authenticated users)
+	publicAuth := v1.Group("")
+	publicAuth.Use(middleware.JWTMiddleware())
 	{
-		public.POST("/results", middleware.RequirePermission("submit:athlete-unknown:results"), handleSubmitResults)
-		public.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), handleGetUserStats)
-		public.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), handleGetUpcomingRounds)
+		publicAuth.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), handleGetUserStats)
+		publicAuth.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), handleGetUpcomingRounds)
 	}
 
 	// Admin endpoints (API key auth)

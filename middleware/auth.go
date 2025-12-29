@@ -164,3 +164,74 @@ func RequireRole(role string) gin.HandlerFunc {
         c.Next()
     }
 }
+
+// OptionalJWTMiddleware attempts to extract JWT claims if present, but doesn't abort if missing
+func OptionalJWTMiddleware() gin.HandlerFunc {
+    issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
+    if err != nil {
+        log.Fatalf("Failed to parse issuer URL: %v", err)
+    }
+
+    provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
+
+    jwtValidator, err := validator.New(
+        provider.KeyFunc,
+        validator.RS256,
+        issuerURL.String(),
+        []string{os.Getenv("AUTH0_AUDIENCE")},
+        validator.WithCustomClaims(func() validator.CustomClaims {
+            return &CustomClaims{}
+        }),
+        validator.WithAllowedClockSkew(30*time.Second),
+    )
+    if err != nil {
+        log.Fatalf("Failed to set up validator: %v", err)
+    }
+
+    return func(c *gin.Context) {
+        // Extract token from Authorization header
+        authHeader := c.GetHeader("Authorization")
+        if authHeader == "" {
+            // No authorization header - continue without setting user context
+            c.Next()
+            return
+        }
+
+        tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+        if tokenString == authHeader {
+            // Invalid format - continue without setting user context
+            c.Next()
+            return
+        }
+
+        // Validate token
+        token, err := jwtValidator.ValidateToken(c.Request.Context(), tokenString)
+        if err != nil {
+            // Invalid token - continue without setting user context
+            c.Next()
+            return
+        }
+
+        // Extract custom claims
+        claims, ok := token.(*validator.ValidatedClaims)
+        if !ok {
+            // Invalid claims - continue without setting user context
+            c.Next()
+            return
+        }
+
+        customClaims, ok := claims.CustomClaims.(*CustomClaims)
+        if !ok {
+            // Invalid custom claims - continue without setting user context
+            c.Next()
+            return
+        }
+
+        // Store user info in context
+        c.Set("userId", customClaims.UserId)
+        c.Set("permissions", customClaims.Permissions)
+        c.Set("roles", customClaims.Roles)
+
+        c.Next()
+    }
+}

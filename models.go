@@ -69,15 +69,10 @@ type Round struct {
 
 // Result represents a game result submission
 type Result struct {
-	Score        int      `json:"score"`
-	IsCorrect    bool     `json:"isCorrect"`
-	TilesFlipped []string `json:"tilesFlipped"`
-}
-
-// SportStats represents statistics for a specific sport for all users
-type SportStats struct {
-	Sport              string `json:"sport" dynamodbav:"sport"`
-	Stats              `json:",inline" dynamodbav:",inline"`
+	Score        int      `json:"score" dynamodbav:"score"`
+	IsCorrect    bool     `json:"isCorrect" dynamodbav:"isCorrect"`
+	TilesFlipped []string `json:"tilesFlipped" dynamodbav:"tilesFlipped"`
+	IncorrectGuesses int  `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
 }
 
 // UserStats represents comprehensive statistics for a user
@@ -87,7 +82,20 @@ type UserStats struct {
 	UserCreated                 time.Time       `json:"userCreated" dynamodbav:"userCreated"`
 	CurrentDailyStreak 			int    			`json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
 	LastDayPlayed               string          `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
-	Sports                      []SportStats    `json:"sports" dynamodbav:"sports"`
+	Sports                      []UserSportStats    `json:"sports" dynamodbav:"sports"`
+}
+
+// SportStats represents statistics for a specific sport for all users
+type UserSportStats struct {
+	Sport        string `json:"sport" dynamodbav:"sport"`
+	Stats        Stats  `json:"stats" dynamodbav:"stats"`
+	History	     []RoundHistory `json:"history" dynamodbav:"history"`
+}
+
+// RoundHistory represents the results of past rounds played
+type RoundHistory struct {
+	PlayDate string `json:"playDate" dynamodbav:"playDate"`
+	Result
 }
 
 // ErrorResponse represents an error response

@@ -163,7 +163,7 @@ func TestUserStatsMarshaling(t *testing.T) {
 		UserCreated: now,
 		CurrentDailyStreak: 5,
 		LastDayPlayed: "2025-12-10",
-		Sports: []SportStats{
+		Sports: []UserSportStats{
 			{
 				Sport:              "basketball",
 				Stats: Stats{
@@ -208,17 +208,17 @@ func TestUserStatsMarshaling(t *testing.T) {
 	if stats.Sports[0].Sport != "basketball" {
 		t.Errorf("Sports[0].Sport = %v, want basketball", stats.Sports[0].Sport)
 	}
-	if stats.Sports[0].TotalPlays != 200 {
-		t.Errorf("Sports[0].TotalPlays = %v, want 200", stats.Sports[0].TotalPlays)
+	if stats.Sports[0].Stats.TotalPlays != 200 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 200", stats.Sports[0].Stats.TotalPlays)
 	}
-	if stats.Sports[0].PercentageCorrect != 75.0 {
-		t.Errorf("Sports[0].PercentageCorrect = %v, want 75.0", stats.Sports[0].PercentageCorrect)
+	if stats.Sports[0].Stats.PercentageCorrect != 75.0 {
+		t.Errorf("Sports[0].PercentageCorrect = %v, want 75.0", stats.Sports[0].Stats.PercentageCorrect)
 	}
-	if stats.Sports[0].AverageNumberOfTileFlips != 5.2 {
-		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", stats.Sports[0].AverageNumberOfTileFlips)
+	if stats.Sports[0].Stats.AverageNumberOfTileFlips != 5.2 {
+		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", stats.Sports[0].Stats.AverageNumberOfTileFlips)
 	}
-	if stats.Sports[1].AverageNumberOfTileFlips != 6.1 {
-		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", stats.Sports[1].AverageNumberOfTileFlips)
+	if stats.Sports[1].Stats.AverageNumberOfTileFlips != 6.1 {
+		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", stats.Sports[1].Stats.AverageNumberOfTileFlips)
 	}
 }
 
@@ -454,7 +454,7 @@ func TestUserStatsWithUserName(t *testing.T) {
 		UserId:      "user-123",
 		UserName:    "Jane Smith",
 		UserCreated: now,
-		Sports: []SportStats{
+		Sports: []UserSportStats{
 			{
 				Sport: "basketball",
 				Stats: Stats{
@@ -473,7 +473,7 @@ func TestUserStatsWithUserName(t *testing.T) {
 	if stats.UserId != "user-123" {
 		t.Errorf("UserId = %v, want user-123", stats.UserId)
 	}
-	if stats.Sports[0].TotalPlays != 50 {
-		t.Errorf("Sports[0].TotalPlays = %v, want 50", stats.Sports[0].TotalPlays)
+	if stats.Sports[0].Stats.TotalPlays != 50 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 50", stats.Sports[0].Stats.TotalPlays)
 	}
 }
