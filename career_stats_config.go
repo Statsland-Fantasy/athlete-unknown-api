@@ -6,8 +6,8 @@ import (
 
 // CareerStatsConfig defines the HTML path and stat name for a career stat
 type CareerStatsConfig struct {
-	HTMLPath string // CSS selector or HTML path to the stat element
-	StatLabel     string // The name/label of the stat (e.g., "Points", "Games", "WAR")
+	HTMLPath  string // CSS selector or HTML path to the stat element
+	StatLabel string // The name/label of the stat (e.g., "Points", "Games", "WAR")
 }
 
 // StatsConfig defines which stats to extract for a sport/position combination
@@ -82,7 +82,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 					{HTMLPath: "div.p1:nth-of-type(3) > div.p1:nth-of-type(4) > p:last-of-type", StatLabel: "TD"},
 					{HTMLPath: "div.p1:nth-of-type(2) > div.p1:nth-of-type(2) > p:last-of-type", StatLabel: "AV"},
 				},
-			}	
+			}
 		} else if strings.Contains(playerInfo, "db") || strings.Contains(playerInfo, "cb") || strings.Contains(playerInfo, "fs") || strings.Contains(playerInfo, "ss") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{
@@ -90,7 +90,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 					{HTMLPath: "div.p1:nth-of-type(3) > div.p1:nth-of-type(1) > p:last-of-type", StatLabel: "INT"},
 					{HTMLPath: "div.p1:nth-of-type(2) > div.p1:nth-of-type(2) > p:last-of-type", StatLabel: "AV"},
 				},
-			}	
+			}
 		} else if strings.Contains(playerInfo, "nt") || strings.Contains(playerInfo, "dt") || strings.Contains(playerInfo, "de") || strings.Contains(playerInfo, ": lb") || strings.Contains(playerInfo, ": olb") || strings.Contains(playerInfo, ": ilb") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{
@@ -99,7 +99,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 					{HTMLPath: "div.p1:nth-of-type(3) > div.p2:nth-of-type(2) > p:last-of-type", StatLabel: "SOLO"},
 					{HTMLPath: "div.p1:nth-of-type(2) > div.p1:nth-of-type(2) > p:last-of-type", StatLabel: "AV"},
 				},
-			}	
+			}
 		} else if strings.Contains(playerInfo, ": k") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{
@@ -108,7 +108,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 					{HTMLPath: "div.p1:nth-of-type(3) > div.p2:nth-of-type(2) > p:last-of-type", StatLabel: "FGA"},
 					{HTMLPath: "div.p1:nth-of-type(2) > div.p1:nth-of-type(2) > p:last-of-type", StatLabel: "AV"},
 				},
-			}	
+			}
 		} else if strings.Contains(playerInfo, ": p") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{
@@ -117,7 +117,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 					{HTMLPath: "div.p1:nth-of-type(3) > div.p2:nth-of-type(2) > p:last-of-type", StatLabel: "YDS"},
 					{HTMLPath: "div.p1:nth-of-type(2) > div.p1:nth-of-type(2) > p:last-of-type", StatLabel: "AV"},
 				},
-			}	
+			}
 		}
 		// Default for other positions (ie offensive linemen)
 		return StatsConfig{

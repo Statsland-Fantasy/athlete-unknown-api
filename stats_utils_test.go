@@ -7,9 +7,9 @@ import (
 func TestUpdateStatsWithResult_FirstPlay(t *testing.T) {
 	stats := &Stats{}
 	result := &Result{
-		Score:        100,
-		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation, TileCareerStats},
+		Score:            100,
+		IsCorrect:        true,
+		TilesFlipped:     []string{TileBio, TilePlayerInformation, TileCareerStats},
 		IncorrectGuesses: 0,
 	}
 

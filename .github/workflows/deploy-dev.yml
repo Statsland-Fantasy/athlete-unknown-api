@@ -1,0 +1,239 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches:
+      - 'release/**'
+      - 'release-*'
+  workflow_dispatch: # Allow manual trigger
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+
+jobs:
+  test-and-build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.4'
+          cache: true
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v -race ./...
+
+      - name: Build for production
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o athlete-unknown-api
+          ls -lh athlete-unknown-api
+          echo "✅ Production build created"
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # Verify binary exists and is executable
+          test -f athlete-unknown-api && echo "✅ Binary exists"
+          file athlete-unknown-api
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: athlete-unknown-api-binary
+          path: athlete-unknown-api
+          retention-days: 7
+
+  deploy-to-dev:
+    name: Deploy to Dev Environment
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    environment:
+      name: dev
+      # url: https://api-dev.statsland.com # Uncomment and update with your dev API URL
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: athlete-unknown-api-binary
+
+      - name: Make binary executable
+        run: chmod +x athlete-unknown-api
+
+      # Option 1: Deploy to AWS (ECS, Lambda, EC2, etc.)
+      # Uncomment and configure if using AWS
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-west-2
+      #
+      # AWS ECS Deployment Example:
+      # - name: Deploy to ECS
+      #   run: |
+      #     # Build and push Docker image
+      #     docker build -t athlete-unknown-api:latest .
+      #     aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+      #     docker tag athlete-unknown-api:latest ${{ secrets.ECR_REGISTRY }}/athlete-unknown-api:latest
+      #     docker push ${{ secrets.ECR_REGISTRY }}/athlete-unknown-api:latest
+      #
+      #     # Update ECS service
+      #     aws ecs update-service --cluster dev-cluster --service athlete-unknown-api --force-new-deployment
+      #
+      # AWS Lambda Deployment Example:
+      # - name: Deploy to Lambda
+      #   run: |
+      #     zip function.zip athlete-unknown-api
+      #     aws lambda update-function-code --function-name athlete-unknown-api-dev --zip-file fileb://function.zip
+
+      # Option 2: Deploy to GCP (Cloud Run, App Engine, etc.)
+      # Uncomment and configure if using GCP
+      # - name: Authenticate to Google Cloud
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     credentials_json: ${{ secrets.GCP_SA_KEY }}
+      #
+      # - name: Deploy to Cloud Run
+      #   uses: google-github-actions/deploy-cloudrun@v2
+      #   with:
+      #     service: athlete-unknown-api-dev
+      #     image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/athlete-unknown-api:latest
+      #     region: us-central1
+
+      # Option 3: Deploy via SSH to server
+      # Uncomment and configure if using traditional server deployment
+      # - name: Deploy to server via SCP
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.DEV_SERVER_HOST }}
+      #     username: ${{ secrets.DEV_SERVER_USER }}
+      #     key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+      #     source: "athlete-unknown-api"
+      #     target: "/opt/athlete-unknown-api/"
+      #
+      # - name: Restart service on server
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.DEV_SERVER_HOST }}
+      #     username: ${{ secrets.DEV_SERVER_USER }}
+      #     key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+      #     script: |
+      #       sudo systemctl restart athlete-unknown-api
+      #       sudo systemctl status athlete-unknown-api
+
+      # Option 4: Deploy using Docker and Docker Compose
+      # Uncomment if using Docker deployment
+      # - name: Build Docker image
+      #   run: |
+      #     docker build -t ${{ secrets.DOCKER_REGISTRY }}/athlete-unknown-api:dev .
+      #     echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      #     docker push ${{ secrets.DOCKER_REGISTRY }}/athlete-unknown-api:dev
+
+      # Placeholder deployment step - replace with actual deployment
+      - name: Deployment (Configure Me!)
+        run: |
+          echo "🚀 Deployment step placeholder"
+          echo "📦 Build artifact ready for deployment"
+          echo "⚠️  Configure deployment by uncommenting one of the deployment options above"
+          echo ""
+          echo "Available deployment options:"
+          echo "  1. AWS (ECS, Lambda, EC2, Elastic Beanstalk)"
+          echo "  2. GCP (Cloud Run, App Engine, Compute Engine)"
+          echo "  3. Traditional server (SSH + SCP + systemd)"
+          echo "  4. Docker / Docker Compose"
+          echo "  5. Kubernetes / Helm"
+          echo ""
+          echo "Binary details:"
+          ls -lh athlete-unknown-api
+          file athlete-unknown-api
+
+      - name: Post-deployment health check
+        run: |
+          echo "Running post-deployment health checks..."
+          # Example health check - uncomment and modify for your endpoint
+          # MAX_RETRIES=10
+          # RETRY_DELAY=5
+          #
+          # for i in $(seq 1 $MAX_RETRIES); do
+          #   echo "Health check attempt $i/$MAX_RETRIES..."
+          #   if curl -f -s https://api-dev.statsland.com/health > /dev/null; then
+          #     echo "✅ Health check passed"
+          #     exit 0
+          #   fi
+          #   echo "Health check failed, retrying in ${RETRY_DELAY}s..."
+          #   sleep $RETRY_DELAY
+          # done
+          # echo "❌ Health check failed after $MAX_RETRIES attempts"
+          # exit 1
+          echo "⚠️ Configure health check endpoint above"
+          echo "✅ Health check placeholder passed"
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Info" >> $GITHUB_STEP_SUMMARY
+          BUILD_SIZE=$(ls -lh athlete-unknown-api | awk '{print $5}')
+          echo "- Binary size: $BUILD_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "- Go version: 1.25.4" >> $GITHUB_STEP_SUMMARY
+          echo "- Build type: Production (CGO_ENABLED=0, stripped symbols)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **Configure deployment target in workflow file**" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: deploy-to-dev
+    if: always()
+
+    steps:
+      # Option: Slack notification
+      # Uncomment and configure if using Slack
+      # - name: Slack Notification
+      #   uses: 8398a7/action-slack@v3
+      #   with:
+      #     status: ${{ needs.deploy-to-dev.result }}
+      #     text: 'API Deployment to Dev: ${{ needs.deploy-to-dev.result }}'
+      #     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      #   if: always()
+
+      # Option: Discord notification
+      # - name: Discord Notification
+      #   uses: sarisia/actions-status-discord@v1
+      #   if: always()
+      #   with:
+      #     webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      #     status: ${{ needs.deploy-to-dev.result }}
+      #     title: "API Deployment to Dev"
+      #     description: "Deployment ${{ needs.deploy-to-dev.result }}"
+
+      - name: Summary
+        run: |
+          echo "Deployment ${{ needs.deploy-to-dev.result }}"
+          echo "Configure notification service (Slack, Discord, etc.) above"

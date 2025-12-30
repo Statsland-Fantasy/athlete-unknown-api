@@ -13,9 +13,9 @@ type AchievementMapping struct {
 
 // ProcessedAchievement holds an achievement with its tier and processed text
 type ProcessedAchievement struct {
-	OriginalText string
+	OriginalText  string
 	ProcessedText string
-	Tier         int
+	Tier          int
 }
 
 // GetAchievementMappings returns all achievement mappings
@@ -83,7 +83,7 @@ func GetAchievementMappings(sport string) []AchievementMapping {
 			{FullName: "ap comeback player", Abbreviation: "CPOY", Tier: 1},
 			{FullName: "walter payton moty", Abbreviation: "", Tier: 2},
 			{FullName: "hof all-", Abbreviation: "", Tier: 2}, // should be HOF All-2000s/1920s, etc Team
-			{FullName: "alan page award", Abbreviation: "", Tier: 2},			
+			{FullName: "alan page award", Abbreviation: "", Tier: 2},
 		}
 	}
 

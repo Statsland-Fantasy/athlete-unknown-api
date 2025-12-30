@@ -440,7 +440,7 @@ func abbreviatePositions(playerInfo string) string {
 	// Position abbreviation map - add your specific abbreviations here
 	// Order matters: longer position names should be replaced first to avoid partial replacements
 	positionReplacements := []struct {
-		full  string
+		full   string
 		abbrev string
 	}{
 
@@ -456,7 +456,7 @@ func abbreviatePositions(playerInfo string) string {
 		{"Shortstop", "SS"},
 		{"Catcher", "C"},
 		{"Pitcher", "P"},
-		
+
 		// Basketball positions (ordered by length, longest first)
 		{"Shooting Guard", "SG"},
 		{"Point Guard", "PG"},
@@ -475,10 +475,10 @@ func abbreviatePositions(playerInfo string) string {
 	// Replace each position with its abbreviation in order (longest first)
 	for _, replacement := range positionReplacements {
 		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
-	}	
+	}
 
 	result = strings.ReplaceAll(result, ", and ", ", ") // no "ands", all comma separated
-	result = strings.ReplaceAll(result, " and ", ", ") // no "ands", all comma separated
+	result = strings.ReplaceAll(result, " and ", ", ")  // no "ands", all comma separated
 
 	return result
 }
