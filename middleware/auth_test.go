@@ -195,38 +195,38 @@ func TestRequireRole(t *testing.T) {
 // TestOptionalJWTMiddleware tests the optional JWT authentication middleware
 func TestOptionalJWTMiddleware(t *testing.T) {
 	tests := []struct {
-		name                 string
-		authHeader           string
-		expectedStatus       int
-		shouldAbort          bool
+		name                  string
+		authHeader            string
+		expectedStatus        int
+		shouldAbort           bool
 		shouldHaveUserContext bool
 	}{
 		{
-			name:                 "missing authorization header - allows through",
-			authHeader:           "",
-			expectedStatus:       http.StatusOK,
-			shouldAbort:          false,
+			name:                  "missing authorization header - allows through",
+			authHeader:            "",
+			expectedStatus:        http.StatusOK,
+			shouldAbort:           false,
 			shouldHaveUserContext: false,
 		},
 		{
-			name:                 "invalid authorization format - allows through",
-			authHeader:           "InvalidToken",
-			expectedStatus:       http.StatusOK,
-			shouldAbort:          false,
+			name:                  "invalid authorization format - allows through",
+			authHeader:            "InvalidToken",
+			expectedStatus:        http.StatusOK,
+			shouldAbort:           false,
 			shouldHaveUserContext: false,
 		},
 		{
-			name:                 "invalid JWT token - allows through",
-			authHeader:           "Bearer invalid.jwt.token",
-			expectedStatus:       http.StatusOK,
-			shouldAbort:          false,
+			name:                  "invalid JWT token - allows through",
+			authHeader:            "Bearer invalid.jwt.token",
+			expectedStatus:        http.StatusOK,
+			shouldAbort:           false,
 			shouldHaveUserContext: false,
 		},
 		{
-			name:                 "malformed JWT - allows through",
-			authHeader:           "Bearer notajwt",
-			expectedStatus:       http.StatusOK,
-			shouldAbort:          false,
+			name:                  "malformed JWT - allows through",
+			authHeader:            "Bearer notajwt",
+			expectedStatus:        http.StatusOK,
+			shouldAbort:           false,
 			shouldHaveUserContext: false,
 		},
 	}

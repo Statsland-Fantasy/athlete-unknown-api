@@ -84,12 +84,12 @@ func TestDBStruct(t *testing.T) {
 func TestRoundMarshaling(t *testing.T) {
 	now := time.Now()
 	round := &Round{
-		RoundID:               "test-round-id",
-		Sport:                 "basketball",
-		PlayDate:              "2024-01-01",
-		Created:               now,
-		LastUpdated:           now,
-		Theme: "GOAT",
+		RoundID:     "test-round-id",
+		Sport:       "basketball",
+		PlayDate:    "2024-01-01",
+		Created:     now,
+		LastUpdated: now,
+		Theme:       "GOAT",
 		Player: Player{
 			Sport:                "basketball",
 			SportsReferenceURL:   "http://example.com",
@@ -158,14 +158,14 @@ func TestRoundMarshaling(t *testing.T) {
 func TestUserStatsMarshaling(t *testing.T) {
 	now := time.Now()
 	stats := &UserStats{
-		UserId:      "test-user-123",
-		UserName:    "John Doe",
-		UserCreated: now,
+		UserId:             "test-user-123",
+		UserName:           "John Doe",
+		UserCreated:        now,
 		CurrentDailyStreak: 5,
-		LastDayPlayed: "2025-12-10",
+		LastDayPlayed:      "2025-12-10",
 		Sports: []UserSportStats{
 			{
-				Sport:              "basketball",
+				Sport: "basketball",
 				Stats: Stats{
 					TotalPlays:                 200,
 					PercentageCorrect:          75.0,
@@ -179,7 +179,7 @@ func TestUserStatsMarshaling(t *testing.T) {
 				},
 			},
 			{
-				Sport:              "baseball",
+				Sport: "baseball",
 				Stats: Stats{
 					TotalPlays:                 150,
 					PercentageCorrect:          80.0,

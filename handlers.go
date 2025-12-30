@@ -354,11 +354,11 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			// If user stats don't exist, create new user stats
 			if userStats == nil {
 				userStats = &UserStats{
-					UserId:  userId,
-					Sports:  []UserSportStats{},
+					UserId:             userId,
+					Sports:             []UserSportStats{},
 					CurrentDailyStreak: 1,
-					LastDayPlayed: playDate,
-					UserName: "", // TODO: update with user's username as fetched from Auth0
+					LastDayPlayed:      playDate,
+					UserName:           "", // TODO: update with user's username as fetched from Auth0
 				}
 			} else {
 				// Update daily streak based on play date
@@ -381,7 +381,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				}
 				userStats.Sports = append(userStats.Sports, newSportStats)
 				sportStats = &userStats.Sports[len(userStats.Sports)-1]
-			}			
+			}
 
 			// Update sport-specific stats
 			updateStatsWithResult(&sportStats.Stats, &result)

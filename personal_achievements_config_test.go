@@ -78,12 +78,12 @@ func TestGetAchievementMappings(t *testing.T) {
 
 func TestGetAchievementAbbreviation(t *testing.T) {
 	tests := []struct {
-		name             string
-		sport            string
-		achievementName  string
-		expectedText     string
-		expectedTier     int
-		expectNil        bool
+		name            string
+		sport           string
+		achievementName string
+		expectedText    string
+		expectedTier    int
+		expectNil       bool
 	}{
 		{
 			name:            "baseball hall of fame",
@@ -175,48 +175,48 @@ func TestProcessAchievements(t *testing.T) {
 		checkResult  func(string) bool
 	}{
 		{
-			name:  "empty achievements",
-			sport: "baseball",
+			name:         "empty achievements",
+			sport:        "baseball",
 			achievements: []string{},
-			maxLength: 100,
+			maxLength:    100,
 			checkResult: func(result string) bool {
 				return result == ""
 			},
 		},
 		{
-			name:  "single baseball achievement",
-			sport: "baseball",
+			name:         "single baseball achievement",
+			sport:        "baseball",
 			achievements: []string{"Hall of Fame"},
-			maxLength: 100,
+			maxLength:    100,
 			checkResult: func(result string) bool {
 				return result == "HOF"
 			},
 		},
 		{
-			name:  "multiple tier 1 basketball achievements",
-			sport: "basketball",
+			name:         "multiple tier 1 basketball achievements",
+			sport:        "basketball",
 			achievements: []string{"5x NBA Champ", "2x Finals MVP", "18x All Star"},
-			maxLength: 100,
+			maxLength:    100,
 			checkResult: func(result string) bool {
 				// Should include all tier 1 achievements
 				return len(result) > 0
 			},
 		},
 		{
-			name:  "exceeds max length with lower tier",
-			sport: "football",
+			name:         "exceeds max length with lower tier",
+			sport:        "football",
 			achievements: []string{"Hall of Fame", "5x Pro Bowl", "3x All-Pro", "SB Champ", "AP MVP"},
-			maxLength: 50,
+			maxLength:    50,
 			checkResult: func(result string) bool {
 				// Should prioritize tier 1 achievements
 				return len(result) > 0
 			},
 		},
 		{
-			name:  "filters out unknown achievements",
-			sport: "baseball",
+			name:         "filters out unknown achievements",
+			sport:        "baseball",
 			achievements: []string{"Hall of Fame", "Unknown Award", "All-Star"},
-			maxLength: 100,
+			maxLength:    100,
 			checkResult: func(result string) bool {
 				// Should not include Unknown Award
 				return result != "" && len(result) > 0

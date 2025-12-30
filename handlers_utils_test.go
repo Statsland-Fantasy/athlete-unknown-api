@@ -353,11 +353,11 @@ func TestFormatDraftInformation(t *testing.T) {
 // TestUpdateDailyStreak tests the updateDailyStreak helper function
 func TestUpdateDailyStreak(t *testing.T) {
 	tests := []struct {
-		name                     string
-		existingUserStats        *UserStats
-		playDate                 string
-		expectedStreak           int
-		expectedLastDayPlayed    string
+		name                  string
+		existingUserStats     *UserStats
+		playDate              string
+		expectedStreak        int
+		expectedLastDayPlayed string
 	}{
 		{
 			name:                  "nil user stats - should do nothing",
