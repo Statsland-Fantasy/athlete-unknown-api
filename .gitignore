@@ -26,6 +26,16 @@ go.work.sum
 
 # env file
 .env
+.env.dev
+.env.prod
+
+# Lambda build artifacts
+bootstrap
+lambda-deployment.zip
+*.zip
+
+# AWS deployment cache
+aws/.cache/
 
 # Editor/IDE
 # .idea/
