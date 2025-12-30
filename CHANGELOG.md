@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-11](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/11)
+
+### Changed
+
+- Upgraded security vulnerability packages
+
+## [PR-10](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/10)
+
 ### Added
 
 - GitHub Actions CI/CD workflows for automated testing, security scanning, and deployment
