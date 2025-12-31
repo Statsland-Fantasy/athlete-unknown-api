@@ -643,8 +643,8 @@ func scrapePhoto(c *colly.Collector, player *Player) {
 // scrapeNicknames extracts the nicknames from various places given the sport page
 func scrapeNicknames(c *colly.Collector, player *Player, sport string) {
 	isFirstP := true // for football
+	var nicknamesText string
 	c.OnHTML("div#meta p", func(e *colly.HTMLElement) {
-		var nicknamesText string
 		divMetaText := strings.TrimSpace(e.Text)
 		switch sport {
 		case "baseball":
