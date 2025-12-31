@@ -2,6 +2,18 @@ package main
 
 import "time"
 
+// Round represents a complete game round
+type Round struct {
+	RoundID     string     `json:"roundId" dynamodbav:"roundId"`
+	Sport       string     `json:"sport" dynamodbav:"sport"`
+	PlayDate    string     `json:"playDate" dynamodbav:"playDate"`
+	Created     time.Time  `json:"created" dynamodbav:"created"`
+	LastUpdated time.Time  `json:"lastUpdated" dynamodbav:"lastUpdated"`
+	Theme       string     `json:"theme" dynamodbav:"theme"`
+	Player      Player     `json:"player" dynamodbav:"player"`
+	Stats       RoundStats `json:"stats" dynamodbav:"stats"`
+}
+
 // Player represents a player entity with comprehensive details
 type Player struct {
 	Sport                string `json:"sport" dynamodbav:"sport"`
@@ -16,19 +28,8 @@ type Player struct {
 	CareerStats          string `json:"careerStats" dynamodbav:"careerStats"`
 	PersonalAchievements string `json:"personalAchievements" dynamodbav:"personalAchievements"`
 	Photo                string `json:"photo" dynamodbav:"photo"`
-}
-
-// TileFlipTracker tracks tile flip counts
-type TileFlipTracker struct {
-	Bio                  int `json:"bio" dynamodbav:"bio"`
-	PlayerInformation    int `json:"playerInformation" dynamodbav:"playerInformation"`
-	DraftInformation     int `json:"draftInformation" dynamodbav:"draftInformation"`
-	TeamsPlayedOn        int `json:"teamsPlayedOn" dynamodbav:"teamsPlayedOn"`
-	JerseyNumbers        int `json:"jerseyNumbers" dynamodbav:"jerseyNumbers"`
-	CareerStats          int `json:"careerStats" dynamodbav:"careerStats"`
-	PersonalAchievements int `json:"personalAchievements" dynamodbav:"personalAchievements"`
-	Photo                int `json:"photo" dynamodbav:"photo"`
-	YearsActive          int `json:"yearsActive" dynamodbav:"yearsActive"`
+	Initials             string `json:"initials" dynamodbav:"initials"`
+	Nicknames            string `json:"nicknames" dynamodbav:"nicknames"`
 }
 
 // Stats represents common statistics fields shared across different stat types
@@ -47,24 +48,25 @@ type Stats struct {
 	MostTileFlippedTracker     TileFlipTracker `json:"mostTileFlippedTracker" dynamodbav:"mostTileFlippedTracker"`
 }
 
+// TileFlipTracker tracks tile flip counts
+type TileFlipTracker struct {
+	Bio                  int `json:"bio" dynamodbav:"bio"`
+	PlayerInformation    int `json:"playerInformation" dynamodbav:"playerInformation"`
+	DraftInformation     int `json:"draftInformation" dynamodbav:"draftInformation"`
+	TeamsPlayedOn        int `json:"teamsPlayedOn" dynamodbav:"teamsPlayedOn"`
+	JerseyNumbers        int `json:"jerseyNumbers" dynamodbav:"jerseyNumbers"`
+	CareerStats          int `json:"careerStats" dynamodbav:"careerStats"`
+	PersonalAchievements int `json:"personalAchievements" dynamodbav:"personalAchievements"`
+	Photo                int `json:"photo" dynamodbav:"photo"`
+	YearsActive          int `json:"yearsActive" dynamodbav:"yearsActive"`
+}
+
 // RoundStats represents statistics for a specific round
 type RoundStats struct {
 	PlayDate string `json:"playDate" dynamodbav:"playDate"`
 	Name     string `json:"name" dynamodbav:"name"`
 	Sport    string `json:"sport" dynamodbav:"sport"`
 	Stats    `json:",inline" dynamodbav:",inline"`
-}
-
-// Round represents a complete game round
-type Round struct {
-	RoundID     string     `json:"roundId" dynamodbav:"roundId"`
-	Sport       string     `json:"sport" dynamodbav:"sport"`
-	PlayDate    string     `json:"playDate" dynamodbav:"playDate"`
-	Created     time.Time  `json:"created" dynamodbav:"created"`
-	LastUpdated time.Time  `json:"lastUpdated" dynamodbav:"lastUpdated"`
-	Theme       string     `json:"theme" dynamodbav:"theme"`
-	Player      Player     `json:"player" dynamodbav:"player"`
-	Stats       RoundStats `json:"stats" dynamodbav:"stats"`
 }
 
 // Result represents a game result submission

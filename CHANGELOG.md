@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-12]
+
+### Added
+
+- Scraped nicknames and added to model
+- Saved initials as its own field
+
 ### Added
 
 - GitHub Actions CI/CD workflows for automated testing, security scanning, and deployment
