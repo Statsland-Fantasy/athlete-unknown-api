@@ -14,6 +14,7 @@ const (
 	PermissionReadRounds         = "read:athlete-unknown:rounds"
 	PermissionReadRoundStats     = "read:athlete-unknown:round-stats"
 	PermissionSubmitResults      = "submit:athlete-unknown:results"
+	PermissionMigrateUserStats   = "migrate:athlete-unknown:user-stats"
 )
 
 // Context key constants
@@ -105,6 +106,7 @@ const (
 	ErrorNoUpcomingRounds         = "NO_UPCOMING_ROUNDS"
 	ErrorStatsNotFound            = "STATS_NOT_FOUND"
 	ErrorUserStatsNotFound        = "USER_STATS_NOT_FOUND"
+	ErrorUserAlreadyMigrated      = "USER_ALREADY_MIGRATED"
 	ErrorConfigurationError       = "CONFIGURATION_ERROR"
 	ErrorInvalidURL               = "INVALID_URL"
 	ErrorScrapingError            = "SCRAPING_ERROR"
