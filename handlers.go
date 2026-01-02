@@ -502,6 +502,84 @@ func (s *Server) GetUserStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// MigrateUserStats handles POST /v1/stats/user/migrate - migrates user stats from local storage to backend
+func (s *Server) MigrateUserStats(c *gin.Context) {
+	// Get userId from JWT token (set by JWT middleware)
+	userIdToken, exists := c.Get(ConstantUserId)
+	if !exists || userIdToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "User ID not found in token",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	userId, ok := userIdToken.(string)
+	if !ok || userId == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "Invalid user ID in token",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Parse UserStats from request body
+	var userStats UserStats
+	if err := c.ShouldBindJSON(&userStats); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidRequestBody,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Check if user stats already exist in the database
+	existingStats, err := s.db.GetUserStats(c.Request.Context(), userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to check existing user stats: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// If user stats already exist, return 409 Conflict
+	if existingStats != nil {
+		c.JSON(http.StatusConflict, gin.H{
+			JSONFieldError:     StatusConflict,
+			JSONFieldMessage:   "User stats already exist. Migration not allowed for user '" + userId + "'",
+			JSONFieldCode:      ErrorUserAlreadyMigrated,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Override userId from payload with userId from JWT token for security
+	userStats.UserId = userId
+
+	// Save user stats to DynamoDB
+	err = s.db.CreateUserStats(c.Request.Context(), &userStats)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to migrate user stats: " + err.Error(),
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, userStats)
+}
+
 // ScrapeAndCreateRound handles POST /v1/round - scrapes player data and creates a round
 func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	// 1. Parse and validate input
