@@ -498,3 +498,251 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 		t.Errorf("Expected AverageNumberOfTileFlips to be %f, got %f", expectedAvgFlips, stats.AverageNumberOfTileFlips)
 	}
 }
+
+func TestGetPlayerInitials_StandardName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Two word name",
+			input:    "John Smith",
+			expected: "J.S.",
+		},
+		{
+			name:     "Three word name",
+			input:    "Michael Jeffrey Jordan",
+			expected: "M.J.J.",
+		},
+		{
+			name:     "Single name",
+			input:    "Madonna",
+			expected: "M.",
+		},
+		{
+			name:     "Four word name",
+			input:    "Martin Luther King Junior",
+			expected: "M.L.K.J.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetPlayerInitials_EmptyAndWhitespace(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Empty string",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "Only spaces",
+			input:    "   ",
+			expected: "",
+		},
+		{
+			name:     "Only tabs",
+			input:    "\t\t",
+			expected: "",
+		},
+		{
+			name:     "Mixed whitespace",
+			input:    " \t \n ",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetPlayerInitials_LeadingTrailingSpaces(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Leading spaces",
+			input:    "  LeBron James",
+			expected: "L.J.",
+		},
+		{
+			name:     "Trailing spaces",
+			input:    "Tom Brady  ",
+			expected: "T.B.",
+		},
+		{
+			name:     "Leading and trailing spaces",
+			input:    "  Kobe Bryant  ",
+			expected: "K.B.",
+		},
+		{
+			name:     "Multiple spaces between words",
+			input:    "Wayne    Gretzky",
+			expected: "W.G.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetPlayerInitials_SpecialCharacters(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Hyphenated first name",
+			input:    "Jean-Claude Van Damme",
+			expected: "J.C.V.D.",
+		},
+		{
+			name:     "Apostrophe in name",
+			input:    "Shaquille O'Neal",
+			expected: "S.O.",
+		},
+		{
+			name:     "Period in name",
+			input:    "J. R. Smith",
+			expected: "J.R.S.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetPlayerInitials_Suffixes(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Name with Jr (with period)",
+			input:    "Martin Luther King Jr.",
+			expected: "M.L.K. JR.",
+		},
+		{
+			name:     "Name with Jr (no period)",
+			input:    "Ken Griffey Jr",
+			expected: "K.G. JR",
+		},
+		{
+			name:     "Name with Sr (with period)",
+			input:    "Robert Downey Sr.",
+			expected: "R.D. SR.",
+		},
+		{
+			name:     "Name with Sr (no period)",
+			input:    "John Smith Sr",
+			expected: "J.S. SR",
+		},
+		{
+			name:     "Name with III",
+			input:    "William Gates III",
+			expected: "W.G. III",
+		},
+		{
+			name:     "Name with IV",
+			input:    "George Bush IV",
+			expected: "G.B. IV",
+		},
+		{
+			name:     "Name with II",
+			input:    "Michael Johnson II",
+			expected: "M.J. II",
+		},
+		{
+			name:     "Name with V",
+			input:    "Henry Tudor V",
+			expected: "H.T. V",
+		},
+		{
+			name:     "Name with IX",
+			input:    "Louis IX",
+			expected: "L. IX",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetPlayerInitials_InternationalNames(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Spanish name with accents",
+			input:    "José Ramírez",
+			expected: "J.R.",
+		},
+		{
+			name:     "German name with umlaut",
+			input:    "Jürgen Klopp",
+			expected: "J.K.",
+		},
+		{
+			name:     "French name",
+			input:    "François Beauchemin",
+			expected: "F.B.",
+		},
+		{
+			name:     "Nordic name",
+			input:    "Björn Borg",
+			expected: "B.B.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getPlayerInitials(tt.input)
+			if result != tt.expected {
+				t.Errorf("getPlayerInitials(%q) = %q, expected %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}

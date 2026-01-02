@@ -1,5 +1,79 @@
 package main
 
+import (
+	"regexp"
+	"strings"
+)
+
+// getPlayerInitials extracts the initials from a player's full name
+// Returns the first letter of each word in uppercase with periods
+// Preserves suffixes like Jr., Sr., and Roman numerals (e.g., III, IV)
+// Empty names return empty string
+func getPlayerInitials(name string) string {
+	// Trim whitespace and check for empty string
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ""
+	}
+
+	// Split name into words
+	words := strings.Fields(name)
+	if len(words) == 0 {
+		return ""
+	}
+
+	// Regex to match suffixes: Jr., Sr., or Roman numerals
+	suffixRegex := regexp.MustCompile(`^(Jr\.?|Sr\.?|[IVX]+)$`)
+
+	// Check if the last word is a suffix
+	var suffix string
+	if len(words) > 0 && suffixRegex.MatchString(words[len(words)-1]) {
+		suffix = words[len(words)-1]
+		words = words[:len(words)-1] // Remove suffix from words to process
+	}
+
+	// Extract first letter of each word, handling hyphens
+	var initials strings.Builder
+	for _, word := range words {
+		if len(word) == 0 {
+			continue
+		}
+
+		// Split by hyphen to handle hyphenated names
+		parts := strings.Split(word, "-")
+		for _, part := range parts {
+			if len(part) > 0 {
+				// Add separator before if not the first initial
+				if initials.Len() > 0 {
+					// Check if the last character is a hyphen
+					str := initials.String()
+					if str[len(str)-1] != '-' {
+						initials.WriteString(".")
+					}
+				}
+
+				// Convert to uppercase and take first character
+				initials.WriteString(strings.ToUpper(string(part[0])))
+			}
+		}
+	}
+
+	// Add final period
+	if initials.Len() > 0 {
+		initials.WriteString(".")
+	}
+
+	// Add suffix if present
+	if suffix != "" {
+		if initials.Len() > 0 {
+			initials.WriteString(" ")
+		}
+		initials.WriteString(strings.ToUpper(suffix))
+	}
+
+	return initials.String()
+}
+
 // updateStatsWithResult updates statistics with a submitted result
 // Works with both RoundStats and SportStats since they both embed Stats
 func updateStatsWithResult(stats *Stats, result *Result) {

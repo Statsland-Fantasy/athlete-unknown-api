@@ -329,7 +329,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	var rawAchievements []string
 
 	// Register all scrapers
-	scrapePlayerName(c, player)
+	scrapePlayerName(c, player) // includes initials
 	scrapeBio(c, player, sport)
 	scrapePlayerInformation(c, player, sport)
 	scrapeDraftInformation(c, player, sport)
@@ -338,6 +338,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	scrapeCareerStats(c, &statsPulloutElement)
 	scrapePersonalAchievements(c, &rawAchievements)
 	scrapePhoto(c, player)
+	scrapeNicknames(c, player, sport)
 
 	// Post-processing after scraping completes
 	c.OnScraped(func(r *colly.Response) {
@@ -408,7 +409,9 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 func scrapePlayerName(c *colly.Collector, player *Player) {
 	c.OnHTML("h1[itemprop='name'], h1 span", func(e *colly.HTMLElement) {
 		if player.Name == "" {
-			player.Name = strings.TrimSpace(e.Text)
+			playerName := strings.TrimSpace(e.Text)
+			player.Name = playerName
+			player.Initials = getPlayerInitials(playerName)
 		}
 	})
 }
@@ -634,5 +637,45 @@ func scrapePhoto(c *colly.Collector, player *Player) {
 				}
 			}
 		}
+	})
+}
+
+// scrapeNicknames extracts the nicknames from various places given the sport page
+func scrapeNicknames(c *colly.Collector, player *Player, sport string) {
+	isFirstP := true // for football
+	var nicknamesText string
+	c.OnHTML("div#meta p", func(e *colly.HTMLElement) {
+		divMetaText := strings.TrimSpace(e.Text)
+		switch sport {
+		case "baseball":
+			if strings.Contains(divMetaText, "Nicknames:") {
+				divMetaText = strings.ReplaceAll(divMetaText, "\n", " ")
+				divMetaText = strings.ReplaceAll(divMetaText, "\t", " ")
+				parts := strings.SplitN(divMetaText, ":", 2)
+				if len(parts) == 2 {
+					nicknamesText = strings.TrimSpace(parts[1])
+				} else {
+					nicknamesText = strings.TrimSpace(parts[0])
+				}
+			}
+		case "basketball":
+			// Extract text between parentheses if string starts with one
+			parenRegex := regexp.MustCompile(`^\(([^)]+)\)`)
+			if matches := parenRegex.FindStringSubmatch(divMetaText); len(matches) > 1 {
+				nicknamesText = matches[1]
+			}
+		case "football":
+			if isFirstP {
+				// Extract text between parentheses from first p element
+				parenRegex := regexp.MustCompile(`\(([^)]+)\)`)
+				if matches := parenRegex.FindStringSubmatch(divMetaText); len(matches) > 1 {
+					nicknamesText = matches[1]
+					nicknamesText = strings.ReplaceAll(nicknamesText, " or", ",")
+				}
+				isFirstP = false
+			}
+		}
+
+		player.Nicknames = nicknamesText
 	})
 }

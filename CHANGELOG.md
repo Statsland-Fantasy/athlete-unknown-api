@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-12]
+
+### Added
+
+- Scraped nicknames and added to model
+- Saved initials as its own field
+
 ## [PR-11](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/11)
 
 ### Changed
