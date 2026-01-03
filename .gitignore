@@ -36,3 +36,12 @@ go.work.sum
 
 # Claude Code
 .claude
+
+# Build artifacts
+bin/
+lambda/
+*.zip
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
