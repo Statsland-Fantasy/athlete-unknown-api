@@ -1,0 +1,13 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "athlete-unknown-be"
+resolve_s3 = true
+s3_prefix = "athlete-unknown-be"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "RoundsTableName=\"AthleteUnknownRoundsDev\" UserStatsTableName=\"AthleteUnknownUserStatsDev\" CorsAllowedOrigins=\"https://dev.statslandfantasy.com\" Auth0Domain=\"dev-2l3xftm16ho266qq.us.auth0.com\" Auth0Audience=\"https://api.statslandfantasy.com\" ApiKey=\"RSE76cUbLmMTCKCTAn5TruFUgzGjMai2\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-west-2"

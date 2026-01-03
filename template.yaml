@@ -57,7 +57,6 @@ Resources:
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
           API_KEY: !Ref ApiKey
-          DYNAMODB_ENDPOINT: http://host.docker.internal:8000
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref RoundsTableName

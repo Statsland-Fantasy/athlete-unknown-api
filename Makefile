@@ -36,25 +36,18 @@ run:
 # Run the Lambda function locally using AWS SAM CLI
 sam-local: build-lambda
 	@echo "Starting Lambda function locally with SAM..."
-	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy AWS_REGION=us-west-2 sam local start-api
+	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy AWS_REGION=us-west-2 \
+	sam local start-api --env-vars env-local.json
 
-# Deploy using AWS SAM
+# Deploy using AWS SAM (guided - first time or when changing parameters)
+sam-deploy-guided: build-lambda
+	@echo "Deploying with AWS SAM (guided)..."
+	AWS_PROFILE=statsland-dev-admin sam deploy --guided --config-file samconfig-dev.toml
+
+# Deploy using AWS SAM (uses saved config)
 sam-deploy: build-lambda
 	@echo "Deploying with AWS SAM..."
-	sam deploy --guided
-
-# Deploy Lambda function using AWS CLI (requires AWS_LAMBDA_FUNCTION_NAME env var)
-deploy-lambda: build-lambda
-	@if [ -z "$$AWS_LAMBDA_FUNCTION_NAME" ]; then \
-		echo "Error: AWS_LAMBDA_FUNCTION_NAME environment variable not set"; \
-		echo "Usage: AWS_LAMBDA_FUNCTION_NAME=my-function make deploy-lambda"; \
-		exit 1; \
-	fi
-	@echo "Deploying to Lambda function: $$AWS_LAMBDA_FUNCTION_NAME"
-	aws lambda update-function-code \
-		--function-name $$AWS_LAMBDA_FUNCTION_NAME \
-		--zip-file fileb://lambda/bootstrap.zip
-	@echo "Deployment complete"
+	AWS_PROFILE=statsland-dev-admin sam deploy --config-file samconfig-dev.toml
 
 # Local DynamoDB helpers
 dynamodb-start: ## Start local DynamoDB (Docker)
