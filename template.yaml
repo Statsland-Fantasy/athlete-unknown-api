@@ -23,7 +23,7 @@ Parameters:
 
   CorsAllowedOrigins:
     Type: String
-    Default: https://yourdomain.com
+    Default: http://localhost:3000,http://localhost:5173
     Description: Comma-separated list of allowed CORS origins
 
   Auth0Domain:
@@ -44,7 +44,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: athlete-unknown-api
-      CodeUri: cmd/lambda/
+      CodeUri: lambda/
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
@@ -53,10 +53,11 @@ Resources:
         Variables:
           ROUNDS_TABLE_NAME: !Ref RoundsTableName
           USER_STATS_TABLE_NAME: !Ref UserStatsTableName
-          CORS_ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
+          ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
           API_KEY: !Ref ApiKey
+          DYNAMODB_ENDPOINT: http://host.docker.internal:8000
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref RoundsTableName

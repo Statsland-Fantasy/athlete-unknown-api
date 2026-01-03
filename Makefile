@@ -36,7 +36,7 @@ run:
 # Run the Lambda function locally using AWS SAM CLI
 sam-local: build-lambda
 	@echo "Starting Lambda function locally with SAM..."
-	sam local start-api
+	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy AWS_REGION=us-west-2 sam local start-api
 
 # Deploy using AWS SAM
 sam-deploy: build-lambda

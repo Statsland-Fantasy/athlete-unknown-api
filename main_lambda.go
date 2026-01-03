@@ -12,14 +12,14 @@ import (
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 )
 
-var ginLambda *ginadapter.GinLambda
+var ginLambda *ginadapter.GinLambdaV2
 
 func main() {
 	// Setup the Gin router
 	router := SetupRouter()
 
-	// Initialize the gin lambda adapter
-	ginLambda = ginadapter.New(router)
+	// Initialize the gin lambda adapter for API Gateway V2 (HttpApi)
+	ginLambda = ginadapter.NewV2(router)
 
 	log.Println("Starting AWS Lambda handler")
 	log.Printf("API endpoints available at /v1/*")
@@ -28,7 +28,7 @@ func main() {
 	lambda.Start(Handler)
 }
 
-// Handler is the Lambda function handler
-func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+// Handler is the Lambda function handler for API Gateway V2
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return ginLambda.ProxyWithContext(ctx, req)
 }
