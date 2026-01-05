@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created new entry point for lambda builds
 - Template.yaml file for AWS deployments
 
+## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
+
+### Added
+
+- POST route for migrating stats
+
 ## [PR-12]
 
 ### Added
