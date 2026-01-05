@@ -34,7 +34,7 @@ Parameters:
     Type: String
     Description: Auth0 audience for JWT validation
 
-  ApiKey:
+  AdminApiKey:
     Type: String
     NoEcho: true
     Description: API key for admin endpoints
@@ -56,7 +56,7 @@ Resources:
           ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
-          API_KEY: !Ref ApiKey
+          ADMIN_API_KEY: !Ref AdminApiKey
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref RoundsTableName
