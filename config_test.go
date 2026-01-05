@@ -74,7 +74,7 @@ func TestLoadConfig(t *testing.T) {
 			},
 			cleanupEnv: func() {},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "http://localhost:8000",
+				DynamoDBEndpoint:   "",
 				RoundsTableName:    "AthleteUnknownRoundsDev",
 				UserStatsTableName: "AthleteUnknownUserStatsDev",
 				AWSRegion:          "us-west-2",
@@ -114,7 +114,7 @@ func TestLoadConfig(t *testing.T) {
 				os.Unsetenv("AWS_REGION")
 			},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "http://localhost:8000",
+				DynamoDBEndpoint:   "",
 				RoundsTableName:    "CustomRoundsOnly",
 				UserStatsTableName: "AthleteUnknownUserStatsDev",
 				AWSRegion:          "eu-west-1",
