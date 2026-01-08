@@ -160,7 +160,7 @@ curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
 
 ```json
 {
-  "roundId": "Basketball100",
+  "roundId": "Basketball#100",
   "sport": "basketball",
   "playDate": "2025-11-15",
   "created": "2025-11-11T10:00:00Z",
@@ -210,7 +210,7 @@ Creates a new game round with player information. Admin access required.
 
 ```json
 {
-  "roundId": "Basketball100",
+  "roundId": "Basketball#100",
   "sport": "basketball",
   "playDate": "2025-11-15",
   "theme": "GOAT",
@@ -320,7 +320,7 @@ Submits the results of a completed trivia round.
 {
   "score": 9,
   "isCorrect": true,
-  "tilesFlipped": [
+  "flippedTiles": [
     "tile1",
     "tile2",
     "tile3",
@@ -339,7 +339,7 @@ Submits the results of a completed trivia round.
 ```bash
 curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11-15" \
   -H "Content-Type: application/json" \
-  -d '{"score": 9, "isCorrect": true, "tilesFlipped": ["tile1", "tile2", "tile3"]}'
+  -d '{"score": 9, "isCorrect": true, "flippedTiles": ["tile1", "tile2", "tile3"]}'
 ```
 
 **Response:** `200 OK`

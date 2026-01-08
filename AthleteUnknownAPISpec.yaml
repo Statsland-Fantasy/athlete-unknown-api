@@ -72,7 +72,7 @@ paths:
                 basketballRound:
                   summary: Basketball player round
                   value:
-                    roundId: "Basketball100"
+                    roundId: "Basketball#100"
                     sport: "basketball"
                     playDate: "2025-11-15"
                     created: "2025-11-11T10:00:00Z"
@@ -106,7 +106,7 @@ paths:
                 baseballRound:
                   summary: Baseball player round
                   value:
-                    roundId: "Baseball75"
+                    roundId: "Baseball#75"
                     sport: "baseball"
                     playDate: "2025-11-12"
                     created: "2025-11-10T09:00:00Z"
@@ -140,7 +140,7 @@ paths:
                 footballRound:
                   summary: Football player round
                   value:
-                    roundId: "Football50"
+                    roundId: "Football#50"
                     sport: "football"
                     playDate: "2025-11-18"
                     created: "2025-11-09T08:00:00Z"
@@ -239,7 +239,7 @@ paths:
               basketballRound:
                 summary: Create basketball round
                 value:
-                  roundId: "Basketball100"
+                  roundId: "Basketball#100"
                   sport: "basketball"
                   playDate: "2025-11-15"
                   created: "2025-11-11T10:00:00Z"
@@ -273,7 +273,7 @@ paths:
               baseballRound:
                 summary: Create baseball round
                 value:
-                  roundId: "Baseball75"
+                  roundId: "Baseball#75"
                   sport: "baseball"
                   playDate: "2025-11-12"
                   created: "2025-11-11T10:00:00Z"
@@ -312,7 +312,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Round"
               example:
-                roundId: "Basketball100"
+                roundId: "Basketball#100"
                 sport: "basketball"
                 playDate: "2025-11-15"
                 created: "2025-11-11T10:00:00Z"
@@ -586,7 +586,7 @@ paths:
                 basketballUpcomingRounds:
                   summary: Upcoming basketball rounds
                   value:
-                    - roundId: "Basketball100"
+                    - roundId: "Basketball#100"
                       sport: "basketball"
                       playDate: "2025-11-15"
                       created: "2025-11-11T10:00:00Z"
@@ -617,7 +617,7 @@ paths:
                         mostCommonLastTileFlipped: "tile9"
                         mostCommonTileFlipped: "tile5"
                         leastCommonTileFlipped: "tile3"
-                    - roundId: "Basketball101"
+                    - roundId: "Basketball#101"
                       sport: "basketball"
                       playDate: "2025-11-20"
                       created: "2025-11-12T09:00:00Z"
@@ -648,7 +648,7 @@ paths:
                         mostCommonLastTileFlipped: "tile8"
                         mostCommonTileFlipped: "tile4"
                         leastCommonTileFlipped: "tile7"
-                    - roundId: "Basketball102"
+                    - roundId: "Basketball#102"
                       sport: "basketball"
                       playDate: "2025-11-25"
                       created: "2025-11-13T08:30:00Z"
@@ -753,7 +753,7 @@ paths:
                 value:
                   score: 9
                   isCorrect: true
-                  tilesFlipped:
+                  flippedTiles:
                     [
                       "tile1",
                       "tile2",
@@ -770,7 +770,7 @@ paths:
                 value:
                   score: 6
                   isCorrect: false
-                  tilesFlipped: ["tile1", "tile3", "tile5", "tile7"]
+                  flippedTiles: ["tile1", "tile3", "tile5", "tile7"]
       responses:
         "200":
           description: Results successfully processed
@@ -781,7 +781,7 @@ paths:
               example:
                 score: 9
                 isCorrect: true
-                tilesFlipped:
+                flippedTiles:
                   [
                     "tile1",
                     "tile2",
@@ -1085,8 +1085,8 @@ components:
           example: "basketball"
         roundId:
           type: string
-          description: Unique identifier for the round, format is Sport name + round number (e.g., Basketball100)
-          example: "Basketball100"
+          description: Unique identifier for the round, format is Sport name + "#" + round number (e.g., Basketball#100)
+          example: "Basketball#100"
         created:
           type: string
           format: date-time
@@ -1107,7 +1107,7 @@ components:
       required:
         - score
         - isCorrect
-        - tilesFlipped
+        - flippedTiles
         - incorrectGuesses
       properties:
         score:
@@ -1120,7 +1120,7 @@ components:
           type: boolean
           description: Whether the player answered correctly
           example: true
-        tilesFlipped:
+        flippedTiles:
           type: array
           items:
             type: string
@@ -1292,7 +1292,7 @@ components:
         - playDate
         - score
         - isCorrect
-        - tilesFlipped
+        - flippedTiles
         - incorrectGuesses
       properties:
         playDate:
@@ -1310,7 +1310,7 @@ components:
           type: boolean
           description: Whether the player answered correctly
           example: true
-        tilesFlipped:
+        flippedTiles:
           type: array
           items:
             type: string
@@ -1436,7 +1436,7 @@ components:
                 - playDate: "2025-11-15"
                   score: 9
                   isCorrect: true
-                  tilesFlipped:
+                  flippedTiles:
                     [
                       "tile1",
                       "tile2",

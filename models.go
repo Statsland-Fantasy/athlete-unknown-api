@@ -59,6 +59,8 @@ type TileFlipTracker struct {
 	PersonalAchievements int `json:"personalAchievements" dynamodbav:"personalAchievements"`
 	Photo                int `json:"photo" dynamodbav:"photo"`
 	YearsActive          int `json:"yearsActive" dynamodbav:"yearsActive"`
+	Initials             int `json:"initials" dynamodbav:"initials"`
+	Nicknames            int `json:"nicknames" dynamodbav:"nicknames"`
 }
 
 // RoundStats represents statistics for a specific round
@@ -73,7 +75,7 @@ type RoundStats struct {
 type Result struct {
 	Score            int      `json:"score" dynamodbav:"score"`
 	IsCorrect        bool     `json:"isCorrect" dynamodbav:"isCorrect"`
-	TilesFlipped     []string `json:"tilesFlipped" dynamodbav:"tilesFlipped"`
+	flippedTiles     []string `json:"flippedTiles" dynamodbav:"flippedTiles"`
 	IncorrectGuesses int      `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
 }
 
