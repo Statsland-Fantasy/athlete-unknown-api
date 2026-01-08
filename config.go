@@ -18,7 +18,7 @@ type Config struct {
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
 	return &Config{
-		DynamoDBEndpoint:   getEnv("DYNAMODB_ENDPOINT", "http://localhost:8000"),
+		DynamoDBEndpoint:   getEnv("DYNAMODB_ENDPOINT", ""),
 		RoundsTableName:    getEnv("ROUNDS_TABLE_NAME", "AthleteUnknownRoundsDev"),
 		UserStatsTableName: getEnv("USER_STATS_TABLE_NAME", "AthleteUnknownUserStatsDev"),
 		AWSRegion:          getEnv("AWS_REGION", "us-west-2"),
