@@ -75,7 +75,7 @@ func GenerateRoundID(sport string, playDate string) (string, error) {
 	daysSince := int(date.Sub(FIRST_ROUND_DATE).Hours() / 24)
 
 	// Generate the round ID. Split sport and round number by "#"
-	roundID := fmt.Sprintf("%s$#%d", sport, daysSince)
+	roundID := fmt.Sprintf("%s#%d", sport, daysSince)
 	return roundID, nil
 }
 
