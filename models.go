@@ -75,7 +75,7 @@ type RoundStats struct {
 type Result struct {
 	Score            int      `json:"score" dynamodbav:"score"`
 	IsCorrect        bool     `json:"isCorrect" dynamodbav:"isCorrect"`
-	flippedTiles     []string `json:"flippedTiles" dynamodbav:"flippedTiles"`
+	FlippedTiles     []string `json:"flippedTiles" dynamodbav:"flippedTiles"`
 	IncorrectGuesses int      `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
 }
 

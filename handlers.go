@@ -288,7 +288,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		return
 	}
 
-	// potential hack catcher. Score cannot be higher than 100
+	// potential hack catcher. Score cannot be higher than 100 or lower than 0
 	if result.Score > 100 || result.Score < 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			JSONFieldError:     StatusBadRequest,

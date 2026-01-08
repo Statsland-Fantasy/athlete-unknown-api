@@ -99,19 +99,19 @@ func updateStatsWithResult(stats *Stats, result *Result) {
 
 	// Update average number of tile flips
 	totalTileFlips := stats.AverageNumberOfTileFlips * float64(stats.TotalPlays-1)
-	totalTileFlips += float64(len(result.flippedTiles))
+	totalTileFlips += float64(len(result.FlippedTiles))
 	stats.AverageNumberOfTileFlips = totalTileFlips / float64(stats.TotalPlays)
 
 	// Track tile flips
-	if len(result.flippedTiles) > 0 {
+	if len(result.FlippedTiles) > 0 {
 		// Track first tile flipped
-		incrementTileTracker(&stats.FirstTileFlippedTracker, result.flippedTiles[0])
+		incrementTileTracker(&stats.FirstTileFlippedTracker, result.FlippedTiles[0])
 
 		// Track last tile flipped
-		incrementTileTracker(&stats.LastTileFlippedTracker, result.flippedTiles[len(result.flippedTiles)-1])
+		incrementTileTracker(&stats.LastTileFlippedTracker, result.FlippedTiles[len(result.FlippedTiles)-1])
 
 		// Track all tiles flipped
-		for _, tile := range result.flippedTiles {
+		for _, tile := range result.FlippedTiles {
 			incrementTileTracker(&stats.MostTileFlippedTracker, tile)
 		}
 
