@@ -234,7 +234,6 @@ func (s *Server) getRoundsWithDateProvider(c *gin.Context, dateProvider dateRang
 	}
 
 	startDate, endDate := dateProvider(c.Query(QueryParamStartDate), c.Query(QueryParamEndDate))
-
 	rounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -291,9 +290,12 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 
 		endDate := endDateQuery
 		if endDate == "" {
-			endDateTime := time.Now()
-			if startDate == FIRST_ROUND_DATE_STRING {
-				endDateTime = FIRST_ROUND_DATE
+			endDateTime := FIRST_ROUND_DATE
+			endDateTime2 := time.Now()
+
+			// set endDateTime as the later date for maximum range
+			if endDateTime.Before(endDateTime2) {
+				endDateTime = endDateTime2
 			}
 			endDate = endDateTime.AddDate(0, 0, 30).Format(DateFormatYYYYMMDD)
 		}
