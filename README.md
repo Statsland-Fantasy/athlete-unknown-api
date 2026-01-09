@@ -45,6 +45,15 @@ aws dynamodb create-table \
     --key-schema \
         AttributeName=playDate,KeyType=HASH \
         AttributeName=sport,KeyType=RANGE \
+    --global-secondary-indexes \
+        '[{
+            "IndexName": "SportPlayDateIndex",
+            "KeySchema": [
+                {"AttributeName": "sport", "KeyType": "HASH"},
+                {"AttributeName": "playDate", "KeyType": "RANGE"}
+            ],
+            "Projection": {"ProjectionType": "ALL"}
+        }]' \
     --billing-mode PAY_PER_REQUEST \
     --endpoint-url http://localhost:8000
 ```
@@ -71,8 +80,63 @@ aws dynamodb create-table \
     --endpoint-url http://localhost:8000
 ```
 
-**Performance Note:**
-The `GetRoundsBySport` endpoint uses a Scan operation to filter by sport. For better performance with large datasets, consider adding a Global Secondary Index (GSI) with `sport` as the partition key and `playDate` as the sort key.
+**Global Secondary Index:**
+
+The table includes a GSI named `SportPlayDateIndex` for efficient querying by sport:
+- Partition Key: `sport`
+- Sort Key: `playDate`
+
+This allows the `GetRoundsBySport` endpoint to use a Query operation (instead of Scan) for better performance, and returns results pre-sorted by playDate in descending order (latest to earliest).
+
+**Adding GSI to an existing table:**
+
+If you already have a table without the GSI, you can add it with this command:
+
+```bash
+# For DynamoDB Local:
+aws dynamodb update-table \
+    --table-name AthleteUnknownRoundsDev \
+    --attribute-definitions \
+        AttributeName=playDate,AttributeType=S \
+        AttributeName=sport,AttributeType=S \
+    --global-secondary-index-updates \
+        '[{
+            "Create": {
+                "IndexName": "SportPlayDateIndex",
+                "KeySchema": [
+                    {"AttributeName": "sport", "KeyType": "HASH"},
+                    {"AttributeName": "playDate", "KeyType": "RANGE"}
+                ],
+                "Projection": {"ProjectionType": "ALL"}
+            }
+        }]' \
+    --endpoint-url http://localhost:8000
+
+# For AWS DynamoDB (production):
+aws dynamodb update-table \
+    --table-name AthleteUnknownRoundsDev \
+    --attribute-definitions \
+        AttributeName=playDate,AttributeType=S \
+        AttributeName=sport,AttributeType=S \
+    --global-secondary-index-updates \
+        '[{
+            "Create": {
+                "IndexName": "SportPlayDateIndex",
+                "KeySchema": [
+                    {"AttributeName": "sport", "KeyType": "HASH"},
+                    {"AttributeName": "playDate", "KeyType": "RANGE"}
+                ],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            }
+        }]'
+
+# Note: For production tables using PAY_PER_REQUEST billing, omit the ProvisionedThroughput parameter
+# or first switch to PROVISIONED billing mode, add the GSI, then switch back to PAY_PER_REQUEST
+```
 
 ### Running the API
 

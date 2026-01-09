@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -254,11 +253,6 @@ func (s *Server) getRoundsWithDateProvider(c *gin.Context, dateProvider dateRang
 		})
 		return
 	}
-
-	// Sort by playDate
-	sort.Slice(rounds, func(i, j int) bool {
-		return rounds[i].PlayDate < rounds[j].PlayDate
-	})
 
 	c.JSON(http.StatusOK, rounds)
 }

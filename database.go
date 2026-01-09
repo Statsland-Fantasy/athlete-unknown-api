@@ -166,32 +166,37 @@ func (db *DB) DeleteRound(ctx context.Context, sport, playDate string) error {
 
 // GetRoundsBySport retrieves minimal round information for a specific sport, optionally filtered by date range
 // Returns only roundId, sport, and playDate fields using DynamoDB ProjectionExpression for efficiency
-// Note: This uses a Scan operation. For better performance with large datasets, consider adding a GSI with sport as partition key
+// Uses the SportPlayDateIndex GSI for efficient querying and automatic sorting by playDate
 func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate string) ([]*RoundSummary, error) {
-	// Build filter expression for sport
-	filterExpression := "sport = :sport"
+	// Build key condition expression for sport (partition key of GSI)
+	keyConditionExpression := "sport = :sport"
 	expressionAttributeValues := map[string]types.AttributeValue{
 		":sport": &types.AttributeValueMemberS{Value: sport},
 	}
 
-	// Add date range filtering if provided
-	if startDate != "" {
-		filterExpression += " AND playDate >= :startDate"
+	// Add date range filtering to key condition if provided
+	if startDate != "" && endDate != "" {
+		keyConditionExpression += " AND playDate BETWEEN :startDate AND :endDate"
 		expressionAttributeValues[":startDate"] = &types.AttributeValueMemberS{Value: startDate}
-	}
-	if endDate != "" {
-		filterExpression += " AND playDate <= :endDate"
+		expressionAttributeValues[":endDate"] = &types.AttributeValueMemberS{Value: endDate}
+	} else if startDate != "" {
+		keyConditionExpression += " AND playDate >= :startDate"
+		expressionAttributeValues[":startDate"] = &types.AttributeValueMemberS{Value: startDate}
+	} else if endDate != "" {
+		keyConditionExpression += " AND playDate <= :endDate"
 		expressionAttributeValues[":endDate"] = &types.AttributeValueMemberS{Value: endDate}
 	}
 
-	result, err := db.client.Scan(ctx, &dynamodb.ScanInput{
+	result, err := db.client.Query(ctx, &dynamodb.QueryInput{
 		TableName:                 aws.String(db.roundsTableName),
-		FilterExpression:          aws.String(filterExpression),
+		IndexName:                 aws.String("SportPlayDateIndex"),
+		KeyConditionExpression:    aws.String(keyConditionExpression),
 		ExpressionAttributeValues: expressionAttributeValues,
 		ProjectionExpression:      aws.String("roundId, sport, playDate"),
+		ScanIndexForward:          aws.Bool(false), // Sort descending (latest to earliest)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan rounds: %w", err)
+		return nil, fmt.Errorf("failed to query rounds: %w", err)
 	}
 
 	var rounds []*RoundSummary
