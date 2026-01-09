@@ -9,7 +9,7 @@ func TestUpdateStatsWithResult_FirstPlay(t *testing.T) {
 	result := &Result{
 		Score:            100,
 		IsCorrect:        true,
-		TilesFlipped:     []string{TileBio, TilePlayerInformation, TileCareerStats},
+		FlippedTiles:     []string{TileBio, TilePlayerInformation, TileCareerStats},
 		IncorrectGuesses: 0,
 	}
 
@@ -73,7 +73,7 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -81,7 +81,7 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePlayerInformation},
+		FlippedTiles: []string{TilePlayerInformation},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -111,7 +111,7 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -119,7 +119,7 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 	result2 := &Result{
 		Score:        0,
 		IsCorrect:    false,
-		TilesFlipped: []string{TilePlayerInformation, TileDraftInformation},
+		FlippedTiles: []string{TilePlayerInformation, TileDraftInformation},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -160,7 +160,7 @@ func TestUpdateStatsWithResult_HighestScoreUpdate(t *testing.T) {
 	result := &Result{
 		Score:        120,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -172,7 +172,7 @@ func TestUpdateStatsWithResult_HighestScoreUpdate(t *testing.T) {
 	result2 := &Result{
 		Score:        60,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileCareerStats},
+		FlippedTiles: []string{TileCareerStats},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -189,7 +189,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation},
+		FlippedTiles: []string{TileBio, TilePlayerInformation},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -201,7 +201,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation, TileDraftInformation, TileCareerStats},
+		FlippedTiles: []string{TileBio, TilePlayerInformation, TileDraftInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -214,7 +214,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result3 := &Result{
 		Score:        90,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result3)
 
@@ -225,13 +225,13 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	}
 }
 
-func TestUpdateStatsWithResult_EmptyTilesFlipped(t *testing.T) {
+func TestUpdateStatsWithResult_EmptyFlippedTiles(t *testing.T) {
 	stats := &Stats{}
 
 	result := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{},
+		FlippedTiles: []string{},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -262,7 +262,7 @@ func TestUpdateStatsWithResult_TileTrackingAccuracy(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation, TileCareerStats},
+		FlippedTiles: []string{TileBio, TilePlayerInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -270,7 +270,7 @@ func TestUpdateStatsWithResult_TileTrackingAccuracy(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TileDraftInformation, TileBio},
+		FlippedTiles: []string{TileBio, TileDraftInformation, TileBio},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -317,7 +317,7 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		result := &Result{
 			Score:        100,
 			IsCorrect:    true,
-			TilesFlipped: []string{TileBio},
+			FlippedTiles: []string{TileBio},
 		}
 		updateStatsWithResult(stats, result)
 	}
@@ -327,7 +327,7 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		result := &Result{
 			Score:        0,
 			IsCorrect:    false,
-			TilesFlipped: []string{TilePlayerInformation},
+			FlippedTiles: []string{TilePlayerInformation},
 		}
 		updateStatsWithResult(stats, result)
 	}
@@ -351,7 +351,7 @@ func TestUpdateStatsWithResult_SingleTileFlipped(t *testing.T) {
 	result := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePhoto},
+		FlippedTiles: []string{TilePhoto},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -380,7 +380,7 @@ func TestUpdateStatsWithResult_AllTileTypes(t *testing.T) {
 	result := &Result{
 		Score:     100,
 		IsCorrect: true,
-		TilesFlipped: []string{
+		FlippedTiles: []string{
 			TileBio,
 			TilePlayerInformation,
 			TileDraftInformation,
@@ -435,7 +435,7 @@ func TestUpdateStatsWithResult_ZeroScore(t *testing.T) {
 	result := &Result{
 		Score:        0,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -466,7 +466,7 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 	result := &Result{
 		Score:        130,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePlayerInformation, TileCareerStats},
+		FlippedTiles: []string{TilePlayerInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result)
 
