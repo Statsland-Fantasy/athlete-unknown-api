@@ -217,8 +217,11 @@ func (s *Server) DeleteRound(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// GetUpcomingRounds handles GET /v1/upcoming-rounds
-func (s *Server) GetUpcomingRounds(c *gin.Context) {
+// dateRangeProvider is a function that computes the date range based on query parameters
+type dateRangeProvider func(startDateQuery, endDateQuery string) (startDate, endDate string)
+
+// getRoundsWithDateProvider handles common logic for retrieving rounds with custom date range logic
+func (s *Server) getRoundsWithDateProvider(c *gin.Context, dateProvider dateRangeProvider) {
 	sport := c.Query(QueryParamSport)
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -230,10 +233,9 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 		return
 	}
 
-	startDate := c.Query(QueryParamStartDate)
-	endDate := c.Query(QueryParamEndDate)
+	startDate, endDate := dateProvider(c.Query(QueryParamStartDate), c.Query(QueryParamEndDate))
 
-	upcomingRounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
+	rounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -244,10 +246,10 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 		return
 	}
 
-	if len(upcomingRounds) == 0 {
+	if len(rounds) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			JSONFieldError:     StatusNotFound,
-			JSONFieldMessage:   "No upcoming rounds found for sport '" + sport + "' in the specified date range",
+			JSONFieldMessage:   "No rounds found for sport '" + sport + "' in the specified date range",
 			JSONFieldCode:      ErrorNoUpcomingRounds,
 			JSONFieldTimestamp: time.Now(),
 		})
@@ -255,11 +257,49 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 	}
 
 	// Sort by playDate
-	sort.Slice(upcomingRounds, func(i, j int) bool {
-		return upcomingRounds[i].PlayDate < upcomingRounds[j].PlayDate
+	sort.Slice(rounds, func(i, j int) bool {
+		return rounds[i].PlayDate < rounds[j].PlayDate
 	})
 
-	c.JSON(http.StatusOK, upcomingRounds)
+	c.JSON(http.StatusOK, rounds)
+}
+
+// GetRounds handles GET /v1/rounds
+func (s *Server) GetRounds(c *gin.Context) {
+	s.getRoundsWithDateProvider(c, func(startDateQuery, endDateQuery string) (string, string) {
+		startDate := startDateQuery
+		if startDate == "" {
+			startDate = FIRST_ROUND_DATE_STRING
+		}
+
+		endDate := endDateQuery
+		if endDate == "" {
+			endDate = time.Now().Format(DateFormatYYYYMMDD)
+		}
+
+		return startDate, endDate
+	})
+}
+
+// GetUpcomingRounds handles GET /v1/upcoming-rounds
+func (s *Server) GetUpcomingRounds(c *gin.Context) {
+	s.getRoundsWithDateProvider(c, func(startDateQuery, endDateQuery string) (string, string) {
+		startDate := startDateQuery
+		if startDate == "" {
+			startDate = FIRST_ROUND_DATE_STRING
+		}
+
+		endDate := endDateQuery
+		if endDate == "" {
+			endDateTime := time.Now()
+			if startDate == FIRST_ROUND_DATE_STRING {
+				endDateTime = FIRST_ROUND_DATE
+			}
+			endDate = endDateTime.AddDate(0, 0, 30).Format(DateFormatYYYYMMDD)
+		}
+
+		return startDate, endDate
+	})
 }
 
 // SubmitResults handles POST /v1/results

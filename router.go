@@ -64,6 +64,7 @@ func SetupRouter() *gin.Engine {
 		public.GET("/round", server.GetRound)
 		public.GET("/stats/round", server.GetRoundStats)
 		public.POST("/results", server.SubmitResults)
+		public.GET("/rounds", server.GetRounds)
 	}
 
 	// Public endpoints (with required JWT auth for authenticated users)

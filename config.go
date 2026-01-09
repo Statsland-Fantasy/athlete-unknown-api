@@ -5,7 +5,18 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// Load .env file before any package variables are initialized
+	_ = godotenv.Load()
+
+	// Initialize date variables after .env is loaded
+	FIRST_ROUND_DATE_STRING = getEnv("FIRST_ROUND_DATE", "2026-02-08")
+	FIRST_ROUND_DATE = mustParseDate(FIRST_ROUND_DATE_STRING)
+}
 
 // Config holds application configuration
 type Config struct {
@@ -60,8 +71,20 @@ func GetCurrentSeasonYear(sport string) int {
 	}
 }
 
-// FIRST_ROUND_DATE is the reference date for calculating round IDs
-var FIRST_ROUND_DATE = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+// FIRST_ROUND_DATE_STRING is the string representation (YYYY-MM-DD) from env or default
+var FIRST_ROUND_DATE_STRING string
+
+// FIRST_ROUND_DATE is the parsed time.Time version for calculations
+var FIRST_ROUND_DATE time.Time
+
+// mustParseDate parses a date string or panics (should only be called at startup)
+func mustParseDate(dateStr string) time.Time {
+	date, err := time.Parse(DateFormatYYYYMMDD, dateStr)
+	if err != nil {
+		panic(fmt.Sprintf("invalid FIRST_ROUND_DATE format '%s': %v", dateStr, err))
+	}
+	return date
+}
 
 // GenerateRoundID generates a round ID by concatenating the sport and the number of days since FIRST_ROUND_DATE
 func GenerateRoundID(sport string, playDate string) (string, error) {
