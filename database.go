@@ -164,9 +164,10 @@ func (db *DB) DeleteRound(ctx context.Context, sport, playDate string) error {
 	return nil
 }
 
-// GetRoundsBySport retrieves all rounds for a specific sport, optionally filtered by date range
+// GetRoundsBySport retrieves minimal round information for a specific sport, optionally filtered by date range
+// Returns only roundId, sport, and playDate fields using DynamoDB ProjectionExpression for efficiency
 // Note: This uses a Scan operation. For better performance with large datasets, consider adding a GSI with sport as partition key
-func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate string) ([]*Round, error) {
+func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate string) ([]*RoundSummary, error) {
 	// Build filter expression for sport
 	filterExpression := "sport = :sport"
 	expressionAttributeValues := map[string]types.AttributeValue{
@@ -187,14 +188,15 @@ func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate st
 		TableName:                 aws.String(db.roundsTableName),
 		FilterExpression:          aws.String(filterExpression),
 		ExpressionAttributeValues: expressionAttributeValues,
+		ProjectionExpression:      aws.String("roundId, sport, playDate"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan rounds: %w", err)
 	}
 
-	var rounds []*Round
+	var rounds []*RoundSummary
 	for _, item := range result.Items {
-		var round Round
+		var round RoundSummary
 		err = attributevalue.UnmarshalMap(item, &round)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal round: %w", err)

@@ -14,6 +14,13 @@ type Round struct {
 	Stats       RoundStats `json:"stats" dynamodbav:"stats"`
 }
 
+// RoundSummary contains minimal round information for list views
+type RoundSummary struct {
+	RoundID  string `json:"roundId" dynamodbav:"roundId"`
+	Sport    string `json:"sport" dynamodbav:"sport"`
+	PlayDate string `json:"playDate" dynamodbav:"playDate"`
+}
+
 // Player represents a player entity with comprehensive details
 type Player struct {
 	Sport                string `json:"sport" dynamodbav:"sport"`
