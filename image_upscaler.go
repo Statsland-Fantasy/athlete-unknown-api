@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-// ImageUpscaler handles AI-powered image upscaling
+// ImageUpscaler handles AI-powered image upscaling using Replicate's Real-ESRGAN model
+// Pricing: ~$0.0023 per image
+// Model: nightmareai/real-esrgan (2x upscaling)
+// API Docs: https://replicate.com/docs/reference/http
 type ImageUpscaler struct {
 	apiKey     string
 	apiURL     string
@@ -83,14 +86,17 @@ func (u *ImageUpscaler) upscaleWithRetry(imageURL string, maxRetries int) (strin
 	return "", fmt.Errorf("all %d attempts failed: %w", maxRetries, lastErr)
 }
 
-// callUpscaleAPI makes the actual API call to the upscaling service
+// callUpscaleAPI makes the actual API call to Replicate's Real-ESRGAN upscaling service
 func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
-	// Prepare request payload
-	// NOTE: Adjust this structure based on your specific AI upscaling service
-	// Examples: Replicate, DeepAI, Let's Enhance, etc.
+	// Replicate API payload for Real-ESRGAN model
+	// Model: nightmareai/real-esrgan (popular 2x upscaling model)
 	payload := map[string]interface{}{
-		"image": imageURL,
-		"scale": 2, // 2x upscaling
+		"version": "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
+		"input": map[string]interface{}{
+			"image": imageURL,
+			"scale": 2, // 2x upscaling
+			"face_enhance": false,
+		},
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -98,14 +104,15 @@ func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
 		return "", fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	// Create HTTP request
-	req, err := http.NewRequest("POST", u.apiURL, bytes.NewBuffer(jsonData))
+	// Create prediction
+	req, err := http.NewRequest("POST", "https://api.replicate.com/v1/predictions", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+u.apiKey)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "wait") // Wait for result instead of polling
 
 	// Make request
 	resp, err := u.httpClient.Do(req)
@@ -114,32 +121,49 @@ func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
 	// Check response status
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Parse response
-	// NOTE: Adjust this based on your specific AI service's response format
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	// Parse Replicate response
+	var result struct {
+		Status string      `json:"status"`
+		Output interface{} `json:"output"`
+		Error  string      `json:"error,omitempty"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Extract upscaled URL
-	// NOTE: This field name may vary by service - adjust accordingly
-	upscaledURL, ok := result["output"].(string)
-	if !ok {
-		// Try alternative field names
-		if url, exists := result["url"].(string); exists {
-			return url, nil
-		}
-		if url, exists := result["result"].(string); exists {
-			return url, nil
-		}
-		return "", fmt.Errorf("invalid response format: no URL found")
+	// Check for errors
+	if result.Error != "" {
+		return "", fmt.Errorf("Replicate error: %s", result.Error)
 	}
 
-	return upscaledURL, nil
+	// Check status
+	if result.Status != "succeeded" {
+		return "", fmt.Errorf("prediction status: %s", result.Status)
+	}
+
+	// Extract output URL
+	// Replicate returns output as a string URL or array of URLs
+	if outputStr, ok := result.Output.(string); ok {
+		return outputStr, nil
+	}
+
+	if outputArray, ok := result.Output.([]interface{}); ok && len(outputArray) > 0 {
+		if url, ok := outputArray[0].(string); ok {
+			return url, nil
+		}
+	}
+
+	return "", fmt.Errorf("invalid output format in Replicate response")
 }

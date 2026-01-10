@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- AI-powered image upscaling service for player photos
+- AI-powered image upscaling service using **Replicate's Real-ESRGAN model**
 - `ImageUpscaler` service with automatic retry logic and graceful fallback
 - Configuration options: `AI_UPSCALER_ENABLED`, `AI_UPSCALER_API_KEY`, `AI_UPSCALER_API_URL`
 - Photo upscaling integrated into scraping workflow (POST /v1/round endpoint)
@@ -25,11 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 
-- Upscaling happens automatically when rounds are created via scraping
-- If upscaling fails or is disabled, original photo is used (graceful degradation)
-- Configurable retry logic with exponential backoff (default: 3 attempts)
-- 60-second timeout per upscaling request
-- Frontend receives upscaled photos transparently (no changes needed)
+- **Service**: Replicate API (https://replicate.com)
+- **Model**: nightmareai/real-esrgan (2x upscaling)
+- **Pricing**: ~$0.0023 per image (~$2.30 per 1000 images)
+- **How it works**:
+  - Upscaling happens automatically when rounds are created via scraping
+  - Photos are sent to Replicate API with `Prefer: wait` header for synchronous response
+  - Upscaled photo URL replaces original in database (transparent to frontend)
+- **Error handling**:
+  - Configurable retry logic with exponential backoff (default: 3 attempts)
+  - 60-second timeout per upscaling request
+  - Graceful fallback to original photo if upscaling fails
+- **Frontend impact**: Zero - frontend receives higher quality photos automatically
 
 ## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
 
