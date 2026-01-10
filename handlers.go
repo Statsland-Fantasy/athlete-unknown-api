@@ -10,12 +10,16 @@ import (
 
 // Server holds dependencies for HTTP handlers
 type Server struct {
-	db *DB
+	db       *DB
+	upscaler *ImageUpscaler
 }
 
-// NewServer creates a new Server with the given database
-func NewServer(db *DB) *Server {
-	return &Server{db: db}
+// NewServer creates a new Server with the given database and upscaler
+func NewServer(db *DB, upscaler *ImageUpscaler) *Server {
+	return &Server{
+		db:       db,
+		upscaler: upscaler,
+	}
 }
 
 // GetRound handles GET /v1/round
@@ -606,6 +610,11 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 			JSONFieldTimestamp: time.Now(),
 		})
 		return
+	}
+
+	// 3.5. Upscale player photo
+	if player.Photo != "" {
+		player.Photo = s.upscaler.UpscaleImage(player.Photo)
 	}
 
 	// 4. Build and save round

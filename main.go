@@ -27,8 +27,16 @@ func main() {
 	log.Printf("DynamoDB client initialized (Rounds Table: %s, User Stats Table: %s, Region: %s)",
 		cfg.RoundsTableName, cfg.UserStatsTableName, cfg.AWSRegion)
 
-	// Create server with database dependency injection
-	server := NewServer(db)
+	// Initialize AI upscaler
+	upscaler := NewImageUpscaler(cfg.AIUpscalerAPIKey, cfg.AIUpscalerAPIURL, cfg.AIUpscalerEnabled)
+	if cfg.AIUpscalerEnabled {
+		log.Printf("AI upscaler enabled (API: %s)", cfg.AIUpscalerAPIURL)
+	} else {
+		log.Printf("AI upscaler disabled")
+	}
+
+	// Create server with database and upscaler dependency injection
+	server := NewServer(db, upscaler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
