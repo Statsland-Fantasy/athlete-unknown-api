@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -217,8 +216,11 @@ func (s *Server) DeleteRound(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// GetUpcomingRounds handles GET /v1/upcoming-rounds
-func (s *Server) GetUpcomingRounds(c *gin.Context) {
+// dateRangeProvider is a function that computes the date range based on query parameters
+type dateRangeProvider func(startDateQuery, endDateQuery string) (startDate, endDate string)
+
+// getRoundsWithDateProvider handles common logic for retrieving rounds with custom date range logic
+func (s *Server) getRoundsWithDateProvider(c *gin.Context, dateProvider dateRangeProvider) {
 	sport := c.Query(QueryParamSport)
 	if sport == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -230,10 +232,8 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 		return
 	}
 
-	startDate := c.Query(QueryParamStartDate)
-	endDate := c.Query(QueryParamEndDate)
-
-	upcomingRounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
+	startDate, endDate := dateProvider(c.Query(QueryParamStartDate), c.Query(QueryParamEndDate))
+	rounds, err := s.db.GetRoundsBySport(c.Request.Context(), sport, startDate, endDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -244,22 +244,58 @@ func (s *Server) GetUpcomingRounds(c *gin.Context) {
 		return
 	}
 
-	if len(upcomingRounds) == 0 {
+	if len(rounds) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			JSONFieldError:     StatusNotFound,
-			JSONFieldMessage:   "No upcoming rounds found for sport '" + sport + "' in the specified date range",
+			JSONFieldMessage:   "No rounds found for sport '" + sport + "' in the specified date range",
 			JSONFieldCode:      ErrorNoUpcomingRounds,
 			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	// Sort by playDate
-	sort.Slice(upcomingRounds, func(i, j int) bool {
-		return upcomingRounds[i].PlayDate < upcomingRounds[j].PlayDate
-	})
+	c.JSON(http.StatusOK, rounds)
+}
 
-	c.JSON(http.StatusOK, upcomingRounds)
+// GetRounds handles GET /v1/rounds
+func (s *Server) GetRounds(c *gin.Context) {
+	s.getRoundsWithDateProvider(c, func(startDateQuery, endDateQuery string) (string, string) {
+		startDate := startDateQuery
+		if startDate == "" {
+			startDate = FIRST_ROUND_DATE_STRING
+		}
+
+		endDate := endDateQuery
+		if endDate == "" {
+			endDate = time.Now().Format(DateFormatYYYYMMDD)
+		}
+
+		return startDate, endDate
+	})
+}
+
+// GetUpcomingRounds handles GET /v1/upcoming-rounds
+func (s *Server) GetUpcomingRounds(c *gin.Context) {
+	s.getRoundsWithDateProvider(c, func(startDateQuery, endDateQuery string) (string, string) {
+		startDate := startDateQuery
+		if startDate == "" {
+			startDate = FIRST_ROUND_DATE_STRING
+		}
+
+		endDate := endDateQuery
+		if endDate == "" {
+			endDateTime := FIRST_ROUND_DATE
+			endDateTime2 := time.Now()
+
+			// set endDateTime as the later date for maximum range
+			if endDateTime.Before(endDateTime2) {
+				endDateTime = endDateTime2
+			}
+			endDate = endDateTime.AddDate(0, 0, 30).Format(DateFormatYYYYMMDD)
+		}
+
+		return startDate, endDate
+	})
 }
 
 // SubmitResults handles POST /v1/results
@@ -288,7 +324,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		return
 	}
 
-	// potential hack catcher. Score cannot be higher than 100
+	// potential hack catcher. Score cannot be higher than 100 or lower than 0
 	if result.Score > 100 || result.Score < 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			JSONFieldError:     StatusBadRequest,
@@ -351,18 +387,23 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				return
 			}
 
+			// Get user's timezone from header (or UTC fallback)
+			userLoc := getUserTimezone(c)
+			// Calculate today's date in the user's local timezone
+			today := time.Now().In(userLoc).Format(DateFormatYYYYMMDD)
+
 			// If user stats don't exist, create new user stats
 			if userStats == nil {
 				userStats = &UserStats{
 					UserId:             userId,
 					Sports:             []UserSportStats{},
 					CurrentDailyStreak: 1,
-					LastDayPlayed:      playDate,
-					UserName:           "", // TODO: update with user's username as fetched from Auth0
+					LastDayPlayed:      today, // Track real-life date in user's timezone, not round playDate
+					UserName:           "",    // TODO: update with user's username as fetched from Auth0
 				}
 			} else {
-				// Update daily streak based on play date
-				updateDailyStreak(userStats, playDate)
+				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)
+				updateDailyStreak(userStats, today)
 			}
 
 			// Find or create specific sport stats
@@ -386,12 +427,25 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			// Update sport-specific stats
 			updateStatsWithResult(&sportStats.Stats, &result)
 
-			// Create round history entry
-			roundHistory := RoundHistory{
-				PlayDate: playDate,
-				Result:   result,
+			// Check if history entry for this playDate already exists
+			historyExists := false
+			for i := range sportStats.History {
+				if sportStats.History[i].PlayDate == playDate {
+					// Update existing history entry instead of creating duplicate
+					sportStats.History[i].Result = result
+					historyExists = true
+					break
+				}
 			}
-			sportStats.History = append(sportStats.History, roundHistory)
+
+			// Only append if this playDate doesn't already exist in history
+			if !historyExists {
+				roundHistory := RoundHistory{
+					PlayDate: playDate,
+					Result:   result,
+				}
+				sportStats.History = append(sportStats.History, roundHistory)
+			}
 
 			// Save or update user stats in DynamoDB
 			if userStats.UserCreated.IsZero() {

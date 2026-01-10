@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Athlete Unknown API - Lambda Deployment
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        GIN_MODE: release
+
+Parameters:
+  RoundsTableName:
+    Type: String
+    Default: AthleteUnknownRoundsDev
+    Description: DynamoDB table name for rounds
+
+  UserStatsTableName:
+    Type: String
+    Default: AthleteUnknownUserStatsDev
+    Description: DynamoDB table name for user stats
+
+  CorsAllowedOrigins:
+    Type: String
+    Default: http://localhost:3000,http://localhost:5173
+    Description: Comma-separated list of allowed CORS origins
+
+  Auth0Domain:
+    Type: String
+    Description: Auth0 domain for JWT validation
+
+  Auth0Audience:
+    Type: String
+    Description: Auth0 audience for JWT validation
+
+  AdminApiKey:
+    Type: String
+    NoEcho: true
+    Description: API key for admin endpoints
+
+Resources:
+  AthleteUnknownApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: athlete-unknown-api
+      CodeUri: lambda/
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          ROUNDS_TABLE_NAME: !Ref RoundsTableName
+          USER_STATS_TABLE_NAME: !Ref UserStatsTableName
+          ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
+          AUTH0_DOMAIN: !Ref Auth0Domain
+          AUTH0_AUDIENCE: !Ref Auth0Audience
+          ADMIN_API_KEY: !Ref AdminApiKey
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoundsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserStatsTableName
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            ApiId: !Ref HttpApi
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref CorsAllowedOrigins
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-API-Key
+          - X-User-Timezone
+        MaxAge: 43200
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt AthleteUnknownApi.Arn

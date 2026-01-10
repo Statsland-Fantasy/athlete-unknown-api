@@ -25,6 +25,10 @@ func incrementTileTracker(tracker *TileFlipTracker, tileName string) {
 		tracker.Photo++
 	case TileYearsActive:
 		tracker.YearsActive++
+	case TileInitials:
+		tracker.Initials++
+	case TileNicknames:
+		tracker.Nicknames++
 	}
 }
 
@@ -47,6 +51,8 @@ func findMostCommonTile(tracker *TileFlipTracker) string {
 		TilePersonalAchievements: tracker.PersonalAchievements,
 		TilePhoto:                tracker.Photo,
 		TileYearsActive:          tracker.YearsActive,
+		TileInitials:             tracker.Initials,
+		TileNicknames:            tracker.Nicknames,
 	}
 
 	for tileName, count := range tiles {
@@ -78,10 +84,12 @@ func findLeastCommonTile(tracker *TileFlipTracker) string {
 		TilePersonalAchievements: tracker.PersonalAchievements,
 		TilePhoto:                tracker.Photo,
 		TileYearsActive:          tracker.YearsActive,
+		TileInitials:             tracker.Initials,
+		TileNicknames:            tracker.Nicknames,
 	}
 
 	for tileName, count := range tiles {
-		if count > 0 && (minCount == -1 || count < minCount) {
+		if count >= 0 && (minCount == -1 || count < minCount) {
 			minCount = count
 			leastCommon = tileName
 		}

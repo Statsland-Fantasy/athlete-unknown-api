@@ -418,19 +418,36 @@ func scrapePlayerName(c *colly.Collector, player *Player) {
 
 // scrapeBio extracts the player's biographical information (birth date and location)
 func scrapeBio(c *colly.Collector, player *Player, sport string) {
+	var dobText string
+	var physicalAttributesText string
 	c.OnHTML("div#meta p", func(e *colly.HTMLElement) {
 		text := strings.TrimSpace(e.Text)
 		// Look for birth information
 		if strings.Contains(text, "Born:") || strings.Contains(text, "born") {
 			// Remove newlines and extra spaces
-			text = strings.ReplaceAll(text, "\n", " ")
-			text = strings.Join(strings.Fields(text), " ")
+			dobText = text
+			dobText = strings.ReplaceAll(dobText, "\n", " ")
+			dobText = strings.Join(strings.Fields(dobText), " ")
 			// Remove country code (last 3 characters: space + 2-char code)
-			if sport != SportFootball && len(text) > 3 {
-				text = strings.TrimSpace(text[:len(text)-3])
+			if sport != SportFootball && len(dobText) > 3 {
+				dobText = strings.TrimSpace(dobText[:len(dobText)-3])
 			}
-			player.Bio = text
 		}
+
+		if (strings.Contains(text, "cm") && strings.Contains(text, "kg")) ||
+			(strings.Contains(text, "lb") && (strings.Contains(text, "-") || strings.Contains(text, "'"))) {
+			// This likely contains height and weight
+			physicalAttributesText = text
+			physicalAttributesText = strings.ReplaceAll(physicalAttributesText, "\n", " ")
+			physicalAttributesText = strings.Join(strings.Fields(physicalAttributesText), " ")
+
+			// Remove metric measurements in parentheses
+			re := regexp.MustCompile(`\s*\([^)]*\)`)
+			physicalAttributesText = re.ReplaceAllString(physicalAttributesText, "")
+			physicalAttributesText = strings.TrimSpace(physicalAttributesText)
+		}
+
+		player.Bio = dobText + " ▪ " + physicalAttributesText
 	})
 }
 
@@ -451,21 +468,6 @@ func scrapePlayerInformation(c *colly.Collector, player *Player, sport string) {
 				text = strings.ReplaceAll(text, "Throws:", " ▪ Throws:") // football has Throws in same line as position
 			}
 			text = strings.Join(strings.Fields(text), " ")
-			*playerInformation = append(*playerInformation, text)
-		}
-
-		// Alternative: Look for height/weight in paragraphs
-		if (strings.Contains(text, "cm") && strings.Contains(text, "kg")) ||
-			(strings.Contains(text, "lb") && (strings.Contains(text, "-") || strings.Contains(text, "'"))) {
-			// This likely contains height and weight
-			text = strings.ReplaceAll(text, "\n", " ")
-			text = strings.Join(strings.Fields(text), " ")
-
-			// Remove metric measurements in parentheses
-			re := regexp.MustCompile(`\s*\([^)]*\)`)
-			text = re.ReplaceAllString(text, "")
-			text = strings.TrimSpace(text)
-
 			*playerInformation = append(*playerInformation, text)
 		}
 

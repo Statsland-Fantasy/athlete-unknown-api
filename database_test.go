@@ -311,7 +311,7 @@ func TestResultStructure(t *testing.T) {
 	result := Result{
 		Score:        150,
 		IsCorrect:    true,
-		TilesFlipped: []string{"bio", "careerStats", "photo", "yearsActive"},
+		FlippedTiles: []string{"bio", "careerStats", "photo", "yearsActive"},
 	}
 
 	if result.Score != 150 {
@@ -320,11 +320,11 @@ func TestResultStructure(t *testing.T) {
 	if !result.IsCorrect {
 		t.Error("IsCorrect should be true")
 	}
-	if len(result.TilesFlipped) != 4 {
-		t.Errorf("len(TilesFlipped) = %v, want 4", len(result.TilesFlipped))
+	if len(result.FlippedTiles) != 4 {
+		t.Errorf("len(FlippedTiles) = %v, want 4", len(result.FlippedTiles))
 	}
-	if result.TilesFlipped[0] != "bio" {
-		t.Errorf("TilesFlipped[0] = %v, want bio", result.TilesFlipped[0])
+	if result.FlippedTiles[0] != "bio" {
+		t.Errorf("FlippedTiles[0] = %v, want bio", result.FlippedTiles[0])
 	}
 }
 

@@ -32,7 +32,7 @@ func TestHandleHome(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
 
-			handleHome(c)
+			HandleHome(c)
 
 			if w.Code != http.StatusOK {
 				t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
@@ -63,7 +63,7 @@ func TestHandleHealth(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest(http.MethodGet, "/health", nil)
 
-	handleHealth(c)
+	HandleHealth(c)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)

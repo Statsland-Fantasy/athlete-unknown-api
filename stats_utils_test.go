@@ -9,7 +9,7 @@ func TestUpdateStatsWithResult_FirstPlay(t *testing.T) {
 	result := &Result{
 		Score:            100,
 		IsCorrect:        true,
-		TilesFlipped:     []string{TileBio, TilePlayerInformation, TileCareerStats},
+		FlippedTiles:     []string{TileBio, TilePlayerInformation, TileCareerStats},
 		IncorrectGuesses: 0,
 	}
 
@@ -73,7 +73,7 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -81,7 +81,7 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePlayerInformation},
+		FlippedTiles: []string{TilePlayerInformation},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -111,7 +111,7 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -119,7 +119,7 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 	result2 := &Result{
 		Score:        0,
 		IsCorrect:    false,
-		TilesFlipped: []string{TilePlayerInformation, TileDraftInformation},
+		FlippedTiles: []string{TilePlayerInformation, TileDraftInformation},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -128,11 +128,9 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 		t.Errorf("Expected TotalPlays to be 2, got %d", stats.TotalPlays)
 	}
 
-	// Note: The implementation only updates PercentageCorrect when IsCorrect is true
-	// This means incorrect answers don't recalculate the percentage
-	// So it stays at 100% (from the first correct answer)
-	if stats.PercentageCorrect != 100.0 {
-		t.Errorf("Expected PercentageCorrect to be 100.0 (not updated for incorrect answers), got %f", stats.PercentageCorrect)
+	// PercentageCorrect should be recalculated: 1 correct out of 2 total = 50%
+	if stats.PercentageCorrect != 50.0 {
+		t.Errorf("Expected PercentageCorrect to be 50.0 (1 correct out of 2 total), got %f", stats.PercentageCorrect)
 	}
 
 	// Average correct score should still be 100 (only correct answers count)
@@ -160,7 +158,7 @@ func TestUpdateStatsWithResult_HighestScoreUpdate(t *testing.T) {
 	result := &Result{
 		Score:        120,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -172,7 +170,7 @@ func TestUpdateStatsWithResult_HighestScoreUpdate(t *testing.T) {
 	result2 := &Result{
 		Score:        60,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileCareerStats},
+		FlippedTiles: []string{TileCareerStats},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -189,7 +187,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation},
+		FlippedTiles: []string{TileBio, TilePlayerInformation},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -201,7 +199,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation, TileDraftInformation, TileCareerStats},
+		FlippedTiles: []string{TileBio, TilePlayerInformation, TileDraftInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -214,7 +212,7 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	result3 := &Result{
 		Score:        90,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result3)
 
@@ -225,13 +223,13 @@ func TestUpdateStatsWithResult_AverageTileFlips(t *testing.T) {
 	}
 }
 
-func TestUpdateStatsWithResult_EmptyTilesFlipped(t *testing.T) {
+func TestUpdateStatsWithResult_EmptyFlippedTiles(t *testing.T) {
 	stats := &Stats{}
 
 	result := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{},
+		FlippedTiles: []string{},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -262,7 +260,7 @@ func TestUpdateStatsWithResult_TileTrackingAccuracy(t *testing.T) {
 	result1 := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TilePlayerInformation, TileCareerStats},
+		FlippedTiles: []string{TileBio, TilePlayerInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result1)
 
@@ -270,7 +268,7 @@ func TestUpdateStatsWithResult_TileTrackingAccuracy(t *testing.T) {
 	result2 := &Result{
 		Score:        80,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio, TileDraftInformation, TileBio},
+		FlippedTiles: []string{TileBio, TileDraftInformation, TileBio},
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -317,7 +315,7 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		result := &Result{
 			Score:        100,
 			IsCorrect:    true,
-			TilesFlipped: []string{TileBio},
+			FlippedTiles: []string{TileBio},
 		}
 		updateStatsWithResult(stats, result)
 	}
@@ -327,7 +325,7 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		result := &Result{
 			Score:        0,
 			IsCorrect:    false,
-			TilesFlipped: []string{TilePlayerInformation},
+			FlippedTiles: []string{TilePlayerInformation},
 		}
 		updateStatsWithResult(stats, result)
 	}
@@ -337,11 +335,9 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		t.Errorf("Expected TotalPlays to be 5, got %d", stats.TotalPlays)
 	}
 
-	// Note: The implementation only updates PercentageCorrect when IsCorrect is true
-	// After 3 correct answers in a row, percentage is 100%
-	// Incorrect answers don't update the percentage, so it remains 100%
-	if stats.PercentageCorrect != 100.0 {
-		t.Errorf("Expected PercentageCorrect to be 100.0 (not updated for incorrect answers), got %f", stats.PercentageCorrect)
+	// PercentageCorrect should be recalculated: 3 correct out of 5 total = 60%
+	if stats.PercentageCorrect != 60.0 {
+		t.Errorf("Expected PercentageCorrect to be 60.0 (3 correct out of 5 total), got %f", stats.PercentageCorrect)
 	}
 }
 
@@ -351,7 +347,7 @@ func TestUpdateStatsWithResult_SingleTileFlipped(t *testing.T) {
 	result := &Result{
 		Score:        100,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePhoto},
+		FlippedTiles: []string{TilePhoto},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -368,8 +364,9 @@ func TestUpdateStatsWithResult_SingleTileFlipped(t *testing.T) {
 		t.Errorf("Expected MostCommonTileFlipped to be %s, got %s", TilePhoto, stats.MostCommonTileFlipped)
 	}
 
-	if stats.LeastCommonTileFlipped != TilePhoto {
-		t.Errorf("Expected LeastCommonTileFlipped to be %s, got %s", TilePhoto, stats.LeastCommonTileFlipped)
+	// anything but photo should be returned
+	if stats.LeastCommonTileFlipped == TilePhoto {
+		t.Errorf("Expected LeastCommonTileFlipped to be anything but %s, got %s", TilePhoto, stats.LeastCommonTileFlipped)
 	}
 }
 
@@ -380,7 +377,7 @@ func TestUpdateStatsWithResult_AllTileTypes(t *testing.T) {
 	result := &Result{
 		Score:     100,
 		IsCorrect: true,
-		TilesFlipped: []string{
+		FlippedTiles: []string{
 			TileBio,
 			TilePlayerInformation,
 			TileDraftInformation,
@@ -435,7 +432,7 @@ func TestUpdateStatsWithResult_ZeroScore(t *testing.T) {
 	result := &Result{
 		Score:        0,
 		IsCorrect:    true,
-		TilesFlipped: []string{TileBio},
+		FlippedTiles: []string{TileBio},
 	}
 	updateStatsWithResult(stats, result)
 
@@ -466,7 +463,7 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 	result := &Result{
 		Score:        130,
 		IsCorrect:    true,
-		TilesFlipped: []string{TilePlayerInformation, TileCareerStats},
+		FlippedTiles: []string{TilePlayerInformation, TileCareerStats},
 	}
 	updateStatsWithResult(stats, result)
 

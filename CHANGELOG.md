@@ -7,11 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-16]
+
+### Added
+
+- Added initials and nicknames to model and tile tracking model
+- New public endpoint /rounds that gets all past rounds for historical play
+
+### Changed
+
+- Move physical attributes: height and weight to "Bio" tile, not "Player Information"
+- Changed model. Variable name "tilesFlipped" -> "filppedTiles"
+- Modify response of /rounds and /upcoming-rounds to be just round summaries
+- Use DynamoDB query with GSI instead of scan for /rounds and /upcoming-rounds
+- Handle currentDailyStreak to increment with daily interaction vs sequential play
+- Fix user stats bugs
+
+## [PR-15]
+
+### Added
+
+- Created new entry point for lambda builds
+- Template.yaml file for AWS deployments
+
 ## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
 
 ### Added
 
 - POST route for migrating stats
+
 ## [PR-12]
 
 ### Added
