@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [AIUpscaler]
+
+### Added
+
+- AI-powered image upscaling service for player photos
+- `ImageUpscaler` service with automatic retry logic and graceful fallback
+- Configuration options: `AI_UPSCALER_ENABLED`, `AI_UPSCALER_API_KEY`, `AI_UPSCALER_API_URL`
+- Photo upscaling integrated into scraping workflow (POST /v1/round endpoint)
+- Automatic upscaling replaces original photo URLs before saving to database
+
+### Changed
+
+- Updated `Server` struct to include upscaler dependency
+- Enhanced `NewServer` to accept upscaler parameter
+- Modified scraping workflow to upscale photos after scraping completes
+
+### Technical Details
+
+- Upscaling happens automatically when rounds are created via scraping
+- If upscaling fails or is disabled, original photo is used (graceful degradation)
+- Configurable retry logic with exponential backoff (default: 3 attempts)
+- 60-second timeout per upscaling request
+- Frontend receives upscaled photos transparently (no changes needed)
+
 ## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
 
 ### Added
