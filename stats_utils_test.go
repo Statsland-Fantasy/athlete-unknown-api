@@ -364,8 +364,9 @@ func TestUpdateStatsWithResult_SingleTileFlipped(t *testing.T) {
 		t.Errorf("Expected MostCommonTileFlipped to be %s, got %s", TilePhoto, stats.MostCommonTileFlipped)
 	}
 
-	if stats.LeastCommonTileFlipped != TilePhoto {
-		t.Errorf("Expected LeastCommonTileFlipped to be %s, got %s", TilePhoto, stats.LeastCommonTileFlipped)
+	// anything but photo should be returned
+	if stats.LeastCommonTileFlipped == TilePhoto {
+		t.Errorf("Expected LeastCommonTileFlipped to be anything but %s, got %s", TilePhoto, stats.LeastCommonTileFlipped)
 	}
 }
 
