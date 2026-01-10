@@ -80,17 +80,21 @@ func updateStatsWithResult(stats *Stats, result *Result) {
 	// Update total plays
 	stats.TotalPlays++
 
-	// Update percentage correct and average correct score
+	// Calculate current correct count from previous percentage
+	correctCount := int(stats.PercentageCorrect * float64(stats.TotalPlays-1) / 100)
+
+	// Update correct count and average correct score if this result is correct
 	if result.IsCorrect {
-		correctCount := int(stats.PercentageCorrect * float64(stats.TotalPlays-1) / 100)
 		correctCount++
-		stats.PercentageCorrect = float64(correctCount) * 100 / float64(stats.TotalPlays)
 
 		// Update average correct score
 		totalCorrectScore := stats.AverageCorrectScore * float64(correctCount-1)
 		totalCorrectScore += float64(result.Score)
 		stats.AverageCorrectScore = totalCorrectScore / float64(correctCount)
 	}
+
+	// Update percentage correct (whether result was correct or incorrect)
+	stats.PercentageCorrect = float64(correctCount) * 100 / float64(stats.TotalPlays)
 
 	// Update highest score
 	if result.Score > stats.HighestScore {

@@ -128,11 +128,9 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 		t.Errorf("Expected TotalPlays to be 2, got %d", stats.TotalPlays)
 	}
 
-	// Note: The implementation only updates PercentageCorrect when IsCorrect is true
-	// This means incorrect answers don't recalculate the percentage
-	// So it stays at 100% (from the first correct answer)
-	if stats.PercentageCorrect != 100.0 {
-		t.Errorf("Expected PercentageCorrect to be 100.0 (not updated for incorrect answers), got %f", stats.PercentageCorrect)
+	// PercentageCorrect should be recalculated: 1 correct out of 2 total = 50%
+	if stats.PercentageCorrect != 50.0 {
+		t.Errorf("Expected PercentageCorrect to be 50.0 (1 correct out of 2 total), got %f", stats.PercentageCorrect)
 	}
 
 	// Average correct score should still be 100 (only correct answers count)
@@ -337,11 +335,9 @@ func TestUpdateStatsWithResult_PercentageCalculation(t *testing.T) {
 		t.Errorf("Expected TotalPlays to be 5, got %d", stats.TotalPlays)
 	}
 
-	// Note: The implementation only updates PercentageCorrect when IsCorrect is true
-	// After 3 correct answers in a row, percentage is 100%
-	// Incorrect answers don't update the percentage, so it remains 100%
-	if stats.PercentageCorrect != 100.0 {
-		t.Errorf("Expected PercentageCorrect to be 100.0 (not updated for incorrect answers), got %f", stats.PercentageCorrect)
+	// PercentageCorrect should be recalculated: 3 correct out of 5 total = 60%
+	if stats.PercentageCorrect != 60.0 {
+		t.Errorf("Expected PercentageCorrect to be 60.0 (3 correct out of 5 total), got %f", stats.PercentageCorrect)
 	}
 }
 
