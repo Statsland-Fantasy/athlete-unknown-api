@@ -5,21 +5,6 @@ import (
 	"testing"
 )
 
-// TestMain sets up environment variables for all tests in this package
-func TestMain(m *testing.M) {
-	// Set FIRST_ROUND_DATE for all tests
-	os.Setenv("FIRST_ROUND_DATE", "2025-01-01")
-
-	// Run tests
-	code := m.Run()
-
-	// Cleanup (optional, but good practice)
-	os.Unsetenv("FIRST_ROUND_DATE")
-
-	// Exit with test result code
-	os.Exit(code)
-}
-
 func TestGetEnv(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -273,6 +258,24 @@ func TestGetCurrentSeasonYear(t *testing.T) {
 }
 
 func TestGenerateRoundID(t *testing.T) {
+	// Save original values
+	originalDateString := FIRST_ROUND_DATE_STRING
+	originalDate := FIRST_ROUND_DATE
+
+	// Set environment variable for test
+	os.Setenv("FIRST_ROUND_DATE", "2025-01-01")
+
+	// Re-initialize the global variables after setting the env var
+	FIRST_ROUND_DATE_STRING = getEnv("FIRST_ROUND_DATE", "2026-02-08")
+	FIRST_ROUND_DATE = mustParseDate(FIRST_ROUND_DATE_STRING)
+
+	// Restore original values after test
+	defer func() {
+		os.Unsetenv("FIRST_ROUND_DATE")
+		FIRST_ROUND_DATE_STRING = originalDateString
+		FIRST_ROUND_DATE = originalDate
+	}()
+
 	tests := []struct {
 		name      string
 		sport     string
