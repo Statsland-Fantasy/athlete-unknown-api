@@ -47,7 +47,7 @@ func SetupRouter() *gin.Engine {
 	corsConfig := cors.Config{
 		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization", "X-API-Key"},
+		AllowHeaders:     []string{"Content-Type", "Authorization", "X-API-Key", "X-User-Timezone"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

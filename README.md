@@ -378,6 +378,10 @@ Submits the results of a completed trivia round.
 - `sport` (required): The sport for the results
 - `playDate` (required): The date of the round in `YYYY-MM-DD` format
 
+**Headers:**
+
+- `X-User-Timezone` (optional): User's IANA timezone (e.g., `America/Los_Angeles`, `Europe/London`, `Asia/Tokyo`). Used for accurate daily streak calculation. Defaults to UTC if not provided.
+
 **Request Body:**
 
 ```json
@@ -403,10 +407,21 @@ Submits the results of a completed trivia round.
 ```bash
 curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11-15" \
   -H "Content-Type: application/json" \
+  -H "X-User-Timezone: America/Los_Angeles" \
   -d '{"score": 9, "isCorrect": true, "flippedTiles": ["tile1", "tile2", "tile3"]}'
 ```
 
 **Response:** `200 OK`
+
+**Daily Streak Tracking:**
+
+The API tracks daily streaks based on **engagement** (consecutive real-life calendar days played), not round completion dates. This means:
+- Streak increments when you play ANY round on consecutive days
+- Playing old/missed rounds still counts toward your streak
+- Streak calculation uses your local timezone from the `X-User-Timezone` header
+- If timezone header is missing or invalid, UTC is used as fallback
+
+Example: If you play on Monday, Tuesday, and Wednesday (in your local timezone), your streak is 3 - regardless of which rounds' playDates you chose to play.
 
 ---
 

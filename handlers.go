@@ -387,18 +387,23 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				return
 			}
 
+			// Get user's timezone from header (or UTC fallback)
+			userLoc := getUserTimezone(c)
+			// Calculate today's date in the user's local timezone
+			today := time.Now().In(userLoc).Format(DateFormatYYYYMMDD)
+
 			// If user stats don't exist, create new user stats
 			if userStats == nil {
 				userStats = &UserStats{
 					UserId:             userId,
 					Sports:             []UserSportStats{},
 					CurrentDailyStreak: 1,
-					LastDayPlayed:      playDate,
-					UserName:           "", // TODO: update with user's username as fetched from Auth0
+					LastDayPlayed:      today, // Track real-life date in user's timezone, not round playDate
+					UserName:           "",    // TODO: update with user's username as fetched from Auth0
 				}
 			} else {
-				// Update daily streak based on play date
-				updateDailyStreak(userStats, playDate)
+				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)
+				updateDailyStreak(userStats, today)
 			}
 
 			// Find or create specific sport stats
