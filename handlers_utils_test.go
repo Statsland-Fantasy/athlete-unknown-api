@@ -351,18 +351,20 @@ func TestFormatDraftInformation(t *testing.T) {
 }
 
 // TestUpdateDailyStreak tests the updateDailyStreak helper function
+// This function uses engagement-based tracking: it tracks consecutive real-life calendar days
+// the user plays ANY round, regardless of which round's playDate they choose to play
 func TestUpdateDailyStreak(t *testing.T) {
 	tests := []struct {
 		name                  string
 		existingUserStats     *UserStats
-		playDate              string
+		currentDate           string // Real-life date (e.g., today's date), not the round's playDate
 		expectedStreak        int
 		expectedLastDayPlayed string
 	}{
 		{
 			name:                  "nil user stats - should do nothing",
 			existingUserStats:     nil,
-			playDate:              "2024-01-15",
+			currentDate:              "2024-01-15",
 			expectedStreak:        0,
 			expectedLastDayPlayed: "",
 		},
@@ -374,7 +376,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-14",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-15",
+			currentDate:              "2024-01-15",
 			expectedStreak:        6,
 			expectedLastDayPlayed: "2024-01-15",
 		},
@@ -386,7 +388,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-15",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-15",
+			currentDate:              "2024-01-15",
 			expectedStreak:        3,
 			expectedLastDayPlayed: "2024-01-15",
 		},
@@ -398,7 +400,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-13",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-15",
+			currentDate:              "2024-01-15",
 			expectedStreak:        1,
 			expectedLastDayPlayed: "2024-01-15",
 		},
@@ -410,7 +412,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-10",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-20",
+			currentDate:              "2024-01-20",
 			expectedStreak:        1,
 			expectedLastDayPlayed: "2024-01-20",
 		},
@@ -422,7 +424,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-12",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-13",
+			currentDate:              "2024-01-13",
 			expectedStreak:        5,
 			expectedLastDayPlayed: "2024-01-13",
 		},
@@ -434,7 +436,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-15",
+			currentDate:              "2024-01-15",
 			expectedStreak:        2,
 			expectedLastDayPlayed: "2024-01-15",
 		},
@@ -446,7 +448,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2024-01-31",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-02-01",
+			currentDate:              "2024-02-01",
 			expectedStreak:        16,
 			expectedLastDayPlayed: "2024-02-01",
 		},
@@ -458,7 +460,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 				LastDayPlayed:      "2023-12-31",
 				UserCreated:        time.Now(),
 			},
-			playDate:              "2024-01-01",
+			currentDate:              "2024-01-01",
 			expectedStreak:        21,
 			expectedLastDayPlayed: "2024-01-01",
 		},
@@ -479,7 +481,7 @@ func TestUpdateDailyStreak(t *testing.T) {
 			}
 
 			// Call the function
-			updateDailyStreak(userStats, tt.playDate)
+			updateDailyStreak(userStats, tt.currentDate)
 
 			// Verify the results
 			if userStats == nil {

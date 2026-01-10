@@ -49,6 +49,8 @@ const (
 	TilePersonalAchievements = "personalAchievements"
 	TilePhoto                = "photo"
 	TileYearsActive          = "yearsActive"
+	TileInitials             = "initials"
+	TileNicknames            = "nicknames"
 )
 
 // AllTiles returns a slice of all tile names
@@ -63,6 +65,8 @@ func AllTiles() []string {
 		TilePersonalAchievements,
 		TilePhoto,
 		TileYearsActive,
+		TileInitials,
+		TileNicknames,
 	}
 }
 

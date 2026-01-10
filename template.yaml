@@ -86,6 +86,7 @@ Resources:
           - Content-Type
           - Authorization
           - X-API-Key
+          - X-User-Timezone
         MaxAge: 43200
 
 Outputs:

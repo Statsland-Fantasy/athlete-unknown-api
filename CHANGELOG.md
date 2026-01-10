@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-16]
+
+### Added
+
+- Added initials and nicknames to model and tile tracking model
+- Changed model. Variable name "tilesFlipped" -> "filppedTiles"
+
+### Changed
+
+- Move physical attributes: height and weight to "Bio" tile, not "Player Information"
+
 ## [PR-15]
 
 ### Added
