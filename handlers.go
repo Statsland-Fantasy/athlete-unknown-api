@@ -427,12 +427,25 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			// Update sport-specific stats
 			updateStatsWithResult(&sportStats.Stats, &result)
 
-			// Create round history entry
-			roundHistory := RoundHistory{
-				PlayDate: playDate,
-				Result:   result,
+			// Check if history entry for this playDate already exists
+			historyExists := false
+			for i := range sportStats.History {
+				if sportStats.History[i].PlayDate == playDate {
+					// Update existing history entry instead of creating duplicate
+					sportStats.History[i].Result = result
+					historyExists = true
+					break
+				}
 			}
-			sportStats.History = append(sportStats.History, roundHistory)
+
+			// Only append if this playDate doesn't already exist in history
+			if !historyExists {
+				roundHistory := RoundHistory{
+					PlayDate: playDate,
+					Result:   result,
+				}
+				sportStats.History = append(sportStats.History, roundHistory)
+			}
 
 			// Save or update user stats in DynamoDB
 			if userStats.UserCreated.IsZero() {
