@@ -93,8 +93,8 @@ func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
 	payload := map[string]interface{}{
 		"version": "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
 		"input": map[string]interface{}{
-			"image": imageURL,
-			"scale": 2, // 2x upscaling
+			"image":        imageURL,
+			"scale":        2, // 2x upscaling
 			"face_enhance": false,
 		},
 	}
