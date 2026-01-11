@@ -36,9 +36,8 @@ jobs:
 
       - name: Build Lambda
         run: |
-          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main_lambda.go
           mkdir -p lambda
-          mv bootstrap lambda/
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to DEV
         run: |
@@ -48,8 +47,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              RoundsTableName=${{ secrets.ROUNDS_TABLE_NAME }} \
-              UserStatsTableName=${{ secrets.USER_STATS_TABLE_NAME }} \
+              Environment=dev \
               Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
               Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
               AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
@@ -81,9 +79,8 @@ jobs:
 
       - name: Build Lambda
         run: |
-          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main_lambda.go
           mkdir -p lambda
-          mv bootstrap lambda/
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to PROD
         run: |
@@ -93,8 +90,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              RoundsTableName=${{ secrets.ROUNDS_TABLE_NAME }} \
-              UserStatsTableName=${{ secrets.USER_STATS_TABLE_NAME }} \
+              Environment=prod \
               Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
               Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
               AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
