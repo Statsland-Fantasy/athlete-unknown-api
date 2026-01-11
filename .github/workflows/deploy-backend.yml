@@ -48,7 +48,7 @@ jobs:
         run: |
           sam deploy \
             --template-file template.yaml \
-            --stack-name statsland-backend-dev \
+            --stack-name athlete-unknown-backend-dev \
             --s3-bucket statsland-sam-deployments-dev \
             --s3-prefix athlete-unknown-api \
             --capabilities CAPABILITY_IAM \
@@ -93,7 +93,7 @@ jobs:
         run: |
           sam deploy \
             --template-file template.yaml \
-            --stack-name statsland-backend-prod \
+            --stack-name athlete-unknown-backend-prod \
             --s3-bucket statsland-sam-deployments-prod \
             --s3-prefix athlete-unknown-api \
             --capabilities CAPABILITY_IAM \
