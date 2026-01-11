@@ -1,12 +1,9 @@
-name: Deploy Backend
+name: Deploy Athlete Unknown Backend
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - "BE-template.yaml"
-      - ".github/workflows/deploy-backend.yml"
+    branches:
+      - "release/**"
   workflow_dispatch:
 
 permissions:
@@ -39,15 +36,14 @@ jobs:
 
       - name: Build Lambda
         run: |
-          cd backend
-          GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o bootstrap main_lambda.go
-          mkdir -p ../lambda
-          mv bootstrap ../lambda/
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main_lambda.go
+          mkdir -p lambda
+          mv bootstrap lambda/
 
       - name: SAM Deploy to DEV
         run: |
           sam deploy \
-            --template-file BE-template.yaml \
+            --template-file template.yaml \
             --stack-name statsland-backend-dev \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
@@ -85,15 +81,14 @@ jobs:
 
       - name: Build Lambda
         run: |
-          cd backend
           GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bootstrap main_lambda.go
-          mkdir -p ../lambda
-          mv bootstrap ../lambda/
+          mkdir -p lambda
+          mv bootstrap lambda/
 
       - name: SAM Deploy to PROD
         run: |
           sam deploy \
-            --template-file BE-template.yaml \
+            --template-file template.yaml \
             --stack-name statsland-backend-prod \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
