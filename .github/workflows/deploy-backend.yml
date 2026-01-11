@@ -44,6 +44,8 @@ jobs:
           sam deploy \
             --template-file template.yaml \
             --stack-name statsland-backend-dev \
+            --s3-bucket statsland-sam-deployments-dev \
+            --s3-prefix athlete-unknown-api \            
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
@@ -87,6 +89,8 @@ jobs:
           sam deploy \
             --template-file template.yaml \
             --stack-name statsland-backend-prod \
+            --s3-bucket statsland-sam-deployments-prod \
+            --s3-prefix athlete-unknown-api \            
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
