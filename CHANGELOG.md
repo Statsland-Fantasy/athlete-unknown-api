@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-21]
+
+### Changed
+
+- Add S3 bucket to upload lambda to
+
 ## [PR-20]
 
 ### Changed
