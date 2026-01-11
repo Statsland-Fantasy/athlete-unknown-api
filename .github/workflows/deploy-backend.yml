@@ -40,6 +40,11 @@ jobs:
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to DEV
+        env:
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         run: |
           sam deploy \
             --template-file template.yaml \
@@ -50,10 +55,10 @@ jobs:
             --no-fail-on-empty-changeset \
             --parameter-overrides \
               Environment=dev \
-              Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
-              Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
-              AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
-              CorsAllowedOrigins=${{ secrets.CORS_ALLOWED_ORIGINS }}
+              Auth0Domain="${AUTH0_DOMAIN}" \
+              Auth0Audience="${AUTH0_AUDIENCE}" \
+              AdminApiKey="${ADMIN_API_KEY}" \
+              CorsAllowedOrigins="${CORS_ALLOWED_ORIGINS}"
 
   deploy-prod:
     needs: deploy-dev
@@ -85,6 +90,11 @@ jobs:
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to PROD
+        env:
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         run: |
           sam deploy \
             --template-file template.yaml \
@@ -95,7 +105,7 @@ jobs:
             --no-fail-on-empty-changeset \
             --parameter-overrides \
               Environment=prod \
-              Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
-              Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
-              AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
-              CorsAllowedOrigins=${{ secrets.CORS_ALLOWED_ORIGINS }}
+              Auth0Domain="${AUTH0_DOMAIN}" \
+              Auth0Audience="${AUTH0_AUDIENCE}" \
+              AdminApiKey="${ADMIN_API_KEY}" \
+              CorsAllowedOrigins="${CORS_ALLOWED_ORIGINS}"
