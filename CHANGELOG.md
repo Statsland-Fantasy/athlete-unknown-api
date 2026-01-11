@@ -7,12 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [PR-16]
+## [PR-18]
 
 ### Added
 
-- Added initials and nicknames to model and tile tracking model
-- New public endpoint /rounds that gets all past rounds for historical play
+- New deploy-backend.yml file. Deployments will only be made on release/ branches
 
 ### Changed
 
@@ -56,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD workflows for automated testing, security scanning, and deployment
   - **ci.yml**: Runs on merge to main - builds, tests, lints, and performs security scans
   - **pr-checks.yml**: Validates pull requests with comprehensive checks and posts status comments
-  - **deploy-dev.yml**: Automatically deploys to dev environment when release branches are created
+  - **deploy-backend.yml**: Automatically deploys to dev environment when release branches are created
   - **changelog-reminder.yml**: Reminds contributors to update changelog for PRs
 
 ## [PR-8](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/8)

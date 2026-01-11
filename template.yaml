@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Athlete Unknown API - Lambda Deployment
+Description: Athlete Unknown API - Lambda + API Gateway + DynamoDB Deployment
 
 Globals:
   Function:
@@ -11,15 +11,13 @@ Globals:
         GIN_MODE: release
 
 Parameters:
-  RoundsTableName:
+  Environment:
     Type: String
-    Default: AthleteUnknownRoundsDev
-    Description: DynamoDB table name for rounds
-
-  UserStatsTableName:
-    Type: String
-    Default: AthleteUnknownUserStatsDev
-    Description: DynamoDB table name for user stats
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name
 
   CorsAllowedOrigins:
     Type: String
@@ -39,29 +37,77 @@ Parameters:
     NoEcho: true
     Description: API key for admin endpoints
 
+Conditions:
+  IsProduction: !Equals [!Ref Environment, "prod"]
+
 Resources:
+  # DynamoDB Tables
+  RoundsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "AthleteUnknownRounds-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: sport
+          AttributeType: S
+        - AttributeName: playDate
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sport
+          KeyType: HASH
+        - AttributeName: playDate
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !If [IsProduction, true, false]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  UserStatsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "AthleteUnknownUserStats-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !If [IsProduction, true, false]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Lambda Function
   AthleteUnknownApi:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: athlete-unknown-api
+      FunctionName: !Sub "athlete-unknown-api-${Environment}"
       CodeUri: lambda/
       Handler: bootstrap
-      Runtime: provided.al2
+      Runtime: provided.al2023
       Architectures:
-        - x86_64
+        - arm64
       Environment:
         Variables:
-          ROUNDS_TABLE_NAME: !Ref RoundsTableName
-          USER_STATS_TABLE_NAME: !Ref UserStatsTableName
+          ROUNDS_TABLE_NAME: !Ref RoundsTable
+          USER_STATS_TABLE_NAME: !Ref UserStatsTable
           ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
           ADMIN_API_KEY: !Ref AdminApiKey
+          ENVIRONMENT: !Ref Environment
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref RoundsTableName
+            TableName: !Ref RoundsTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref UserStatsTableName
+            TableName: !Ref UserStatsTable
       Events:
         ApiEvent:
           Type: HttpApi
@@ -70,6 +116,7 @@ Resources:
             Method: ANY
             ApiId: !Ref HttpApi
 
+  # API Gateway
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -88,6 +135,8 @@ Resources:
           - X-API-Key
           - X-User-Timezone
         MaxAge: 43200
+      Tags:
+        Environment: !Ref Environment
 
 Outputs:
   ApiUrl:
@@ -97,3 +146,11 @@ Outputs:
   FunctionArn:
     Description: Lambda Function ARN
     Value: !GetAtt AthleteUnknownApi.Arn
+
+  RoundsTableName:
+    Description: DynamoDB Rounds Table Name
+    Value: !Ref RoundsTable
+
+  UserStatsTableName:
+    Description: DynamoDB User Stats Table Name
+    Value: !Ref UserStatsTable
