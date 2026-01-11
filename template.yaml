@@ -93,7 +93,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
-        - amd64
+        - x86_64
       Environment:
         Variables:
           ROUNDS_TABLE_NAME: !Ref RoundsTable
