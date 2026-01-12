@@ -1,0 +1,101 @@
+name: Deploy Athlete Unknown Backend
+
+on:
+  push:
+    branches:
+      - "release/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: https://dev.statslandfantasy.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Build Lambda
+        run: |
+          mkdir -p lambda
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
+
+      - name: SAM Deploy to DEV
+        run: |
+          sam deploy \
+            --template-file template.yaml \
+            --stack-name statsland-backend-dev \
+            --s3-bucket statsland-sam-deployments-dev \
+            --s3-prefix athlete-unknown-api \            
+            --capabilities CAPABILITY_IAM \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=dev \
+              Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
+              Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
+              AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
+              CorsAllowedOrigins=${{ secrets.CORS_ALLOWED_ORIGINS }}
+
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: https://statslandfantasy.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Build Lambda
+        run: |
+          mkdir -p lambda
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
+
+      - name: SAM Deploy to PROD
+        run: |
+          sam deploy \
+            --template-file template.yaml \
+            --stack-name statsland-backend-prod \
+            --s3-bucket statsland-sam-deployments-prod \
+            --s3-prefix athlete-unknown-api \            
+            --capabilities CAPABILITY_IAM \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=prod \
+              Auth0Domain=${{ secrets.AUTH0_DOMAIN }} \
+              Auth0Audience=${{ secrets.AUTH0_AUDIENCE }} \
+              AdminApiKey=${{ secrets.ADMIN_API_KEY }} \
+              CorsAllowedOrigins=${{ secrets.CORS_ALLOWED_ORIGINS }}

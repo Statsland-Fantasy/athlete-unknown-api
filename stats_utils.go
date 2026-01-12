@@ -80,17 +80,21 @@ func updateStatsWithResult(stats *Stats, result *Result) {
 	// Update total plays
 	stats.TotalPlays++
 
-	// Update percentage correct and average correct score
+	// Calculate current correct count from previous percentage
+	correctCount := int(stats.PercentageCorrect * float64(stats.TotalPlays-1) / 100)
+
+	// Update correct count and average correct score if this result is correct
 	if result.IsCorrect {
-		correctCount := int(stats.PercentageCorrect * float64(stats.TotalPlays-1) / 100)
 		correctCount++
-		stats.PercentageCorrect = float64(correctCount) * 100 / float64(stats.TotalPlays)
 
 		// Update average correct score
 		totalCorrectScore := stats.AverageCorrectScore * float64(correctCount-1)
 		totalCorrectScore += float64(result.Score)
 		stats.AverageCorrectScore = totalCorrectScore / float64(correctCount)
 	}
+
+	// Update percentage correct (whether result was correct or incorrect)
+	stats.PercentageCorrect = float64(correctCount) * 100 / float64(stats.TotalPlays)
 
 	// Update highest score
 	if result.Score > stats.HighestScore {
@@ -99,19 +103,19 @@ func updateStatsWithResult(stats *Stats, result *Result) {
 
 	// Update average number of tile flips
 	totalTileFlips := stats.AverageNumberOfTileFlips * float64(stats.TotalPlays-1)
-	totalTileFlips += float64(len(result.TilesFlipped))
+	totalTileFlips += float64(len(result.FlippedTiles))
 	stats.AverageNumberOfTileFlips = totalTileFlips / float64(stats.TotalPlays)
 
 	// Track tile flips
-	if len(result.TilesFlipped) > 0 {
+	if len(result.FlippedTiles) > 0 {
 		// Track first tile flipped
-		incrementTileTracker(&stats.FirstTileFlippedTracker, result.TilesFlipped[0])
+		incrementTileTracker(&stats.FirstTileFlippedTracker, result.FlippedTiles[0])
 
 		// Track last tile flipped
-		incrementTileTracker(&stats.LastTileFlippedTracker, result.TilesFlipped[len(result.TilesFlipped)-1])
+		incrementTileTracker(&stats.LastTileFlippedTracker, result.FlippedTiles[len(result.FlippedTiles)-1])
 
 		// Track all tiles flipped
-		for _, tile := range result.TilesFlipped {
+		for _, tile := range result.FlippedTiles {
 			incrementTileTracker(&stats.MostTileFlippedTracker, tile)
 		}
 

@@ -5,7 +5,18 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// Load .env file before any package variables are initialized
+	_ = godotenv.Load()
+
+	// Initialize date variables after .env is loaded
+	FIRST_ROUND_DATE_STRING = getEnv("FIRST_ROUND_DATE", "2026-02-08")
+	FIRST_ROUND_DATE = mustParseDate(FIRST_ROUND_DATE_STRING)
+}
 
 // Config holds application configuration
 type Config struct {
@@ -21,7 +32,7 @@ type Config struct {
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
 	return &Config{
-		DynamoDBEndpoint:   getEnv("DYNAMODB_ENDPOINT", "http://localhost:8000"),
+		DynamoDBEndpoint:   getEnv("DYNAMODB_ENDPOINT", ""),
 		RoundsTableName:    getEnv("ROUNDS_TABLE_NAME", "AthleteUnknownRoundsDev"),
 		UserStatsTableName: getEnv("USER_STATS_TABLE_NAME", "AthleteUnknownUserStatsDev"),
 		AWSRegion:          getEnv("AWS_REGION", "us-west-2"),
@@ -74,8 +85,20 @@ func GetCurrentSeasonYear(sport string) int {
 	}
 }
 
-// FIRST_ROUND_DATE is the reference date for calculating round IDs
-var FIRST_ROUND_DATE = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+// FIRST_ROUND_DATE_STRING is the string representation (YYYY-MM-DD) from env or default
+var FIRST_ROUND_DATE_STRING string
+
+// FIRST_ROUND_DATE is the parsed time.Time version for calculations
+var FIRST_ROUND_DATE time.Time
+
+// mustParseDate parses a date string or panics (should only be called at startup)
+func mustParseDate(dateStr string) time.Time {
+	date, err := time.Parse(DateFormatYYYYMMDD, dateStr)
+	if err != nil {
+		panic(fmt.Sprintf("invalid FIRST_ROUND_DATE format '%s': %v", dateStr, err))
+	}
+	return date
+}
 
 // GenerateRoundID generates a round ID by concatenating the sport and the number of days since FIRST_ROUND_DATE
 func GenerateRoundID(sport string, playDate string) (string, error) {
@@ -88,8 +111,8 @@ func GenerateRoundID(sport string, playDate string) (string, error) {
 	// Calculate the number of days since FIRST_ROUND_DATE
 	daysSince := int(date.Sub(FIRST_ROUND_DATE).Hours() / 24)
 
-	// Generate the round ID
-	roundID := fmt.Sprintf("%s%d", sport, daysSince)
+	// Generate the round ID. Split sport and round number by "#"
+	roundID := fmt.Sprintf("%s#%d", sport, daysSince)
 	return roundID, nil
 }
 
