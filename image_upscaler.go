@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -88,13 +89,25 @@ func (u *ImageUpscaler) upscaleWithRetry(imageURL string, maxRetries int) (strin
 
 // callUpscaleAPI makes the actual API call to Replicate's Real-ESRGAN upscaling service
 func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
+	// Download the image first to bypass hotlink protection
+	log.Printf("[Upscaler] Downloading image from: %s", imageURL)
+	imageData, contentType, err := u.downloadImage(imageURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to download image: %w", err)
+	}
+
+	// Convert to base64 data URL
+	base64Data := base64.StdEncoding.EncodeToString(imageData)
+	dataURL := fmt.Sprintf("data:%s;base64,%s", contentType, base64Data)
+	log.Printf("[Upscaler] Converted image to base64 data URL (%d bytes)", len(imageData))
+
 	// Replicate API payload for Real-ESRGAN model
 	// Model: nightmareai/real-esrgan (popular 2x upscaling model)
 	payload := map[string]interface{}{
 		"version": "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
 		"input": map[string]interface{}{
-			"image":        imageURL,
-			"scale":        2, // 2x upscaling
+			"image":        dataURL, // Use base64 data URL instead of direct URL
+			"scale":        2,       // 2x upscaling
 			"face_enhance": false,
 		},
 	}
@@ -166,4 +179,44 @@ func (u *ImageUpscaler) callUpscaleAPI(imageURL string) (string, error) {
 	}
 
 	return "", fmt.Errorf("invalid output format in Replicate response")
+}
+
+// downloadImage downloads an image from a URL and returns the image data and content type
+func (u *ImageUpscaler) downloadImage(imageURL string) ([]byte, string, error) {
+	// Create request with user agent to avoid bot detection
+	req, err := http.NewRequest("GET", imageURL, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add headers to mimic a browser request
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
+	req.Header.Set("Accept", "image/webp,image/apng,image/*,*/*;q=0.8")
+	req.Header.Set("Referer", "https://www.basketball-reference.com/")
+
+	// Download the image
+	resp, err := u.httpClient.Do(req)
+	if err != nil {
+		return nil, "", fmt.Errorf("download failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		return nil, "", fmt.Errorf("download returned status %d", resp.StatusCode)
+	}
+
+	// Read image data
+	imageData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read image data: %w", err)
+	}
+
+	// Get content type (default to image/jpeg if not specified)
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "image/jpeg"
+	}
+
+	return imageData, contentType, nil
 }
