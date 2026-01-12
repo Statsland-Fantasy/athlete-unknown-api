@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [auth0workflow]
+
+### Added
+
+- Username management functionality for Auth0 integration
+- `PUT /v1/user/username` endpoint for authenticated users to update their display name
+- Username validation utility with profanity filtering
+  - Validates length (3-20 characters)
+  - Validates format (alphanumeric + spaces only)
+  - Checks for inappropriate content
+- Default username generation utility (`GenerateDefaultUsername`)
+  - Format: "Guest{1-999}{FirstLetterOfEmail}"
+  - Example: "Guest42J" for john@example.com
+- Comprehensive unit tests for username utilities
+- New permission: `update:athlete-unknown:profile` for username updates
+
+### Technical Details
+
+- Username validation includes:
+  - Length constraints (3-20 chars)
+  - Character restrictions (letters, numbers, spaces only)
+  - No consecutive spaces
+  - Basic profanity filter (can be enhanced with external library)
+- Creates user stats entry if it doesn't exist when setting username
+- Uses existing Auth0 JWT middleware for authentication
+- Supports both new user creation and username updates
+
 ## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
 
 ### Added
