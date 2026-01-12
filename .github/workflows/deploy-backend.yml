@@ -49,8 +49,8 @@ jobs:
           sam deploy \
             --template-file template.yaml \
             --stack-name athlete-unknown-backend-dev \
-            --s3-bucket statsland-sam-deployments-dev \
-            --s3-prefix athlete-unknown-api \
+            --s3-bucket statslandfantasy-sam-deployments-dev \
+            --s3-prefix athlete-unknown-api-dev \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides Environment=dev Auth0Domain="${AUTH0_DOMAIN}" Auth0Audience="${AUTH0_AUDIENCE}" AdminApiKey="${ADMIN_API_KEY}" CorsAllowedOrigins="${CORS_ALLOWED_ORIGINS}"
@@ -94,8 +94,8 @@ jobs:
           sam deploy \
             --template-file template.yaml \
             --stack-name athlete-unknown-backend-prod \
-            --s3-bucket statsland-sam-deployments-prod \
-            --s3-prefix athlete-unknown-api \
+            --s3-bucket statslandfantasy-sam-deployments-prod \
+            --s3-prefix athlete-unknown-api-prod \
             --capabilities CAPABILITY_IAM \
             --no-fail-on-empty-changeset \
             --parameter-overrides Environment=prod Auth0Domain="${AUTH0_DOMAIN}" Auth0Audience="${AUTH0_AUDIENCE}" AdminApiKey="${ADMIN_API_KEY}" CorsAllowedOrigins="${CORS_ALLOWED_ORIGINS}"
