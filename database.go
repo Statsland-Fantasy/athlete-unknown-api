@@ -189,7 +189,6 @@ func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate st
 
 	result, err := db.client.Query(ctx, &dynamodb.QueryInput{
 		TableName:                 aws.String(db.roundsTableName),
-		IndexName:                 aws.String("SportPlayDateIndex"),
 		KeyConditionExpression:    aws.String(keyConditionExpression),
 		ExpressionAttributeValues: expressionAttributeValues,
 		ProjectionExpression:      aws.String("roundId, sport, playDate"),
