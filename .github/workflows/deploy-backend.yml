@@ -37,7 +37,7 @@ jobs:
       - name: Build Lambda
         run: |
           mkdir -p lambda
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc,lambda -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to DEV
         env:
@@ -82,7 +82,7 @@ jobs:
       - name: Build Lambda
         run: |
           mkdir -p lambda
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o lambda/bootstrap -ldflags="-s -w" .
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc,lambda -o lambda/bootstrap -ldflags="-s -w" .
 
       - name: SAM Deploy to PROD
         env:
