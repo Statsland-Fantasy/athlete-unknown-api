@@ -24,6 +24,9 @@ type Config struct {
 	RoundsTableName    string
 	UserStatsTableName string
 	AWSRegion          string
+	AIUpscalerEnabled  bool
+	AIUpscalerAPIKey   string
+	AIUpscalerAPIURL   string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -33,6 +36,9 @@ func LoadConfig() *Config {
 		RoundsTableName:    getEnv("ROUNDS_TABLE_NAME", "AthleteUnknownRoundsDev"),
 		UserStatsTableName: getEnv("USER_STATS_TABLE_NAME", "AthleteUnknownUserStatsDev"),
 		AWSRegion:          getEnv("AWS_REGION", "us-west-2"),
+		AIUpscalerEnabled:  getEnvBool("AI_UPSCALER_ENABLED", false),
+		AIUpscalerAPIKey:   getEnv("AI_UPSCALER_API_KEY", ""),
+		AIUpscalerAPIURL:   getEnv("AI_UPSCALER_API_URL", ""),
 	}
 }
 
@@ -41,6 +47,14 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value == "true" || value == "1" || value == "yes"
 }
 
 // GetSportsReferenceHostname returns the hostname for the given sport
