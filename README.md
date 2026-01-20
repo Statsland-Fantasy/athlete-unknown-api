@@ -45,6 +45,15 @@ aws dynamodb create-table \
     --key-schema \
         AttributeName=playDate,KeyType=HASH \
         AttributeName=sport,KeyType=RANGE \
+    --global-secondary-indexes \
+        '[{
+            "IndexName": "SportPlayDateIndex",
+            "KeySchema": [
+                {"AttributeName": "sport", "KeyType": "HASH"},
+                {"AttributeName": "playDate", "KeyType": "RANGE"}
+            ],
+            "Projection": {"ProjectionType": "ALL"}
+        }]' \
     --billing-mode PAY_PER_REQUEST \
     --endpoint-url http://localhost:8000
 ```
@@ -71,8 +80,63 @@ aws dynamodb create-table \
     --endpoint-url http://localhost:8000
 ```
 
-**Performance Note:**
-The `GetRoundsBySport` endpoint uses a Scan operation to filter by sport. For better performance with large datasets, consider adding a Global Secondary Index (GSI) with `sport` as the partition key and `playDate` as the sort key.
+**Global Secondary Index:**
+
+The table includes a GSI named `SportPlayDateIndex` for efficient querying by sport:
+- Partition Key: `sport`
+- Sort Key: `playDate`
+
+This allows the `GetRoundsBySport` endpoint to use a Query operation (instead of Scan) for better performance, and returns results pre-sorted by playDate in descending order (latest to earliest).
+
+**Adding GSI to an existing table:**
+
+If you already have a table without the GSI, you can add it with this command:
+
+```bash
+# For DynamoDB Local:
+aws dynamodb update-table \
+    --table-name AthleteUnknownRoundsDev \
+    --attribute-definitions \
+        AttributeName=playDate,AttributeType=S \
+        AttributeName=sport,AttributeType=S \
+    --global-secondary-index-updates \
+        '[{
+            "Create": {
+                "IndexName": "SportPlayDateIndex",
+                "KeySchema": [
+                    {"AttributeName": "sport", "KeyType": "HASH"},
+                    {"AttributeName": "playDate", "KeyType": "RANGE"}
+                ],
+                "Projection": {"ProjectionType": "ALL"}
+            }
+        }]' \
+    --endpoint-url http://localhost:8000
+
+# For AWS DynamoDB (production):
+aws dynamodb update-table \
+    --table-name AthleteUnknownRoundsDev \
+    --attribute-definitions \
+        AttributeName=playDate,AttributeType=S \
+        AttributeName=sport,AttributeType=S \
+    --global-secondary-index-updates \
+        '[{
+            "Create": {
+                "IndexName": "SportPlayDateIndex",
+                "KeySchema": [
+                    {"AttributeName": "sport", "KeyType": "HASH"},
+                    {"AttributeName": "playDate", "KeyType": "RANGE"}
+                ],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                }
+            }
+        }]'
+
+# Note: For production tables using PAY_PER_REQUEST billing, omit the ProvisionedThroughput parameter
+# or first switch to PROVISIONED billing mode, add the GSI, then switch back to PAY_PER_REQUEST
+```
 
 ### Running the API
 
@@ -160,7 +224,7 @@ curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
 
 ```json
 {
-  "roundId": "Basketball100",
+  "roundId": "Basketball#100",
   "sport": "basketball",
   "playDate": "2025-11-15",
   "created": "2025-11-11T10:00:00Z",
@@ -210,7 +274,7 @@ Creates a new game round with player information. Admin access required.
 
 ```json
 {
-  "roundId": "Basketball100",
+  "roundId": "Basketball#100",
   "sport": "basketball",
   "playDate": "2025-11-15",
   "theme": "GOAT",
@@ -314,13 +378,17 @@ Submits the results of a completed trivia round.
 - `sport` (required): The sport for the results
 - `playDate` (required): The date of the round in `YYYY-MM-DD` format
 
+**Headers:**
+
+- `X-User-Timezone` (optional): User's IANA timezone (e.g., `America/Los_Angeles`, `Europe/London`, `Asia/Tokyo`). Used for accurate daily streak calculation. Defaults to UTC if not provided.
+
 **Request Body:**
 
 ```json
 {
   "score": 9,
   "isCorrect": true,
-  "tilesFlipped": [
+  "flippedTiles": [
     "tile1",
     "tile2",
     "tile3",
@@ -339,10 +407,21 @@ Submits the results of a completed trivia round.
 ```bash
 curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11-15" \
   -H "Content-Type: application/json" \
-  -d '{"score": 9, "isCorrect": true, "tilesFlipped": ["tile1", "tile2", "tile3"]}'
+  -H "X-User-Timezone: America/Los_Angeles" \
+  -d '{"score": 9, "isCorrect": true, "flippedTiles": ["tile1", "tile2", "tile3"]}'
 ```
 
 **Response:** `200 OK`
+
+**Daily Streak Tracking:**
+
+The API tracks daily streaks based on **engagement** (consecutive real-life calendar days played), not round completion dates. This means:
+- Streak increments when you play ANY round on consecutive days
+- Playing old/missed rounds still counts toward your streak
+- Streak calculation uses your local timezone from the `X-User-Timezone` header
+- If timezone header is missing or invalid, UTC is used as fallback
+
+Example: If you play on Monday, Tuesday, and Wednesday (in your local timezone), your streak is 3 - regardless of which rounds' playDates you chose to play.
 
 ---
 

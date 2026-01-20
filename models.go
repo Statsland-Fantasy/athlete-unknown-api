@@ -14,6 +14,13 @@ type Round struct {
 	Stats       RoundStats `json:"stats" dynamodbav:"stats"`
 }
 
+// RoundSummary contains minimal round information for list views
+type RoundSummary struct {
+	RoundID  string `json:"roundId" dynamodbav:"roundId"`
+	Sport    string `json:"sport" dynamodbav:"sport"`
+	PlayDate string `json:"playDate" dynamodbav:"playDate"`
+}
+
 // Player represents a player entity with comprehensive details
 type Player struct {
 	Sport                string `json:"sport" dynamodbav:"sport"`
@@ -59,6 +66,8 @@ type TileFlipTracker struct {
 	PersonalAchievements int `json:"personalAchievements" dynamodbav:"personalAchievements"`
 	Photo                int `json:"photo" dynamodbav:"photo"`
 	YearsActive          int `json:"yearsActive" dynamodbav:"yearsActive"`
+	Initials             int `json:"initials" dynamodbav:"initials"`
+	Nicknames            int `json:"nicknames" dynamodbav:"nicknames"`
 }
 
 // RoundStats represents statistics for a specific round
@@ -73,7 +82,7 @@ type RoundStats struct {
 type Result struct {
 	Score            int      `json:"score" dynamodbav:"score"`
 	IsCorrect        bool     `json:"isCorrect" dynamodbav:"isCorrect"`
-	TilesFlipped     []string `json:"tilesFlipped" dynamodbav:"tilesFlipped"`
+	FlippedTiles     []string `json:"flippedTiles" dynamodbav:"flippedTiles"`
 	IncorrectGuesses int      `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
 }
 

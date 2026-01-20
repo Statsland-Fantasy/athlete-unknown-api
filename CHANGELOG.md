@@ -34,11 +34,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Uses existing Auth0 JWT middleware for authentication
 - Supports both new user creation and username updates
 
+## [v1.0.2] - 2026-01-11
+
+## [PR-21]
+
+### Changed
+
+- Add S3 bucket to upload lambda to
+
+## [PR-20]
+
+### Changed
+
+- Fix lambda build commands. Settle on x86_64 architecture for simplicity
+
+## [PR-18]
+
+### Added
+
+- New deploy-backend.yml file. Deployments will only be made on release/ branches
+
+### Changed
+
+- Move physical attributes: height and weight to "Bio" tile, not "Player Information"
+- Changed model. Variable name "tilesFlipped" -> "filppedTiles"
+- Modify response of /rounds and /upcoming-rounds to be just round summaries
+- Use DynamoDB query with GSI instead of scan for /rounds and /upcoming-rounds
+- Handle currentDailyStreak to increment with daily interaction vs sequential play
+- Fix user stats bugs
+
+## [PR-15]
+
+### Added
+
+- Created new entry point for lambda builds
+- Template.yaml file for AWS deployments
+
 ## [PR-14] (https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/14)
 
 ### Added
 
 - POST route for migrating stats
+
 ## [PR-12]
 
 ### Added
@@ -59,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD workflows for automated testing, security scanning, and deployment
   - **ci.yml**: Runs on merge to main - builds, tests, lints, and performs security scans
   - **pr-checks.yml**: Validates pull requests with comprehensive checks and posts status comments
-  - **deploy-dev.yml**: Automatically deploys to dev environment when release branches are created
+  - **deploy-backend.yml**: Automatically deploys to dev environment when release branches are created
   - **changelog-reminder.yml**: Reminds contributors to update changelog for PRs
 
 ## [PR-8](https://github.com/Statsland-Fantasy/athlete-unknown-api/pull/8)

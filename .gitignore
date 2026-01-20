@@ -26,6 +26,7 @@ go.work.sum
 
 # env file
 .env
+env-local.json
 
 # Editor/IDE
 # .idea/
@@ -50,3 +51,11 @@ athlete-unknown-api
 test_request.json
 test_upscaler_directly.go
 
+# Build artifacts
+bin/
+lambda/
+*.zip
+
+# AWS SAM
+.aws-sam/
+samconfig.toml

@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // contains checks if a string slice contains a specific string
@@ -483,25 +485,53 @@ func abbreviatePositions(playerInfo string) string {
 	return result
 }
 
-// updateDailyStreak updates the user's daily streak and last day played based on the play date
-// For new users (userStats is nil), it initializes the streak to 1 and sets the last day played
+// getUserTimezone extracts and validates the user's timezone from the request header
+// Returns the timezone location or UTC as fallback if header is missing/invalid
+func getUserTimezone(c *gin.Context) *time.Location {
+	// Get timezone from X-User-Timezone header
+	tzHeader := c.GetHeader("X-User-Timezone")
+
+	if tzHeader == "" {
+		// No header provided, use UTC as fallback
+		return time.UTC
+	}
+
+	// Validate and load the timezone
+	loc, err := time.LoadLocation(tzHeader)
+	if err != nil {
+		// Invalid timezone string, use UTC as fallback
+		// Could log this for monitoring: fmt.Printf("Invalid timezone header: %s\n", tzHeader)
+		return time.UTC
+	}
+
+	return loc
+}
+
+// updateDailyStreak updates the user's daily streak based on real-life calendar days (engagement-based)
+// This function tracks consecutive days the user plays ANY round, regardless of which round's playDate they choose
 // For existing users, it:
-// - Increments the streak if the play date is exactly 1 day after the last day played
-// - Resets the streak to 1 if more than 1 day has passed since the last day played
-// - Keeps the streak unchanged if playing on the same day
-// Always updates lastDayPlayed to the current play date
-func updateDailyStreak(userStats *UserStats, playDate string) {
+// - Increments the streak if currentDate is exactly 1 day after the last real-life day they played
+// - Resets the streak to 1 if more than 1 day has passed since the last real-life day they played
+// - Keeps the streak unchanged if they already played on currentDate (prevents multiple increments on same day)
+// Always updates LastDayPlayed to currentDate
+// The currentDate parameter should be the real-life date (typically today's date from time.Now())
+func updateDailyStreak(userStats *UserStats, currentDate string) {
 	if userStats == nil {
 		return
 	}
 
 	// Check if we have a previous play date to compare against
 	if userStats.LastDayPlayed != "" {
-		lastPlayed, err := time.Parse("2006-01-02", userStats.LastDayPlayed)
-		currentPlay, err2 := time.Parse("2006-01-02", playDate)
+		// If they already played on this date, don't update the streak (prevents multiple increments)
+		if userStats.LastDayPlayed == currentDate {
+			return
+		}
+
+		lastPlayed, err := time.Parse(DateFormatYYYYMMDD, userStats.LastDayPlayed)
+		currentParsed, err2 := time.Parse(DateFormatYYYYMMDD, currentDate)
 
 		if err == nil && err2 == nil {
-			daysDiff := int(currentPlay.Sub(lastPlayed).Hours() / 24)
+			daysDiff := int(currentParsed.Sub(lastPlayed).Hours() / 24)
 
 			if daysDiff == 1 {
 				// Consecutive day - increment streak
@@ -510,10 +540,10 @@ func updateDailyStreak(userStats *UserStats, playDate string) {
 				// Missed a day - reset streak to 1
 				userStats.CurrentDailyStreak = 1
 			}
-			// If daysDiff == 0, same day - don't change streak
+			// If daysDiff == 0, same day - don't change streak (shouldn't happen due to check above)
 		}
 	}
 
-	// Update last day played
-	userStats.LastDayPlayed = playDate
+	// Update last day played to the current date
+	userStats.LastDayPlayed = currentDate
 }

@@ -74,7 +74,7 @@ func TestLoadConfig(t *testing.T) {
 			},
 			cleanupEnv: func() {},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "http://localhost:8000",
+				DynamoDBEndpoint:   "",
 				RoundsTableName:    "AthleteUnknownRoundsDev",
 				UserStatsTableName: "AthleteUnknownUserStatsDev",
 				AWSRegion:          "us-west-2",
@@ -114,7 +114,7 @@ func TestLoadConfig(t *testing.T) {
 				os.Unsetenv("AWS_REGION")
 			},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "http://localhost:8000",
+				DynamoDBEndpoint:   "",
 				RoundsTableName:    "CustomRoundsOnly",
 				UserStatsTableName: "AthleteUnknownUserStatsDev",
 				AWSRegion:          "eu-west-1",
@@ -258,6 +258,24 @@ func TestGetCurrentSeasonYear(t *testing.T) {
 }
 
 func TestGenerateRoundID(t *testing.T) {
+	// Save original values
+	originalDateString := FIRST_ROUND_DATE_STRING
+	originalDate := FIRST_ROUND_DATE
+
+	// Set environment variable for test
+	os.Setenv("FIRST_ROUND_DATE", "2025-01-01")
+
+	// Re-initialize the global variables after setting the env var
+	FIRST_ROUND_DATE_STRING = getEnv("FIRST_ROUND_DATE", "2026-02-08")
+	FIRST_ROUND_DATE = mustParseDate(FIRST_ROUND_DATE_STRING)
+
+	// Restore original values after test
+	defer func() {
+		os.Unsetenv("FIRST_ROUND_DATE")
+		FIRST_ROUND_DATE_STRING = originalDateString
+		FIRST_ROUND_DATE = originalDate
+	}()
+
 	tests := []struct {
 		name      string
 		sport     string
@@ -269,35 +287,35 @@ func TestGenerateRoundID(t *testing.T) {
 			name:      "baseball on first round date",
 			sport:     "baseball",
 			playDate:  "2025-01-01",
-			expected:  "baseball0",
+			expected:  "baseball#0",
 			expectErr: false,
 		},
 		{
 			name:      "basketball one day after first round date",
 			sport:     "basketball",
 			playDate:  "2025-01-02",
-			expected:  "basketball1",
+			expected:  "basketball#1",
 			expectErr: false,
 		},
 		{
 			name:      "football 30 days after first round date",
 			sport:     "football",
 			playDate:  "2025-01-31",
-			expected:  "football30",
+			expected:  "football#30",
 			expectErr: false,
 		},
 		{
 			name:      "baseball 365 days after first round date",
 			sport:     "baseball",
 			playDate:  "2026-01-01",
-			expected:  "baseball365",
+			expected:  "baseball#365",
 			expectErr: false,
 		},
 		{
 			name:      "date before first round date",
 			sport:     "basketball",
 			playDate:  "2024-12-31",
-			expected:  "basketball-1",
+			expected:  "basketball#-1",
 			expectErr: false,
 		},
 		{

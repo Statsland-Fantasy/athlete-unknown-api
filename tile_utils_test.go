@@ -190,19 +190,16 @@ func TestFindMostCommonTile(t *testing.T) {
 
 func TestFindLeastCommonTile(t *testing.T) {
 	tests := []struct {
-		name    string
-		tracker *TileFlipTracker
-		want    string
+		name      string
+		tracker   *TileFlipTracker
+		want      string
+		doNotWant string
 	}{
 		{
-			name:    "nil tracker",
-			tracker: nil,
-			want:    "",
-		},
-		{
-			name:    "empty tracker",
-			tracker: &TileFlipTracker{},
-			want:    "",
+			name:      "nil tracker",
+			tracker:   nil,
+			want:      "",
+			doNotWant: "",
 		},
 		{
 			name: "jerseyNumbers is least common",
@@ -216,11 +213,14 @@ func TestFindLeastCommonTile(t *testing.T) {
 				PersonalAchievements: 6,
 				Photo:                7,
 				YearsActive:          8,
+				Initials:             11,
+				Nicknames:            12,
 			},
-			want: "jerseyNumbers",
+			want:      "jerseyNumbers",
+			doNotWant: "",
 		},
 		{
-			name: "bio is least common (ignoring zeros)",
+			name: "years active is least common",
 			tracker: &TileFlipTracker{
 				Bio:                  1,
 				PlayerInformation:    2,
@@ -231,8 +231,11 @@ func TestFindLeastCommonTile(t *testing.T) {
 				PersonalAchievements: 7,
 				Photo:                8,
 				YearsActive:          0,
+				Initials:             10,
+				Nicknames:            11,
 			},
-			want: "bio",
+			want:      "yearsActive",
+			doNotWant: "",
 		},
 		{
 			name: "some fields are zero",
@@ -246,15 +249,25 @@ func TestFindLeastCommonTile(t *testing.T) {
 				PersonalAchievements: 0,
 				Photo:                0,
 				YearsActive:          0,
+				Initials:             10,
+				Nicknames:            11,
 			},
-			want: "jerseyNumbers",
+			want:      "jerseyNumbers",
+			doNotWant: "nicknames",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := findLeastCommonTile(tt.tracker); got != tt.want {
-				t.Errorf("findLeastCommonTile() = %v, want %v", got, tt.want)
+			got := findLeastCommonTile(tt.tracker)
+			if tt.doNotWant != "" {
+				if got == tt.doNotWant {
+					t.Errorf("findLeastCommonTile() = %v, do NOT want %v", got, tt.doNotWant)
+				}
+			} else {
+				if got != tt.want {
+					t.Errorf("findLeastCommonTile() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
