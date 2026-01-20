@@ -36,3 +36,17 @@ go.work.sum
 
 # Claude Code
 .claude
+
+# Environment files with secrets
+.env.dev
+.env.prod
+env
+
+# Compiled binaries
+athlete-unknown-api
+
+# Backup and temporary test files
+*.bak
+test_request.json
+test_upscaler_directly.go
+
