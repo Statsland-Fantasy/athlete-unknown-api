@@ -19,8 +19,8 @@ func TestGenerateDefaultUsername(t *testing.T) {
 			email:         "john@example.com",
 			wantPrefix:    "Guest",
 			wantLastChar:  "J",
-			wantMinLength: 7,  // Guest1J
-			wantMaxLength: 9,  // Guest999J
+			wantMinLength: 7, // Guest1J
+			wantMaxLength: 9, // Guest999J
 		},
 		{
 			name:          "Email starting with lowercase",
@@ -125,10 +125,10 @@ func TestIsInappropriateName(t *testing.T) {
 
 func TestValidateUsername(t *testing.T) {
 	tests := []struct {
-		name    string
+		name     string
 		username string
-		wantErr bool
-		errMsg  string
+		wantErr  bool
+		errMsg   string
 	}{
 		{
 			name:     "Valid username - alphanumeric",
