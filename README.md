@@ -488,6 +488,58 @@ curl "http://localhost:8080/v1/stats/user?userId=123e4567-e89b-12d3-a456-4266141
 
 ---
 
+#### Update Username
+
+```
+PUT /v1/user/username
+```
+
+Updates the display username for the authenticated user. Requires JWT authentication.
+
+**Authentication:** Required (JWT Bearer token)
+
+**Permission Required:** `update:athlete-unknown:profile`
+
+**Request Body:**
+
+```json
+{
+  "userName": "MyNewUsername"
+}
+```
+
+**Username Requirements:**
+- Length: 3-20 characters
+- Allowed characters: Letters, numbers, and spaces
+- No consecutive spaces
+- No inappropriate content
+
+**Example:**
+
+```bash
+curl -X PUT "http://localhost:8080/v1/user/username" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"userName": "CoolPlayer123"}'
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "userId": "auth0|123456",
+  "userName": "CoolPlayer123",
+  "message": "Username updated successfully"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid username (too short/long, invalid characters, inappropriate content)
+- `401 Unauthorized` - Missing or invalid JWT token
+- `500 Internal Server Error` - Database error
+
+---
+
 ## Error Responses
 
 All error responses follow this format:

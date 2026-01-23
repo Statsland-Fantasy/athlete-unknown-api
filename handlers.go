@@ -671,3 +671,90 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, round)
 }
+
+// UpdateUsername handles PUT /v1/user/username
+// Updates the display username for the authenticated user
+func (s *Server) UpdateUsername(c *gin.Context) {
+	// Extract userId from JWT token (set by middleware)
+	userIdToken, exists := c.Get(ConstantUserId)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "User ID not found in token",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	userId, ok := userIdToken.(string)
+	if !ok || userId == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "Invalid user ID in token",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		Username string `json:"userName" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: userName field is required",
+			JSONFieldCode:      ErrorMissingRequiredField,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Validate username
+	if err := ValidateUsername(req.Username); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   err.Error(),
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Get user stats
+	userStats, err := s.db.GetUserStats(c.Request.Context(), userId)
+	if err != nil {
+		// If user stats don't exist yet, create new entry
+		userStats = &UserStats{
+			UserId:             userId,
+			UserName:           req.Username,
+			UserCreated:        time.Now(),
+			CurrentDailyStreak: 0,
+			LastDayPlayed:      "",
+			Sports:             []UserSportStats{},
+		}
+	} else {
+		// Update existing username
+		userStats.UserName = req.Username
+	}
+
+	// Save to database
+	if err := s.db.UpdateUserStats(c.Request.Context(), userStats); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to update username",
+			JSONFieldCode:      ErrorDatabaseError,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"userId":   userId,
+		"userName": userStats.UserName,
+		"message":  "Username updated successfully",
+	})
+}
