@@ -14,7 +14,7 @@ func TestGetAchievementMappings(t *testing.T) {
 		{
 			name:          "baseball mappings",
 			sport:         "baseball",
-			expectedCount: 17,
+			expectedCount: 18,
 			checkMapping: func(mappings []AchievementMapping) bool {
 				// Check that Hall of Fame exists
 				for _, m := range mappings {
