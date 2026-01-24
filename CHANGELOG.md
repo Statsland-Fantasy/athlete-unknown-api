@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-24]
+
+### Changed
+
+- Abbreviated DOB month
+- Removed city and state from drafted if over max character limit
+
 ## [v1.0.2] - 2026-01-11
 
 ## [PR-21]
