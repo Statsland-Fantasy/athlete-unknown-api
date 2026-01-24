@@ -32,7 +32,7 @@ type scrapeError struct {
 }
 
 const (
-	AchievementsMaxLength = 100
+	ClueMaxLength = 55
 )
 
 func (e *scrapeError) Error() string {
@@ -386,7 +386,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 
 		// Set personal achievements
 		if len(rawAchievements) > 0 {
-			player.PersonalAchievements = ProcessAchievements(sport, rawAchievements, AchievementsMaxLength)
+			player.PersonalAchievements = ProcessAchievements(sport, rawAchievements, ClueMaxLength)
 		} else {
 			player.PersonalAchievements = "N/A"
 		}
@@ -428,6 +428,10 @@ func scrapeBio(c *colly.Collector, player *Player, sport string) {
 			dobText = text
 			dobText = strings.ReplaceAll(dobText, "\n", " ")
 			dobText = strings.Join(strings.Fields(dobText), " ")
+			// Abbreviate month names to first 3 characters
+			dobText = regexp.MustCompile(`\b(January|February|March|April|May|June|July|August|September|October|November|December)\b`).ReplaceAllStringFunc(dobText, func(month string) string {
+				return month[:3]
+			})
 			// Remove country code (last 3 characters: space + 2-char code)
 			if sport != SportFootball && len(dobText) > 3 {
 				dobText = strings.TrimSpace(dobText[:len(dobText)-3])
@@ -522,6 +526,20 @@ func scrapeDraftInformation(c *colly.Collector, player *Player, sport string) {
 			school = strings.ReplaceAll(school, "\n", "")
 			school = strings.ReplaceAll(school, "\t", "")
 			player.DraftInformation = formatDraftInformation(draftText, sport, school)
+		}
+
+		if len(player.DraftInformation) > ClueMaxLength {
+			// should only occur for baseball
+			// Remove parentheses that don't contain "OVR" (e.g., city/state locations)
+			re := regexp.MustCompile(`\s*\([^)]*\)`)
+			player.DraftInformation = re.ReplaceAllStringFunc(player.DraftInformation, func(match string) string {
+				if strings.Contains(strings.ToUpper(match), "OVR") {
+					return match // Keep parentheses containing "OVR"
+				}
+				return "" // Remove other parentheses (locations, etc.)
+			})
+			// Clean up any extra spaces left behind
+			player.DraftInformation = strings.Join(strings.Fields(player.DraftInformation), " ")
 		}
 	})
 }

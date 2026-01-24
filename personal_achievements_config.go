@@ -25,6 +25,7 @@ func GetAchievementMappings(sport string) []AchievementMapping {
 			// baseball - more specific matches first
 			{FullName: "ws mvp", Abbreviation: "", Tier: 1},
 			{FullName: "alcs mvp", Abbreviation: "", Tier: 2},
+			{FullName: "nlcs mvp", Abbreviation: "", Tier: 2},
 			{FullName: "as mvp", Abbreviation: "", Tier: 3},
 			{FullName: "hall of fame", Abbreviation: "HOF", Tier: 1},
 			{FullName: "world series", Abbreviation: "WS Champ", Tier: 1},

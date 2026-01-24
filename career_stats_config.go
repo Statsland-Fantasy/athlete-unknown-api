@@ -24,7 +24,7 @@ func GetCareerStatsConfig(sport, playerInfo string) StatsConfig {
 	switch sport {
 	case SportBaseball:
 		// Check if pitcher or hitter
-		if strings.Contains(playerInfo, "pitcher") {
+		if strings.Contains(playerInfo, "position: p") {
 			return StatsConfig{
 				Stats: []CareerStatsConfig{
 					{HTMLPath: "div.p1 > :nth-of-type(2) > p:last-of-type", StatLabel: "W"},
