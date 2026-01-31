@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [PR-25]
+
+### Added
+
+- New endpoint PUT /user/username to update username in Auth0
+
 ## [PR-24]
 
 ### Changed
