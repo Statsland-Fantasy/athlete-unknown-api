@@ -375,6 +375,12 @@ func (s *Server) SubmitResults(c *gin.Context) {
 	if exists && userIdToken != "" {
 		userId, ok := userIdToken.(string)
 		if ok && userId != "" {
+			var overwriteUsername string
+			usernameToken, exists := c.Get(ConstantUsername)
+			if exists && usernameToken != "" {
+				overwriteUsername = usernameToken.(string)
+			}
+
 			// Fetch existing user stats or create new ones
 			userStats, err := s.db.GetUserStats(c.Request.Context(), userId)
 			if err != nil {
@@ -399,11 +405,16 @@ func (s *Server) SubmitResults(c *gin.Context) {
 					Sports:             []UserSportStats{},
 					CurrentDailyStreak: 1,
 					LastDayPlayed:      today, // Track real-life date in user's timezone, not round playDate
-					UserName:           "",    // TODO: update with user's username as fetched from Auth0
+					UserName:           overwriteUsername,
 				}
 			} else {
 				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)
 				updateDailyStreak(userStats, today)
+			}
+
+			// update username
+			if overwriteUsername != "" {
+				userStats.UserName = overwriteUsername
 			}
 
 			// Find or create specific sport stats
@@ -581,6 +592,22 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 		return
 	}
 
+	usernameToken, exists := c.Get(ConstantUsername)
+	if !exists {
+		usernameToken = ""
+	}
+
+	username, ok := usernameToken.(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "Invalid username in token",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
 	// Parse UserStats from request body
 	var userStats UserStats
 	if err := c.ShouldBindJSON(&userStats); err != nil {
@@ -616,8 +643,9 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 		return
 	}
 
-	// Override userId from payload with userId from JWT token for security
+	// Override userId and username from payload with userId from JWT token for security
 	userStats.UserId = userId
+	userStats.UserName = username
 
 	// Save user stats to DynamoDB
 	err = s.db.CreateUserStats(c.Request.Context(), &userStats)
@@ -670,4 +698,85 @@ func (s *Server) ScrapeAndCreateRound(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, round)
+}
+
+// UpdateUsername handles PUT /v1/user/username - updates user's username in Auth0
+func (s *Server) UpdateUsername(c *gin.Context) {
+	// Get userId from JWT token (set by JWT middleware)
+	userIdToken, exists := c.Get(ConstantUserId)
+	if !exists || userIdToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "User ID not found in token",
+			JSONFieldCode:      ErrorMissingRequiredParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	userId, ok := userIdToken.(string)
+	if !ok || userId == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			JSONFieldError:     "Unauthorized",
+			JSONFieldMessage:   "Invalid user ID in token",
+			JSONFieldCode:      ErrorInvalidParameter,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Parse request body
+	var requestBody struct {
+		Username string `json:"username"`
+	}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Invalid request body: " + err.Error(),
+			JSONFieldCode:      ErrorInvalidRequestBody,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Validate username field
+	if requestBody.Username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			JSONFieldError:     StatusBadRequest,
+			JSONFieldMessage:   "Missing required field: username",
+			JSONFieldCode:      ErrorMissingRequiredField,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Get Auth0 Management API access token
+	managementToken, err := getAuth0ManagementToken()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to obtain Auth0 Management API token: " + err.Error(),
+			JSONFieldCode:      ErrorConfigurationError,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	// Update user metadata in Auth0
+	err = updateAuth0UserMetadata(userId, requestBody.Username, managementToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			JSONFieldError:     StatusInternalServerError,
+			JSONFieldMessage:   "Failed to update username in Auth0: " + err.Error(),
+			JSONFieldCode:      ErrorConfigurationError,
+			JSONFieldTimestamp: time.Now(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Username updated successfully",
+		"userId":   userId,
+		"username": requestBody.Username,
+	})
 }

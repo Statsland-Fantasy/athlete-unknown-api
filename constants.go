@@ -20,6 +20,7 @@ const (
 // Context key constants
 const (
 	ConstantUserId      = "userId"
+	ConstantUsername    = "username"
 	ConstantPermissions = "permissions"
 	ConstantRoles       = "roles"
 	ConstantIsAdmin     = "isAdmin"

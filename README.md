@@ -488,6 +488,60 @@ curl "http://localhost:8080/v1/stats/user?userId=123e4567-e89b-12d3-a456-4266141
 
 ---
 
+### User Management
+
+#### Update Username
+
+```
+PUT /v1/user/username
+```
+
+Updates the username in the user's Auth0 user_metadata. Requires JWT authentication.
+
+**Headers:**
+
+- `Authorization` (required): Bearer token containing valid JWT
+
+**Request Body:**
+
+```json
+{
+  "username": "newusername123"
+}
+```
+
+**Example:**
+
+```bash
+curl -X PUT "http://localhost:8080/v1/user/username" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"username": "newusername123"}'
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Username updated successfully",
+  "userId": "auth0|123456789",
+  "username": "newusername123"
+}
+```
+
+**Auth0 Management API Setup:**
+
+This endpoint requires Auth0 Management API credentials. You must:
+
+1. Create a Machine to Machine Application in your Auth0 dashboard
+2. Authorize it to call the Auth0 Management API
+3. Grant it the `update:users` permission
+4. Set the following environment variables:
+   - `AUTH0_MANAGEMENT_CLIENT_ID`: Your M2M application client ID
+   - `AUTH0_MANAGEMENT_CLIENT_SECRET`: Your M2M application client secret
+
+---
+
 ## Error Responses
 
 All error responses follow this format:
