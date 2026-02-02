@@ -436,6 +436,8 @@ func scrapeBio(c *colly.Collector, player *Player, sport string) {
 			if sport != SportFootball && len(dobText) > 3 {
 				dobText = strings.TrimSpace(dobText[:len(dobText)-3])
 			}
+			// Abbreviate US state names to 2-letter codes
+			dobText = abbreviateUSState(dobText)
 		}
 
 		if (strings.Contains(text, "cm") && strings.Contains(text, "kg")) ||

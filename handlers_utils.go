@@ -485,6 +485,73 @@ func abbreviatePositions(playerInfo string) string {
 	return result
 }
 
+// abbreviateUSState abbreviates US state names to their 2-letter codes
+// Uses ", " prefix to avoid abbreviating state names that are part of city names (e.g., "Kansas City, Kansas" -> "Kansas City, KS")
+func abbreviateUSState(text string) string {
+	stateReplacements := []struct {
+		full   string
+		abbrev string
+	}{
+		// Ordered by length (longest first) to avoid partial replacements
+		{", North Carolina", ", NC"},
+		{", South Carolina", ", SC"},
+		{", North Dakota", ", ND"},
+		{", South Dakota", ", SD"},
+		{", West Virginia", ", WV"},
+		{", New Hampshire", ", NH"},
+		{", New Jersey", ", NJ"},
+		{", New Mexico", ", NM"},
+		{", New York", ", NY"},
+		{", Rhode Island", ", RI"},
+		{", Massachusetts", ", MA"},
+		{", Pennsylvania", ", PA"},
+		{", Connecticut", ", CT"},
+		{", Mississippi", ", MS"},
+		{", Washington", ", WA"},
+		{", California", ", CA"},
+		{", Louisiana", ", LA"},
+		{", Minnesota", ", MN"},
+		{", Tennessee", ", TN"},
+		{", Wisconsin", ", WI"},
+		{", Arkansas", ", AR"},
+		{", Colorado", ", CO"},
+		{", Delaware", ", DE"},
+		{", Florida", ", FL"},
+		{", Georgia", ", GA"},
+		{", Illinois", ", IL"},
+		{", Indiana", ", IN"},
+		{", Kentucky", ", KY"},
+		{", Maryland", ", MD"},
+		{", Michigan", ", MI"},
+		{", Missouri", ", MO"},
+		{", Nebraska", ", NE"},
+		{", Oklahoma", ", OK"},
+		{", Virginia", ", VA"},
+		{", Wyoming", ", WY"},
+		{", Alabama", ", AL"},
+		{", Arizona", ", AZ"},
+		{", Montana", ", MT"},
+		{", Vermont", ", VT"},
+		{", Alaska", ", AK"},
+		{", Hawaii", ", HI"},
+		{", Kansas", ", KS"},
+		{", Nevada", ", NV"},
+		{", Oregon", ", OR"},
+		{", Maine", ", ME"},
+		{", Idaho", ", ID"},
+		{", Texas", ", TX"},
+		{", Ohio", ", OH"},
+		{", Utah", ", UT"},
+		{", Iowa", ", IA"},
+	}
+
+	result := text
+	for _, replacement := range stateReplacements {
+		result = strings.ReplaceAll(result, replacement.full, replacement.abbrev)
+	}
+	return result
+}
+
 // getUserTimezone extracts and validates the user's timezone from the request header
 // Returns the timezone location or UTC as fallback if header is missing/invalid
 func getUserTimezone(c *gin.Context) *time.Location {
