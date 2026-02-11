@@ -101,6 +101,11 @@ func updateStatsWithResult(stats *Stats, result *Result) {
 		stats.HighestScore = result.Score
 	}
 
+	// Calculate current incorrect guesses from previous average
+	incorrectGuesses := int(stats.AverageIncorrectGuesses * float64(stats.TotalPlays-1))
+	incorrectGuesses += result.IncorrectGuesses
+	stats.AverageIncorrectGuesses = float64(incorrectGuesses) / float64(stats.TotalPlays)
+
 	// Update average number of tile flips
 	totalTileFlips := stats.AverageNumberOfTileFlips * float64(stats.TotalPlays-1)
 	totalTileFlips += float64(len(result.FlippedTiles))

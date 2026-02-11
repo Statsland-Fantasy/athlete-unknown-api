@@ -45,6 +45,7 @@ type Stats struct {
 	PercentageCorrect          float64         `json:"percentageCorrect" dynamodbav:"percentageCorrect"`
 	HighestScore               int             `json:"highestScore" dynamodbav:"highestScore"`
 	AverageCorrectScore        float64         `json:"averageCorrectScore" dynamodbav:"averageCorrectScore"`
+	AverageIncorrectGuesses    float64         `json:"averageIncorrectGuesses" dynamodbav:"averageIncorrectGuesses"`
 	AverageNumberOfTileFlips   float64         `json:"averageNumberOfTileFlips" dynamodbav:"averageNumberOfTileFlips"`
 	MostCommonFirstTileFlipped string          `json:"mostCommonFirstTileFlipped" dynamodbav:"mostCommonFirstTileFlipped"`
 	MostCommonLastTileFlipped  string          `json:"mostCommonLastTileFlipped" dynamodbav:"mostCommonLastTileFlipped"`

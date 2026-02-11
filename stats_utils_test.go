@@ -36,6 +36,10 @@ func TestUpdateStatsWithResult_FirstPlay(t *testing.T) {
 		t.Errorf("Expected AverageNumberOfTileFlips to be 3.0, got %f", stats.AverageNumberOfTileFlips)
 	}
 
+	if stats.AverageIncorrectGuesses != 0.0 {
+		t.Errorf("Expected AverageIncorrectGuesses to be 0.0, got %f", stats.AverageIncorrectGuesses)
+	}
+
 	// Verify tile tracking
 	if stats.MostCommonFirstTileFlipped != TileBio {
 		t.Errorf("Expected MostCommonFirstTileFlipped to be %s, got %s", TileBio, stats.MostCommonFirstTileFlipped)
@@ -71,17 +75,19 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 
 	// First correct answer with score 100
 	result1 := &Result{
-		Score:        100,
-		IsCorrect:    true,
-		FlippedTiles: []string{TileBio},
+		Score:            100,
+		IsCorrect:        true,
+		FlippedTiles:     []string{TileBio},
+		IncorrectGuesses: 2,
 	}
 	updateStatsWithResult(stats, result1)
 
 	// Second correct answer with score 80
 	result2 := &Result{
-		Score:        80,
-		IsCorrect:    true,
-		FlippedTiles: []string{TilePlayerInformation},
+		Score:            80,
+		IsCorrect:        true,
+		FlippedTiles:     []string{TilePlayerInformation},
+		IncorrectGuesses: 4,
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -102,6 +108,11 @@ func TestUpdateStatsWithResult_CorrectAnswers(t *testing.T) {
 	if stats.HighestScore != 100 {
 		t.Errorf("Expected HighestScore to be 100, got %d", stats.HighestScore)
 	}
+
+	// Average incorrect guesses: (2 + 4) / 2 = 3.0
+	if stats.AverageIncorrectGuesses != 3.0 {
+		t.Errorf("Expected AverageIncorrectGuesses to be 3.0, got %f", stats.AverageIncorrectGuesses)
+	}
 }
 
 func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
@@ -109,17 +120,19 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 
 	// First correct answer
 	result1 := &Result{
-		Score:        100,
-		IsCorrect:    true,
-		FlippedTiles: []string{TileBio},
+		Score:            100,
+		IsCorrect:        true,
+		FlippedTiles:     []string{TileBio},
+		IncorrectGuesses: 1,
 	}
 	updateStatsWithResult(stats, result1)
 
 	// Incorrect answer
 	result2 := &Result{
-		Score:        0,
-		IsCorrect:    false,
-		FlippedTiles: []string{TilePlayerInformation, TileDraftInformation},
+		Score:            0,
+		IsCorrect:        false,
+		FlippedTiles:     []string{TilePlayerInformation, TileDraftInformation},
+		IncorrectGuesses: 5,
 	}
 	updateStatsWithResult(stats, result2)
 
@@ -146,6 +159,11 @@ func TestUpdateStatsWithResult_IncorrectAnswer(t *testing.T) {
 	// Average tile flips: (1 + 2) / 2 = 1.5
 	if stats.AverageNumberOfTileFlips != 1.5 {
 		t.Errorf("Expected AverageNumberOfTileFlips to be 1.5, got %f", stats.AverageNumberOfTileFlips)
+	}
+
+	// Average incorrect guesses: (1 + 5) / 2 = 3.0
+	if stats.AverageIncorrectGuesses != 3.0 {
+		t.Errorf("Expected AverageIncorrectGuesses to be 3.0, got %f", stats.AverageIncorrectGuesses)
 	}
 }
 
@@ -452,6 +470,7 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 		PercentageCorrect:        60.0, // 3 out of 5 correct
 		HighestScore:             150,
 		AverageCorrectScore:      120.0,
+		AverageIncorrectGuesses:  2.0,
 		AverageNumberOfTileFlips: 2.5,
 		FirstTileFlippedTracker: TileFlipTracker{
 			Bio: 3,
@@ -461,9 +480,10 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 
 	// Add another correct result
 	result := &Result{
-		Score:        130,
-		IsCorrect:    true,
-		FlippedTiles: []string{TilePlayerInformation, TileCareerStats},
+		Score:            130,
+		IsCorrect:        true,
+		FlippedTiles:     []string{TilePlayerInformation, TileCareerStats},
+		IncorrectGuesses: 4,
 	}
 	updateStatsWithResult(stats, result)
 
@@ -493,6 +513,12 @@ func TestUpdateStatsWithResult_ExistingStats(t *testing.T) {
 	expectedAvgFlips := 14.5 / 6.0
 	if stats.AverageNumberOfTileFlips != expectedAvgFlips {
 		t.Errorf("Expected AverageNumberOfTileFlips to be %f, got %f", expectedAvgFlips, stats.AverageNumberOfTileFlips)
+	}
+
+	// Average incorrect guesses: (2.0 * 5 + 4) / 6 = 14 / 6 = 2.333...
+	expectedAvgGuesses := 14.0 / 6.0
+	if stats.AverageIncorrectGuesses != expectedAvgGuesses {
+		t.Errorf("Expected AverageIncorrectGuesses to be %f, got %f", expectedAvgGuesses, stats.AverageIncorrectGuesses)
 	}
 }
 
