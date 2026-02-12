@@ -311,8 +311,8 @@ func TestHandleGetRoundStats(t *testing.T) {
 	}
 }
 
-// TestHandleGetUserStats tests the handleGetUserStats function's input validation
-func TestHandleGetUserStats(t *testing.T) {
+// TestHandleGetUser tests the handleGetUser function's input validation
+func TestHandleGetUser(t *testing.T) {
 	tests := []struct {
 		name           string
 		queryParams    string

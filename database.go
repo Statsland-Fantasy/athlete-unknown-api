@@ -15,9 +15,9 @@ import (
 
 // DB wraps the DynamoDB client
 type DB struct {
-	client             *dynamodb.Client
-	roundsTableName    string
-	userStatsTableName string
+	client          *dynamodb.Client
+	roundsTableName string
+	usersTableName  string
 }
 
 // NewDB creates a new DynamoDB client
@@ -42,9 +42,9 @@ func NewDB(cfg *Config) (*DB, error) {
 		})
 
 		return &DB{
-			client:             client,
-			roundsTableName:    cfg.RoundsTableName,
-			userStatsTableName: cfg.UserStatsTableName,
+			client:          client,
+			roundsTableName: cfg.RoundsTableName,
+			usersTableName:  cfg.UsersTableName,
 		}, nil
 	}
 
@@ -59,9 +59,9 @@ func NewDB(cfg *Config) (*DB, error) {
 	client := dynamodb.NewFromConfig(awsCfg)
 
 	return &DB{
-		client:             client,
-		roundsTableName:    cfg.RoundsTableName,
-		userStatsTableName: cfg.UserStatsTableName,
+		client:          client,
+		roundsTableName: cfg.RoundsTableName,
+		usersTableName:  cfg.UsersTableName,
 	}, nil
 }
 
@@ -211,10 +211,10 @@ func (db *DB) GetRoundsBySport(ctx context.Context, sport, startDate, endDate st
 	return rounds, nil
 }
 
-// GetUserStats retrieves user statistics by userId
-func (db *DB) GetUserStats(ctx context.Context, userId string) (*UserStats, error) {
+// GetUser retrieves user info by userId
+func (db *DB) GetUser(ctx context.Context, userId string) (*User, error) {
 	result, err := db.client.GetItem(ctx, &dynamodb.GetItemInput{
-		TableName: aws.String(db.userStatsTableName),
+		TableName: aws.String(db.usersTableName),
 		Key: map[string]types.AttributeValue{
 			ConstantUserId: &types.AttributeValueMemberS{Value: userId},
 		},
@@ -227,52 +227,52 @@ func (db *DB) GetUserStats(ctx context.Context, userId string) (*UserStats, erro
 		return nil, nil // Not found
 	}
 
-	var stats UserStats
-	err = attributevalue.UnmarshalMap(result.Item, &stats)
+	var user User
+	err = attributevalue.UnmarshalMap(result.Item, &user)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal user stats: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal user: %w", err)
 	}
 
-	return &stats, nil
+	return &user, nil
 }
 
-// CreateUserStats creates new user statistics
-func (db *DB) CreateUserStats(ctx context.Context, stats *UserStats) error {
+// CreateUser creates new user
+func (db *DB) CreateUser(ctx context.Context, user *User) error {
 	// Set timestamp
-	stats.UserCreated = time.Now()
+	user.UserCreated = time.Now()
 
 	// Marshal the stats to DynamoDB format
-	item, err := attributevalue.MarshalMap(stats)
+	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
-		return fmt.Errorf("failed to marshal user stats: %w", err)
+		return fmt.Errorf("failed to marshal user: %w", err)
 	}
 
 	// Check if item already exists using ConditionExpression
 	_, err = db.client.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName:           aws.String(db.userStatsTableName),
+		TableName:           aws.String(db.usersTableName),
 		Item:                item,
 		ConditionExpression: aws.String("attribute_not_exists(userId)"),
 	})
 	if err != nil {
 		if _, ok := err.(*types.ConditionalCheckFailedException); ok {
-			return fmt.Errorf("user stats already exist")
+			return fmt.Errorf("user already exists")
 		}
-		return fmt.Errorf("failed to create user stats: %w", err)
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 
 	return nil
 }
 
-// UpdateUserStats updates existing user statistics
-func (db *DB) UpdateUserStats(ctx context.Context, stats *UserStats) error {
-	// Marshal the stats to DynamoDB format
-	item, err := attributevalue.MarshalMap(stats)
+// UpdateUser updates existing user
+func (db *DB) UpdateUser(ctx context.Context, user *User) error {
+	// Marshal the user to DynamoDB format
+	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
-		return fmt.Errorf("failed to marshal user stats: %w", err)
+		return fmt.Errorf("failed to marshal user: %w", err)
 	}
 
 	_, err = db.client.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(db.userStatsTableName),
+		TableName: aws.String(db.usersTableName),
 		Item:      item,
 	})
 	if err != nil {

@@ -20,19 +20,19 @@ func init() {
 
 // Config holds application configuration
 type Config struct {
-	DynamoDBEndpoint   string
-	RoundsTableName    string
-	UserStatsTableName string
-	AWSRegion          string
+	DynamoDBEndpoint string
+	RoundsTableName  string
+	UsersTableName   string
+	AWSRegion        string
 }
 
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
 	return &Config{
-		DynamoDBEndpoint:   getEnv("DYNAMODB_ENDPOINT", ""),
-		RoundsTableName:    getEnv("ROUNDS_TABLE_NAME", "AthleteUnknownRoundsDev"),
-		UserStatsTableName: getEnv("USER_STATS_TABLE_NAME", "AthleteUnknownUserStatsDev"),
-		AWSRegion:          getEnv("AWS_REGION", "us-west-2"),
+		DynamoDBEndpoint: getEnv("DYNAMODB_ENDPOINT", ""),
+		RoundsTableName:  getEnv("ROUNDS_TABLE_NAME", "AthleteUnknownRoundsDev"),
+		UsersTableName:   getEnv("USERS_TABLE_NAME", "AthleteUnknownUsersDev"),
+		AWSRegion:        getEnv("AWS_REGION", "us-west-2"),
 	}
 }
 

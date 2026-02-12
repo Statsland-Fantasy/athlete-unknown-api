@@ -919,15 +919,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /stats/user:
+  /user:
     get:
       tags:
         - Statistics
-      summary: Get user statistics
+      summary: Get user info
       description: |
-        Retrieves comprehensive statistics for a specific user across all rounds they have played.
+        Retrieves comprehensive info for a specific user across all rounds they have played.
         Stats include play history, streaks, and performance metrics.
-      operationId: getUserStats
+      operationId: getUser
       security:
         - BearerAuth: []
       parameters:
@@ -944,10 +944,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserStats"
+                $ref: "#/components/schemas/User"
               examples:
-                userStats:
-                  summary: User statistics example
+                user:
+                  summary: User example
                   value:
                     userId: "123e4567-e89b-12d3-a456-426614174000"
                     userName: "Bob1"
@@ -966,15 +966,15 @@ paths:
                 code: "MISSING_REQUIRED_PARAMETER"
                 timestamp: "2025-11-11T10:50:00Z"
         "404":
-          description: User statistics not found
+          description: Users not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
                 error: "Not Found"
-                message: "No statistics found for user '123e4567-e89b-12d3-a456-426614174000'"
-                code: "USER_STATS_NOT_FOUND"
+                message: "User not found for userId='123e4567-e89b-12d3-a456-426614174000'"
+                code: "USER_NOT_FOUND"
                 timestamp: "2025-11-11T10:50:00Z"
         "500":
           description: Internal server error
@@ -1358,7 +1358,7 @@ components:
           items:
             $ref: "#/components/schemas/RoundHistory"
 
-    UserStats:
+    User:
       type: object
       required:
         - userId

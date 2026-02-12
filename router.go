@@ -26,7 +26,7 @@ func SetupRouter() *gin.Engine {
 		log.Fatalf("Failed to initialize DynamoDB client: %v", err)
 	}
 	log.Printf("DynamoDB client initialized (Rounds Table: %s, User Stats Table: %s, Region: %s)",
-		cfg.RoundsTableName, cfg.UserStatsTableName, cfg.AWSRegion)
+		cfg.RoundsTableName, cfg.UsersTableName, cfg.AWSRegion)
 
 	// Create server with database dependency injection
 	server := NewServer(db)

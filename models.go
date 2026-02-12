@@ -87,14 +87,15 @@ type Result struct {
 	IncorrectGuesses int      `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
 }
 
-// UserStats represents comprehensive statistics for a user
-type UserStats struct {
+// User represents comprehensive statistics for a user
+type User struct {
 	UserId             string           `json:"userId" dynamodbav:"userId"`
 	UserName           string           `json:"userName" dynamodbav:"userName"`
 	UserCreated        time.Time        `json:"userCreated" dynamodbav:"userCreated"`
 	CurrentDailyStreak int              `json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
 	LastDayPlayed      string           `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
 	Sports             []UserSportStats `json:"sports" dynamodbav:"sports"`
+	StoryMissions      []StoryMission   `json:"storyMissions" dynamodbav:"storyMissions"`
 }
 
 // SportStats represents statistics for a specific sport for all users
@@ -108,6 +109,33 @@ type UserSportStats struct {
 type RoundHistory struct {
 	PlayDate string `json:"playDate" dynamodbav:"playDate"`
 	Result
+}
+
+// StoryTemplate represents the configured story saved in database and then resolved in API to be dislayed in the FE
+type StoryTemplate struct {
+	StoryId    string `json:"storyId" dynamodbav:"storyId"`
+	Title      string `json:"title" dynamodbav:"title"`
+	ModalType  string `json:"modalType" dynamodbav:"modalType"`
+	DateOffset string `json:"dateOffset" dynamodbav:"dateOffset"`
+	BodyText   string `json:"bodyText" dynamodbav:"bodyText"`
+}
+
+// StoryMission represents the status of each story mission. Stored in User object
+type StoryMission struct {
+	Criteria     string `json:"criteria"` // ex: Solve 1 Case
+	Title        string `json:"title"`    // ex: A Smashing Debut
+	DateAchieved string `json:"date"`
+	PlayerName   string `json:"playerName"`
+	StoryId      string `json:"storyId"`
+}
+
+// Story represents the response to FE with resolved text, date, names, etc for simple pass through display
+type Story struct {
+	StoryId   string `json:"storyId"`
+	Title     string `json:"title"`
+	ModalType string `json:"modalType"`
+	Date      string `json:"date"`
+	BodyText  string `json:"bodyText"`
 }
 
 // ErrorResponse represents an error response

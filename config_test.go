@@ -69,15 +69,15 @@ func TestLoadConfig(t *testing.T) {
 				// Clear all config-related environment variables
 				os.Unsetenv("DYNAMODB_ENDPOINT")
 				os.Unsetenv("ROUNDS_TABLE_NAME")
-				os.Unsetenv("USER_STATS_TABLE_NAME")
+				os.Unsetenv("USERS_TABLE_NAME")
 				os.Unsetenv("AWS_REGION")
 			},
 			cleanupEnv: func() {},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "",
-				RoundsTableName:    "AthleteUnknownRoundsDev",
-				UserStatsTableName: "AthleteUnknownUserStatsDev",
-				AWSRegion:          "us-west-2",
+				DynamoDBEndpoint: "",
+				RoundsTableName:  "AthleteUnknownRoundsDev",
+				UsersTableName:   "AthleteUnknownUsersDev",
+				AWSRegion:        "us-west-2",
 			},
 		},
 		{
@@ -85,20 +85,20 @@ func TestLoadConfig(t *testing.T) {
 			setupEnv: func() {
 				os.Setenv("DYNAMODB_ENDPOINT", "http://custom:9000")
 				os.Setenv("ROUNDS_TABLE_NAME", "CustomRoundsTable")
-				os.Setenv("USER_STATS_TABLE_NAME", "CustomUserStatsTable")
+				os.Setenv("USERS_TABLE_NAME", "CustomUsersTable")
 				os.Setenv("AWS_REGION", "us-east-1")
 			},
 			cleanupEnv: func() {
 				os.Unsetenv("DYNAMODB_ENDPOINT")
 				os.Unsetenv("ROUNDS_TABLE_NAME")
-				os.Unsetenv("USER_STATS_TABLE_NAME")
+				os.Unsetenv("USERS_TABLE_NAME")
 				os.Unsetenv("AWS_REGION")
 			},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "http://custom:9000",
-				RoundsTableName:    "CustomRoundsTable",
-				UserStatsTableName: "CustomUserStatsTable",
-				AWSRegion:          "us-east-1",
+				DynamoDBEndpoint: "http://custom:9000",
+				RoundsTableName:  "CustomRoundsTable",
+				UsersTableName:   "CustomUsersTable",
+				AWSRegion:        "us-east-1",
 			},
 		},
 		{
@@ -106,7 +106,7 @@ func TestLoadConfig(t *testing.T) {
 			setupEnv: func() {
 				os.Unsetenv("DYNAMODB_ENDPOINT")
 				os.Setenv("ROUNDS_TABLE_NAME", "CustomRoundsOnly")
-				os.Unsetenv("USER_STATS_TABLE_NAME")
+				os.Unsetenv("USERS_TABLE_NAME")
 				os.Setenv("AWS_REGION", "eu-west-1")
 			},
 			cleanupEnv: func() {
@@ -114,10 +114,10 @@ func TestLoadConfig(t *testing.T) {
 				os.Unsetenv("AWS_REGION")
 			},
 			expectedConfig: &Config{
-				DynamoDBEndpoint:   "",
-				RoundsTableName:    "CustomRoundsOnly",
-				UserStatsTableName: "AthleteUnknownUserStatsDev",
-				AWSRegion:          "eu-west-1",
+				DynamoDBEndpoint: "",
+				RoundsTableName:  "CustomRoundsOnly",
+				UsersTableName:   "AthleteUnknownUsersDev",
+				AWSRegion:        "eu-west-1",
 			},
 		},
 	}
@@ -138,8 +138,8 @@ func TestLoadConfig(t *testing.T) {
 			if cfg.RoundsTableName != tt.expectedConfig.RoundsTableName {
 				t.Errorf("RoundsTableName = %v, want %v", cfg.RoundsTableName, tt.expectedConfig.RoundsTableName)
 			}
-			if cfg.UserStatsTableName != tt.expectedConfig.UserStatsTableName {
-				t.Errorf("UserStatsTableName = %v, want %v", cfg.UserStatsTableName, tt.expectedConfig.UserStatsTableName)
+			if cfg.UsersTableName != tt.expectedConfig.UsersTableName {
+				t.Errorf("UsersTableName = %v, want %v", cfg.UsersTableName, tt.expectedConfig.UsersTableName)
 			}
 			if cfg.AWSRegion != tt.expectedConfig.AWSRegion {
 				t.Errorf("AWSRegion = %v, want %v", cfg.AWSRegion, tt.expectedConfig.AWSRegion)
@@ -151,10 +151,10 @@ func TestLoadConfig(t *testing.T) {
 func TestConfigStruct(t *testing.T) {
 	// Test that Config struct can be created and fields accessed
 	cfg := &Config{
-		DynamoDBEndpoint:   "http://test:8000",
-		RoundsTableName:    "TestRoundsTable",
-		UserStatsTableName: "TestUserStatsTable",
-		AWSRegion:          "test-region",
+		DynamoDBEndpoint: "http://test:8000",
+		RoundsTableName:  "TestRoundsTable",
+		UsersTableName:   "TestUsersTable",
+		AWSRegion:        "test-region",
 	}
 
 	if cfg.DynamoDBEndpoint != "http://test:8000" {
@@ -163,8 +163,8 @@ func TestConfigStruct(t *testing.T) {
 	if cfg.RoundsTableName != "TestRoundsTable" {
 		t.Errorf("RoundsTableName = %v, want %v", cfg.RoundsTableName, "TestRoundsTable")
 	}
-	if cfg.UserStatsTableName != "TestUserStatsTable" {
-		t.Errorf("UserStatsTableName = %v, want %v", cfg.UserStatsTableName, "TestUserStatsTable")
+	if cfg.UsersTableName != "TestUsersTable" {
+		t.Errorf("TestUsersTable = %v, want %v", cfg.UsersTableName, "TestUsersTable")
 	}
 	if cfg.AWSRegion != "test-region" {
 		t.Errorf("AWSRegion = %v, want %v", cfg.AWSRegion, "test-region")

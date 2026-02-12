@@ -76,7 +76,7 @@ create-local-tables: ## Create DynamoDB tables locally
 
 	AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy AWS_REGION=us-west-2 \
 	aws dynamodb create-table \
-		--table-name AthleteUnknownUserStatsDev \
+		--table-name AthleteUnknownUsersDev \
 		--attribute-definitions \
 			AttributeName=userId,AttributeType=S \
 		--key-schema \
@@ -97,5 +97,5 @@ help:
 	@echo "  deploy-lambda       - Deploy to existing Lambda (requires AWS_LAMBDA_FUNCTION_NAME)"
 	@echo "  dynamodb-start      - Start local instance of DynamoDB on port 8000"
 	@echo "  dynamodb-stop       - Stop local instance of DynamoDB"
-	@echo "  create-local-tables - Create Rounds and UserStats local DynamoDB tables"
+	@echo "  create-local-tables - Create Rounds and Users local DynamoDB tables"
 	@echo "  help                - Show this help message"

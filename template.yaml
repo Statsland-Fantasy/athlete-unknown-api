@@ -65,12 +65,12 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  UserStatsTable:
+  UsersTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: !Sub "AthleteUnknownUserStats-${Environment}"
+      TableName: !Sub "AthleteUnknownUsers-${Environment}"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: userId
@@ -97,7 +97,7 @@ Resources:
       Environment:
         Variables:
           ROUNDS_TABLE_NAME: !Ref RoundsTable
-          USER_STATS_TABLE_NAME: !Ref UserStatsTable
+          USERS_TABLE_NAME: !Ref UsersTable
           ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
@@ -107,7 +107,7 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref RoundsTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref UserStatsTable
+            TableName: !Ref UsersTable
       Events:
         ApiEvent:
           Type: HttpApi
@@ -151,6 +151,6 @@ Outputs:
     Description: DynamoDB Rounds Table Name
     Value: !Ref RoundsTable
 
-  UserStatsTableName:
-    Description: DynamoDB User Stats Table Name
-    Value: !Ref UserStatsTable
+  UsersTableName:
+    Description: DynamoDB Users Table Name
+    Value: !Ref UsersTable

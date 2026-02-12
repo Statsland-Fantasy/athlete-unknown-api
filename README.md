@@ -16,7 +16,7 @@ The API requires the following environment variables for DynamoDB configuration:
 
 - `DYNAMODB_ENDPOINT` (optional): Custom DynamoDB endpoint URL. Use this for DynamoDB Local or custom endpoints. Leave empty for standard AWS DynamoDB.
 - `ROUNDS_TABLE_NAME` (optional): Name of the rounds DynamoDB table. Defaults to `AthleteUnknownRoundsDev`.
-- `USER_STATS_TABLE_NAME` (optional): Name of the user stats DynamoDB table. Defaults to `AthleteUnknownUserStatsDev`.
+- `USERS_TABLE_NAME` (optional): Name of the user stats DynamoDB table. Defaults to `AthleteUnknownUsersDev`.
 - `AWS_REGION` (optional): AWS region for DynamoDB. Defaults to `us-west-2`.
 - `PORT` (optional): Port for the HTTP server. Defaults to `8080`.
 
@@ -58,20 +58,20 @@ aws dynamodb create-table \
     --endpoint-url http://localhost:8000
 ```
 
-#### 2. User Stats Table (AthleteUnknownUserStatsDev)
+#### 2. User Stats Table (AthleteUnknownUsersDev)
 
 **Primary Key:**
 
 - `userId` (String): Partition key (user's unique identifier)
 
 **Attributes:**
-The table stores UserStats objects with all their nested attributes (Sports, aggregate statistics, etc.)
+The table stores User objects with all their nested attributes (Sports, aggregate statistics, etc.)
 
 **Example DynamoDB Local table creation:**
 
 ```bash
 aws dynamodb create-table \
-    --table-name AthleteUnknownUserStatsDev \
+    --table-name AthleteUnknownUsersDev \
     --attribute-definitions \
         AttributeName=userId,AttributeType=S \
     --key-schema \
@@ -146,7 +146,7 @@ aws dynamodb update-table \
 ```bash
 export AWS_REGION=us-west-2
 export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
-export USER_STATS_TABLE_NAME=AthleteUnknownUserStatsDev
+export USERS_TABLE_NAME=AthleteUnknownUsersDev
 go run .
 ```
 
@@ -155,7 +155,7 @@ go run .
 ```bash
 export DYNAMODB_ENDPOINT=http://localhost:8000
 export ROUNDS_TABLE_NAME=AthleteUnknownRoundsDev
-export USER_STATS_TABLE_NAME=AthleteUnknownUserStatsDev
+export USERS_TABLE_NAME=AthleteUnknownUsersDev
 export AWS_REGION=us-west-2
 go run .
 ```
@@ -564,7 +564,7 @@ All error responses follow this format:
 - `ROUND_NOT_FOUND` - The requested round does not exist
 - `ROUND_ALREADY_EXISTS` - A round already exists for the sport/date
 - `STATS_NOT_FOUND` - Statistics not found
-- `USER_STATS_NOT_FOUND` - User statistics not found
+- `USER_NOT_FOUND` - User not found
 - `METHOD_NOT_ALLOWED` - HTTP method not supported
 
 ---

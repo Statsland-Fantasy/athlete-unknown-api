@@ -381,12 +381,12 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				overwriteUsername = usernameToken.(string)
 			}
 
-			// Fetch existing user stats or create new ones
-			userStats, err := s.db.GetUserStats(c.Request.Context(), userId)
+			// Fetch existing user or create new ones
+			user, err := s.db.GetUser(c.Request.Context(), userId)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					JSONFieldError:     StatusInternalServerError,
-					JSONFieldMessage:   "Failed to retrieve user stats: " + err.Error(),
+					JSONFieldMessage:   "Failed to retrieve user: " + err.Error(),
 					JSONFieldCode:      ErrorDatabaseError,
 					JSONFieldTimestamp: time.Now(),
 				})
@@ -399,8 +399,8 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			today := time.Now().In(userLoc).Format(DateFormatYYYYMMDD)
 
 			// If user stats don't exist, create new user stats
-			if userStats == nil {
-				userStats = &UserStats{
+			if user == nil {
+				user = &User{
 					UserId:             userId,
 					Sports:             []UserSportStats{},
 					CurrentDailyStreak: 1,
@@ -409,19 +409,19 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				}
 			} else {
 				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)
-				updateDailyStreak(userStats, today)
+				updateDailyStreak(user, today)
 			}
 
 			// update username
 			if overwriteUsername != "" {
-				userStats.UserName = overwriteUsername
+				user.UserName = overwriteUsername
 			}
 
 			// Find or create specific sport stats
 			var sportStats *UserSportStats
-			for i := range userStats.Sports {
-				if userStats.Sports[i].Sport == sport {
-					sportStats = &userStats.Sports[i]
+			for i := range user.Sports {
+				if user.Sports[i].Sport == sport {
+					sportStats = &user.Sports[i]
 					break
 				}
 			}
@@ -431,8 +431,8 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				newSportStats := UserSportStats{
 					Sport: sport,
 				}
-				userStats.Sports = append(userStats.Sports, newSportStats)
-				sportStats = &userStats.Sports[len(userStats.Sports)-1]
+				user.Sports = append(user.Sports, newSportStats)
+				sportStats = &user.Sports[len(user.Sports)-1]
 			}
 
 			// Update sport-specific stats
@@ -459,10 +459,10 @@ func (s *Server) SubmitResults(c *gin.Context) {
 			}
 
 			// Save or update user stats in DynamoDB
-			if userStats.UserCreated.IsZero() {
-				err = s.db.CreateUserStats(c.Request.Context(), userStats)
+			if user.UserCreated.IsZero() {
+				err = s.db.CreateUser(c.Request.Context(), user)
 			} else {
-				err = s.db.UpdateUserStats(c.Request.Context(), userStats)
+				err = s.db.UpdateUser(c.Request.Context(), user)
 			}
 
 			if err != nil {
@@ -519,7 +519,7 @@ func (s *Server) GetRoundStats(c *gin.Context) {
 	c.JSON(http.StatusOK, round.Stats)
 }
 
-// GetUserStats handles GET /v1/user
+// GetUser handles GET /v1/user
 func (s *Server) GetUser(c *gin.Context) {
 	userId := c.Query(QueryParamUserId)
 	if userId == "" {
@@ -543,28 +543,28 @@ func (s *Server) GetUser(c *gin.Context) {
 		}
 	}
 
-	stats, err := s.db.GetUserStats(c.Request.Context(), userId)
+	user, err := s.db.GetUser(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
-			JSONFieldMessage:   "Failed to retrieve user stats: " + err.Error(),
+			JSONFieldMessage:   "Failed to retrieve user: " + err.Error(),
 			JSONFieldCode:      ErrorDatabaseError,
 			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	if stats == nil {
+	if user == nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			JSONFieldError:     StatusNotFound,
-			JSONFieldMessage:   "No statistics found for user '" + userId + "'",
-			JSONFieldCode:      ErrorUserStatsNotFound,
+			JSONFieldMessage:   "User not found for '" + userId + "'",
+			JSONFieldCode:      ErrorUserNotFound,
 			JSONFieldTimestamp: time.Now(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, stats)
+	c.JSON(http.StatusOK, user)
 }
 
 // MigrateUserStats handles POST /v1/stats/user/migrate - migrates user stats from local storage to backend
@@ -608,9 +608,9 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 		return
 	}
 
-	// Parse UserStats from request body
-	var userStats UserStats
-	if err := c.ShouldBindJSON(&userStats); err != nil {
+	// Parse User from request body
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			JSONFieldError:     StatusBadRequest,
 			JSONFieldMessage:   "Invalid request body: " + err.Error(),
@@ -620,8 +620,8 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 		return
 	}
 
-	// Check if user stats already exist in the database
-	existingStats, err := s.db.GetUserStats(c.Request.Context(), userId)
+	// Check if user already exist in the database
+	existingUser, err := s.db.GetUser(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -633,7 +633,7 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 	}
 
 	// If user stats already exist, return 409 Conflict
-	if existingStats != nil {
+	if existingUser != nil {
 		c.JSON(http.StatusConflict, gin.H{
 			JSONFieldError:     StatusConflict,
 			JSONFieldMessage:   "User stats already exist. Migration not allowed for user '" + userId + "'",
@@ -644,11 +644,11 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 	}
 
 	// Override userId and username from payload with userId from JWT token for security
-	userStats.UserId = userId
-	userStats.UserName = username
+	user.UserId = userId
+	user.UserName = username
 
 	// Save user stats to DynamoDB
-	err = s.db.CreateUserStats(c.Request.Context(), &userStats)
+	err = s.db.CreateUser(c.Request.Context(), &user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			JSONFieldError:     StatusInternalServerError,
@@ -659,7 +659,7 @@ func (s *Server) MigrateUserStats(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, userStats)
+	c.JSON(http.StatusCreated, user)
 }
 
 // ScrapeAndCreateRound handles POST /v1/round - scrapes player data and creates a round

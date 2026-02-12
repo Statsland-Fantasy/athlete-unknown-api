@@ -582,19 +582,19 @@ func getUserTimezone(c *gin.Context) *time.Location {
 // - Keeps the streak unchanged if they already played on currentDate (prevents multiple increments on same day)
 // Always updates LastDayPlayed to currentDate
 // The currentDate parameter should be the real-life date (typically today's date from time.Now())
-func updateDailyStreak(userStats *UserStats, currentDate string) {
-	if userStats == nil {
+func updateDailyStreak(user *User, currentDate string) {
+	if user == nil {
 		return
 	}
 
 	// Check if we have a previous play date to compare against
-	if userStats.LastDayPlayed != "" {
+	if user.LastDayPlayed != "" {
 		// If they already played on this date, don't update the streak (prevents multiple increments)
-		if userStats.LastDayPlayed == currentDate {
+		if user.LastDayPlayed == currentDate {
 			return
 		}
 
-		lastPlayed, err := time.Parse(DateFormatYYYYMMDD, userStats.LastDayPlayed)
+		lastPlayed, err := time.Parse(DateFormatYYYYMMDD, user.LastDayPlayed)
 		currentParsed, err2 := time.Parse(DateFormatYYYYMMDD, currentDate)
 
 		if err == nil && err2 == nil {
@@ -602,15 +602,15 @@ func updateDailyStreak(userStats *UserStats, currentDate string) {
 
 			if daysDiff == 1 {
 				// Consecutive day - increment streak
-				userStats.CurrentDailyStreak++
+				user.CurrentDailyStreak++
 			} else if daysDiff > 1 {
 				// Missed a day - reset streak to 1
-				userStats.CurrentDailyStreak = 1
+				user.CurrentDailyStreak = 1
 			}
 			// If daysDiff == 0, same day - don't change streak (shouldn't happen due to check above)
 		}
 	}
 
 	// Update last day played to the current date
-	userStats.LastDayPlayed = currentDate
+	user.LastDayPlayed = currentDate
 }

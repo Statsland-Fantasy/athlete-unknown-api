@@ -14,20 +14,20 @@ func TestNewDB(t *testing.T) {
 		{
 			name: "create DB with local endpoint",
 			config: &Config{
-				DynamoDBEndpoint:   "http://localhost:8000",
-				RoundsTableName:    "TestRoundsTable",
-				UserStatsTableName: "TestUserStatsTable",
-				AWSRegion:          "us-west-2",
+				DynamoDBEndpoint: "http://localhost:8000",
+				RoundsTableName:  "TestRoundsTable",
+				UsersTableName:   "TestUsersTable",
+				AWSRegion:        "us-west-2",
 			},
 			wantError: false,
 		},
 		{
 			name: "create DB without custom endpoint",
 			config: &Config{
-				DynamoDBEndpoint:   "",
-				RoundsTableName:    "TestRoundsTable",
-				UserStatsTableName: "TestUserStatsTable",
-				AWSRegion:          "us-west-2",
+				DynamoDBEndpoint: "",
+				RoundsTableName:  "TestRoundsTable",
+				UsersTableName:   "TestUsersTable",
+				AWSRegion:        "us-west-2",
 			},
 			wantError: false,
 		},
@@ -47,8 +47,8 @@ func TestNewDB(t *testing.T) {
 				if db.roundsTableName != tt.config.RoundsTableName {
 					t.Errorf("roundsTableName = %v, want %v", db.roundsTableName, tt.config.RoundsTableName)
 				}
-				if db.userStatsTableName != tt.config.UserStatsTableName {
-					t.Errorf("userStatsTableName = %v, want %v", db.userStatsTableName, tt.config.UserStatsTableName)
+				if db.usersTableName != tt.config.UsersTableName {
+					t.Errorf("usersTableName = %v, want %v", db.usersTableName, tt.config.UsersTableName)
 				}
 			}
 		})
@@ -58,10 +58,10 @@ func TestNewDB(t *testing.T) {
 func TestDBStruct(t *testing.T) {
 	// Test that DB struct can be created with the expected fields
 	cfg := &Config{
-		DynamoDBEndpoint:   "http://localhost:8000",
-		RoundsTableName:    "TestRoundsTable",
-		UserStatsTableName: "TestUserStatsTable",
-		AWSRegion:          "us-west-2",
+		DynamoDBEndpoint: "http://localhost:8000",
+		RoundsTableName:  "TestRoundsTable",
+		UsersTableName:   "TestUsersTable",
+		AWSRegion:        "us-west-2",
 	}
 
 	db, err := NewDB(cfg)
@@ -75,8 +75,8 @@ func TestDBStruct(t *testing.T) {
 	if db.roundsTableName != "TestRoundsTable" {
 		t.Errorf("roundsTableName = %v, want TestRoundsTable", db.roundsTableName)
 	}
-	if db.userStatsTableName != "TestUserStatsTable" {
-		t.Errorf("userStatsTableName = %v, want TestUserStatsTable", db.userStatsTableName)
+	if db.usersTableName != "TestUsersTable" {
+		t.Errorf("usersTableName = %v, want TestUsersTable", db.usersTableName)
 	}
 }
 
@@ -154,10 +154,10 @@ func TestRoundMarshaling(t *testing.T) {
 	}
 }
 
-// Test UserStats marshaling and unmarshaling
-func TestUserStatsMarshaling(t *testing.T) {
+// Test User marshaling and unmarshaling
+func TestUserMarshaling(t *testing.T) {
 	now := time.Now()
-	stats := &UserStats{
+	user := &User{
 		UserId:             "test-user-123",
 		UserName:           "John Doe",
 		UserCreated:        now,
@@ -196,29 +196,29 @@ func TestUserStatsMarshaling(t *testing.T) {
 	}
 
 	// Verify all fields are set correctly
-	if stats.UserId != "test-user-123" {
-		t.Errorf("UserId = %v, want test-user-123", stats.UserId)
+	if user.UserId != "test-user-123" {
+		t.Errorf("UserId = %v, want test-user-123", user.UserId)
 	}
-	if stats.UserName != "John Doe" {
-		t.Errorf("UserName = %v, want John Doe", stats.UserName)
+	if user.UserName != "John Doe" {
+		t.Errorf("UserName = %v, want John Doe", user.UserName)
 	}
-	if len(stats.Sports) != 2 {
-		t.Errorf("len(Sports) = %v, want 2", len(stats.Sports))
+	if len(user.Sports) != 2 {
+		t.Errorf("len(Sports) = %v, want 2", len(user.Sports))
 	}
-	if stats.Sports[0].Sport != "basketball" {
-		t.Errorf("Sports[0].Sport = %v, want basketball", stats.Sports[0].Sport)
+	if user.Sports[0].Sport != "basketball" {
+		t.Errorf("Sports[0].Sport = %v, want basketball", user.Sports[0].Sport)
 	}
-	if stats.Sports[0].Stats.TotalPlays != 200 {
-		t.Errorf("Sports[0].TotalPlays = %v, want 200", stats.Sports[0].Stats.TotalPlays)
+	if user.Sports[0].Stats.TotalPlays != 200 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 200", user.Sports[0].Stats.TotalPlays)
 	}
-	if stats.Sports[0].Stats.PercentageCorrect != 75.0 {
-		t.Errorf("Sports[0].PercentageCorrect = %v, want 75.0", stats.Sports[0].Stats.PercentageCorrect)
+	if user.Sports[0].Stats.PercentageCorrect != 75.0 {
+		t.Errorf("Sports[0].PercentageCorrect = %v, want 75.0", user.Sports[0].Stats.PercentageCorrect)
 	}
-	if stats.Sports[0].Stats.AverageNumberOfTileFlips != 5.2 {
-		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", stats.Sports[0].Stats.AverageNumberOfTileFlips)
+	if user.Sports[0].Stats.AverageNumberOfTileFlips != 5.2 {
+		t.Errorf("Sports[0].AverageNumberOfTileFlips = %v, want 5.2", user.Sports[0].Stats.AverageNumberOfTileFlips)
 	}
-	if stats.Sports[1].Stats.AverageNumberOfTileFlips != 6.1 {
-		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", stats.Sports[1].Stats.AverageNumberOfTileFlips)
+	if user.Sports[1].Stats.AverageNumberOfTileFlips != 6.1 {
+		t.Errorf("Sports[1].AverageNumberOfTileFlips = %v, want 6.1", user.Sports[1].Stats.AverageNumberOfTileFlips)
 	}
 }
 
@@ -447,10 +447,10 @@ func TestRoundStatsWithAverageNumberOfTileFlips(t *testing.T) {
 	}
 }
 
-// Test UserName field in UserStats
-func TestUserStatsWithUserName(t *testing.T) {
+// Test UserName field in User
+func TestUserWithUserName(t *testing.T) {
 	now := time.Now()
-	stats := UserStats{
+	user := User{
 		UserId:      "user-123",
 		UserName:    "Jane Smith",
 		UserCreated: now,
@@ -467,13 +467,13 @@ func TestUserStatsWithUserName(t *testing.T) {
 		},
 	}
 
-	if stats.UserName != "Jane Smith" {
-		t.Errorf("UserName = %v, want Jane Smith", stats.UserName)
+	if user.UserName != "Jane Smith" {
+		t.Errorf("UserName = %v, want Jane Smith", user.UserName)
 	}
-	if stats.UserId != "user-123" {
-		t.Errorf("UserId = %v, want user-123", stats.UserId)
+	if user.UserId != "user-123" {
+		t.Errorf("UserId = %v, want user-123", user.UserId)
 	}
-	if stats.Sports[0].Stats.TotalPlays != 50 {
-		t.Errorf("Sports[0].TotalPlays = %v, want 50", stats.Sports[0].Stats.TotalPlays)
+	if user.Sports[0].Stats.TotalPlays != 50 {
+		t.Errorf("Sports[0].TotalPlays = %v, want 50", user.Sports[0].Stats.TotalPlays)
 	}
 }
