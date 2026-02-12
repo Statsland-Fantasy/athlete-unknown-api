@@ -134,7 +134,7 @@ const (
 	QueryParamUserId             = "userId"
 	QueryParamName               = "name"
 	QueryParamSportsReferenceURL = "sportsReferenceURL"
-	QueryParamTheme              = "theme"
+	QueryParamTitle              = "title"
 )
 
 // JSON response field names

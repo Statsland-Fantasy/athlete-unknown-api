@@ -105,8 +105,8 @@ func TestParseAndValidateScrapeParams(t *testing.T) {
 			shouldSucceed:  false,
 		},
 		{
-			name:           "valid params with theme",
-			queryParams:    "sport=football&playDate=2024-09-01&name=Patrick+Mahomes&theme=dark",
+			name:           "valid params with title",
+			queryParams:    "sport=football&playDate=2024-09-01&name=Patrick+Mahomes&title=GOAT",
 			expectedStatus: 0,
 			expectedCode:   "",
 			shouldSucceed:  true,

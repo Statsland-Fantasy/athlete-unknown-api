@@ -19,7 +19,7 @@ type scrapeParams struct {
 	PlayDate           string
 	Name               string
 	SportsReferenceURL string
-	Theme              string
+	Title              string
 	Hostname           string
 }
 
@@ -48,7 +48,7 @@ func parseAndValidateScrapeParams(c *gin.Context) (*scrapeParams, *scrapeError) 
 	playDate := c.Query(QueryParamPlayDate)
 	name := c.Query(QueryParamName)
 	sportsReferenceURL := c.Query(QueryParamSportsReferenceURL)
-	theme := c.Query(QueryParamTheme)
+	title := c.Query(QueryParamTitle)
 
 	// Validate required parameters
 	if sport == "" {
@@ -100,7 +100,7 @@ func parseAndValidateScrapeParams(c *gin.Context) (*scrapeParams, *scrapeError) 
 		PlayDate:           playDate,
 		Name:               name,
 		SportsReferenceURL: sportsReferenceURL,
-		Theme:              theme,
+		Title:              title,
 		Hostname:           hostname,
 	}, nil
 }
@@ -249,7 +249,7 @@ func (s *Server) createRoundFromPlayer(ctx context.Context, player *Player, para
 		Player:      *player,
 		Created:     now,
 		LastUpdated: now,
-		Theme:       params.Theme,
+		Title:       params.Title,
 		Stats: RoundStats{
 			PlayDate: params.PlayDate,
 			Name:     player.Name,

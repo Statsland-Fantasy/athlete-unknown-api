@@ -230,7 +230,7 @@ curl "http://localhost:8080/v1/round?sport=basketball&playDate=2025-11-15"
   "playDate": "2025-11-15",
   "created": "2025-11-11T10:00:00Z",
   "lastUpdated": "2025-11-11T14:30:00Z",
-  "theme": "GOAT",
+  "title": "GOAT",
   "player": {
     "sport": "basketball",
     "sportsReferenceURL": "https://www.basketball-reference.com/players/j/jamesle01.html",
@@ -278,7 +278,7 @@ Creates a new game round with player information. Admin access required.
   "roundId": "Basketball#100",
   "sport": "basketball",
   "playDate": "2025-11-15",
-  "theme": "GOAT",
+  "title": "GOAT",
   "player": {
     "sport": "basketball",
     "sportsReferenceURL": "https://www.basketball-reference.com/players/j/jamesle01.html",

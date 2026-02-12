@@ -77,7 +77,7 @@ paths:
                     playDate: "2025-11-15"
                     created: "2025-11-11T10:00:00Z"
                     lastUpdated: "2025-11-11T14:30:00Z"
-                    theme: "GOAT"
+                    title: "GOAT"
                     player:
                       sport: "basketball"
                       sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
@@ -111,7 +111,7 @@ paths:
                     playDate: "2025-11-12"
                     created: "2025-11-10T09:00:00Z"
                     lastUpdated: "2025-11-10T09:00:00Z"
-                    theme: ""
+                    title: ""
                     player:
                       sport: "baseball"
                       sportsReferenceURL: "https://www.baseball-reference.com/players/j/jeterde01.shtml"
@@ -145,7 +145,7 @@ paths:
                     playDate: "2025-11-18"
                     created: "2025-11-09T08:00:00Z"
                     lastUpdated: "2025-11-09T08:00:00Z"
-                    theme: ""
+                    title: ""
                     player:
                       sport: "football"
                       sportsReferenceURL: "https://www.pro-football-reference.com/players/B/BradTo00.htm"
@@ -244,7 +244,7 @@ paths:
                   playDate: "2025-11-15"
                   created: "2025-11-11T10:00:00Z"
                   lastUpdated: "2025-11-11T10:00:00Z"
-                  theme: ""
+                  title: ""
                   player:
                     sport: "basketball"
                     sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
@@ -278,7 +278,7 @@ paths:
                   playDate: "2025-11-12"
                   created: "2025-11-11T10:00:00Z"
                   lastUpdated: "2025-11-11T10:00:00Z"
-                  theme: ""
+                  title: ""
                   player:
                     sport: "baseball"
                     sportsReferenceURL: "https://www.baseball-reference.com/players/j/jeterde01.shtml"
@@ -317,7 +317,7 @@ paths:
                 playDate: "2025-11-15"
                 created: "2025-11-11T10:00:00Z"
                 lastUpdated: "2025-11-11T10:00:00Z"
-                theme: ""
+                title: ""
                 player:
                   sport: "basketball"
                   sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
@@ -591,7 +591,7 @@ paths:
                       playDate: "2025-11-15"
                       created: "2025-11-11T10:00:00Z"
                       lastUpdated: "2025-11-11T10:00:00Z"
-                      theme: ""
+                      title: ""
                       player:
                         sport: "basketball"
                         sportsReferenceURL: "https://www.basketball-reference.com/players/j/jamesle01.html"
@@ -622,7 +622,7 @@ paths:
                       playDate: "2025-11-20"
                       created: "2025-11-12T09:00:00Z"
                       lastUpdated: "2025-11-12T09:00:00Z"
-                      theme: ""
+                      title: ""
                       player:
                         sport: "basketball"
                         sportsReferenceURL: "https://www.basketball-reference.com/players/c/curryst01.html"
@@ -653,7 +653,7 @@ paths:
                       playDate: "2025-11-25"
                       created: "2025-11-13T08:30:00Z"
                       lastUpdated: "2025-11-13T08:30:00Z"
-                      theme: ""
+                      title: ""
                       player:
                         sport: "basketball"
                         sportsReferenceURL: "https://www.basketball-reference.com/players/d/duranke01.html"
@@ -1064,7 +1064,7 @@ components:
         - roundId
         - created
         - lastUpdated
-        - theme
+        - title
       properties:
         player:
           $ref: "#/components/schemas/Player"
@@ -1097,9 +1097,9 @@ components:
           format: date-time
           description: Timestamp when the round was last updated
           example: "2025-11-11T14:30:00Z"
-        theme:
+        title:
           type: string
-          description: On Sundays, each puzzle will have a unified theme. Otherwise, empty string and omit when displaying
+          description: On Sundays, each puzzle will have a unified title. Otherwise, empty string and omit when displaying
           example: "Playoff Heroes"
 
     Result:

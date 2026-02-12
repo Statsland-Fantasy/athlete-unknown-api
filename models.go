@@ -9,7 +9,7 @@ type Round struct {
 	PlayDate    string     `json:"playDate" dynamodbav:"playDate"`
 	Created     time.Time  `json:"created" dynamodbav:"created"`
 	LastUpdated time.Time  `json:"lastUpdated" dynamodbav:"lastUpdated"`
-	Theme       string     `json:"theme" dynamodbav:"theme"`
+	Title       string     `json:"title" dynamodbav:"title"`
 	Player      Player     `json:"player" dynamodbav:"player"`
 	Stats       RoundStats `json:"stats" dynamodbav:"stats"`
 }
