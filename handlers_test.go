@@ -331,9 +331,9 @@ func TestHandleGetUserStats(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request = httptest.NewRequest(http.MethodGet, "/v1/stats/user?"+tt.queryParams, nil)
+			c.Request = httptest.NewRequest(http.MethodGet, "/v1/user?"+tt.queryParams, nil)
 
-			getTestServer().GetUserStats(c)
+			getTestServer().GetUser(c)
 
 			if w.Code != tt.expectedStatus {
 				t.Errorf("Expected status %d, got %d", tt.expectedStatus, w.Code)

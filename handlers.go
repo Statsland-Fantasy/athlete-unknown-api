@@ -519,8 +519,8 @@ func (s *Server) GetRoundStats(c *gin.Context) {
 	c.JSON(http.StatusOK, round.Stats)
 }
 
-// GetUserStats handles GET /v1/stats/user
-func (s *Server) GetUserStats(c *gin.Context) {
+// GetUserStats handles GET /v1/user
+func (s *Server) GetUser(c *gin.Context) {
 	userId := c.Query(QueryParamUserId)
 	if userId == "" {
 		// if userId is not part in query param, extract from bearer token instead

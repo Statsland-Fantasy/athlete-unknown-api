@@ -83,6 +83,7 @@ aws dynamodb create-table \
 **Global Secondary Index:**
 
 The table includes a GSI named `SportPlayDateIndex` for efficient querying by sport:
+
 - Partition Key: `sport`
 - Sort Key: `playDate`
 
@@ -416,6 +417,7 @@ curl -X POST "http://localhost:8080/v1/results?sport=basketball&playDate=2025-11
 **Daily Streak Tracking:**
 
 The API tracks daily streaks based on **engagement** (consecutive real-life calendar days played), not round completion dates. This means:
+
 - Streak increments when you play ANY round on consecutive days
 - Playing old/missed rounds still counts toward your streak
 - Streak calculation uses your local timezone from the `X-User-Timezone` header
@@ -466,13 +468,13 @@ curl "http://localhost:8080/v1/stats/round?sport=basketball&playDate=2025-11-15"
 
 ---
 
-#### Get User Statistics
+#### Get User
 
 ```
-GET /v1/stats/user?userId={userId}
+GET /v1/user?userId={userId}
 ```
 
-Retrieves comprehensive statistics for a specific user.
+Retrieves comprehensive information for a specific user including stats, history, and story.
 
 **Query Parameters:**
 
@@ -481,7 +483,7 @@ Retrieves comprehensive statistics for a specific user.
 **Example:**
 
 ```bash
-curl "http://localhost:8080/v1/stats/user?userId=123e4567-e89b-12d3-a456-426614174000"
+curl "http://localhost:8080/v1/user?userId=123e4567-e89b-12d3-a456-426614174000"
 ```
 
 **Response:** `200 OK`

@@ -71,7 +71,7 @@ func SetupRouter() *gin.Engine {
 	publicAuth := v1.Group("")
 	publicAuth.Use(middleware.JWTMiddleware())
 	{
-		publicAuth.GET("/stats/user", middleware.RequirePermission("read:athlete-unknown:user-stats"), server.GetUserStats)
+		publicAuth.GET("/user", middleware.RequirePermission("read:athlete-unknown:user"), server.GetUser)
 		publicAuth.POST("/stats/user/migrate", middleware.RequirePermission("migrate:athlete-unknown:user-stats"), server.MigrateUserStats)
 		publicAuth.GET("/upcoming-rounds", middleware.RequirePermission("read:athlete-unknown:upcoming-rounds"), server.GetUpcomingRounds)
 		publicAuth.PUT("/user/username", server.UpdateUsername)
@@ -108,7 +108,7 @@ func HandleHome(c *gin.Context) {
 			"GET /v1/upcoming-rounds?sport={sport}&startDate={date}&endDate={date}",
 			"POST /v1/results?sport={sport}&playDate={date}",
 			"GET /v1/stats/round?sport={sport}&playDate={date}",
-			"GET /v1/stats/user?userId={userId}",
+			"GET /v1/user?userId={userId}",
 			"POST /v1/stats/user/migrate",
 			"PUT /v1/user/username",
 		},
