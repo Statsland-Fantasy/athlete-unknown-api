@@ -309,13 +309,15 @@ func TestPlayerStructure(t *testing.T) {
 // Test Result structure
 func TestResultStructure(t *testing.T) {
 	result := Result{
-		Score:        150,
-		IsCorrect:    true,
-		FlippedTiles: []string{"bio", "careerStats", "photo", "yearsActive"},
+		Score:            90,
+		IsCorrect:        true,
+		FlippedTiles:     []string{"bio", "careerStats", "photo", "yearsActive"},
+		IncorrectGuesses: 1,
+		PlayerName:       "John Doe",
 	}
 
-	if result.Score != 150 {
-		t.Errorf("Score = %v, want 150", result.Score)
+	if result.Score != 90 {
+		t.Errorf("Score = %v, want 90", result.Score)
 	}
 	if !result.IsCorrect {
 		t.Error("IsCorrect should be true")
@@ -325,6 +327,12 @@ func TestResultStructure(t *testing.T) {
 	}
 	if result.FlippedTiles[0] != "bio" {
 		t.Errorf("FlippedTiles[0] = %v, want bio", result.FlippedTiles[0])
+	}
+	if result.IncorrectGuesses != 1 {
+		t.Errorf("Incorrect Guesses = %v, want 1", result.IncorrectGuesses)
+	}
+	if result.PlayerName != "John Doe" {
+		t.Errorf("Player Name = %v, want John Doe", result.PlayerName)
 	}
 }
 

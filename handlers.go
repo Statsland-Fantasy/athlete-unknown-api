@@ -370,6 +370,9 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		return
 	}
 
+	// Build response with optional storyId
+	resultResponse := ResultResponse{Result: result}
+
 	// Get user_id from bearer token (set by JWT middleware)
 	userIdToken, exists := c.Get(ConstantUserId)
 	if exists && userIdToken != "" {
@@ -392,6 +395,10 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				})
 				return
 			}
+
+			// initialize empty storyId, populate if necessary
+			currentDailyStreakStoryId := ""
+			totalWinsStoryId := ""
 
 			// Get user's timezone from header (or UTC fallback)
 			userLoc := getUserTimezone(c)
@@ -417,7 +424,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				}
 			} else {
 				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)
-				updateDailyStreak(user, today)
+				currentDailyStreakStoryId = updateDailyStreak(user, today)
 			}
 
 			// update username
@@ -443,6 +450,13 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				sportStats = &user.Sports[len(user.Sports)-1]
 			}
 
+			// Update root level stats
+			user.TotalPlays++
+			if result.Score > 0 {
+				user.TotalWins++
+				totalWinsStoryId = totalWinsStoryMissions(user.TotalWins)
+			}
+
 			// Update sport-specific stats
 			updateStatsWithResult(&sportStats.Stats, &result)
 
@@ -466,6 +480,12 @@ func (s *Server) SubmitResults(c *gin.Context) {
 				sportStats.History = append(sportStats.History, roundHistory)
 			}
 
+			// Update storyMissions with any new completed ones
+			updateStoryMissions(&user.StoryMissions, &currentDailyStreakStoryId, &totalWinsStoryId, today, result.PlayerName)
+
+			// Set storyId on response if a total wins story mission was achieved
+			resultResponse.StoryId = totalWinsStoryId
+
 			// Save or update user stats in DynamoDB
 			if user.UserCreated.IsZero() {
 				err = s.db.CreateUser(c.Request.Context(), user)
@@ -485,7 +505,7 @@ func (s *Server) SubmitResults(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, resultResponse)
 }
 
 // GetRoundStats handles GET /v1/stats/round
@@ -571,6 +591,8 @@ func (s *Server) GetUser(c *gin.Context) {
 		})
 		return
 	}
+
+	// TODO: check most advanced currentDailyStreak story and return that
 
 	c.JSON(http.StatusOK, user)
 }

@@ -11,6 +11,7 @@ func TestUpdateStatsWithResult_FirstPlay(t *testing.T) {
 		IsCorrect:        true,
 		FlippedTiles:     []string{TileBio, TilePlayerInformation, TileCareerStats},
 		IncorrectGuesses: 0,
+		PlayerName:       "John Doe",
 	}
 
 	updateStatsWithResult(stats, result)

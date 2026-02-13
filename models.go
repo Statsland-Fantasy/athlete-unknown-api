@@ -85,9 +85,10 @@ type Result struct {
 	IsCorrect        bool     `json:"isCorrect"`
 	FlippedTiles     []string `json:"flippedTiles"`
 	IncorrectGuesses int      `json:"incorrectGuesses"`
+	PlayerName       string   `json:"playerName"`
 }
 
-// ResultResponse represents a game result submission
+// ResultResponse represents a game result submission response
 type ResultResponse struct {
 	Result
 	StoryId string `json:"storyId,omitempty"`
