@@ -400,12 +400,20 @@ func (s *Server) SubmitResults(c *gin.Context) {
 
 			// If user stats don't exist, create new user stats
 			if user == nil {
+				totalWins := 0
+				if result.Score > 0 {
+					totalWins = 1
+				}
 				user = &User{
 					UserId:             userId,
-					Sports:             []UserSportStats{},
-					CurrentDailyStreak: 1,
-					LastDayPlayed:      today, // Track real-life date in user's timezone, not round playDate
 					UserName:           overwriteUsername,
+					UserCreated:        time.Now(),
+					CurrentDailyStreak: 1,
+					TotalPlays:         1,
+					TotalWins:          totalWins,
+					LastDayPlayed:      today, // Track real-life date in user's timezone, not round playDate
+					Sports:             []UserSportStats{},
+					StoryMissions:      createEmptyStoryMissions(today),
 				}
 			} else {
 				// Update daily streak based on real-life date in user's timezone (engagement-based tracking)

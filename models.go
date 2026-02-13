@@ -100,6 +100,8 @@ type User struct {
 	UserCreated        time.Time        `json:"userCreated" dynamodbav:"userCreated"`
 	CurrentDailyStreak int              `json:"currentDailyStreak" dynamodbav:"currentDailyStreak"`
 	LastDayPlayed      string           `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
+	TotalPlays         int              `json:"totalPlays" dynamodbav:"totalPlays"`
+	TotalWins          int              `json:"totalWins" dynamodbav:"totalWins"`
 	Sports             []UserSportStats `json:"sports" dynamodbav:"sports"`
 	StoryMissions      []StoryMission   `json:"storyMissions" dynamodbav:"storyMissions"`
 }

@@ -238,9 +238,6 @@ func (db *DB) GetUser(ctx context.Context, userId string) (*User, error) {
 
 // CreateUser creates new user
 func (db *DB) CreateUser(ctx context.Context, user *User) error {
-	// Set timestamp
-	user.UserCreated = time.Now()
-
 	// Marshal the stats to DynamoDB format
 	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
