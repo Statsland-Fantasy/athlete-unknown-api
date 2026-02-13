@@ -81,10 +81,16 @@ type RoundStats struct {
 
 // Result represents a game result submission
 type Result struct {
-	Score            int      `json:"score" dynamodbav:"score"`
-	IsCorrect        bool     `json:"isCorrect" dynamodbav:"isCorrect"`
-	FlippedTiles     []string `json:"flippedTiles" dynamodbav:"flippedTiles"`
-	IncorrectGuesses int      `json:"incorrectGuesses" dynamodbav:"incorrectGuesses"`
+	Score            int      `json:"score"`
+	IsCorrect        bool     `json:"isCorrect"`
+	FlippedTiles     []string `json:"flippedTiles"`
+	IncorrectGuesses int      `json:"incorrectGuesses"`
+}
+
+// ResultResponse represents a game result submission
+type ResultResponse struct {
+	Result
+	StoryId string `json:"storyId,omitempty"`
 }
 
 // User represents comprehensive statistics for a user
