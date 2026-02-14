@@ -240,11 +240,7 @@ func (gs *GameService) SubmitResults(ctx context.Context, params SubmitResultsPa
 		resultResponse.StoryId = totalWinsStoryId
 
 		// Save or update user
-		if user.UserCreated.IsZero() {
-			err = gs.db.CreateUser(ctx, user)
-		} else {
-			err = gs.db.UpdateUser(ctx, user)
-		}
+		err = gs.db.UpdateUser(ctx, user)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to update user stats: %w", err)

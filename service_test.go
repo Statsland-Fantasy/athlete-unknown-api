@@ -10,14 +10,14 @@ import (
 // --- Mock Database ---
 
 type mockDB struct {
-	getRoundFn        func(ctx context.Context, sport, playDate string) (*Round, error)
-	createRoundFn     func(ctx context.Context, round *Round) error
-	updateRoundFn     func(ctx context.Context, round *Round) error
-	deleteRoundFn     func(ctx context.Context, sport, playDate string) error
+	getRoundFn         func(ctx context.Context, sport, playDate string) (*Round, error)
+	createRoundFn      func(ctx context.Context, round *Round) error
+	updateRoundFn      func(ctx context.Context, round *Round) error
+	deleteRoundFn      func(ctx context.Context, sport, playDate string) error
 	getRoundsBySportFn func(ctx context.Context, sport, startDate, endDate string) ([]*RoundSummary, error)
-	getUserFn         func(ctx context.Context, userId string) (*User, error)
-	createUserFn      func(ctx context.Context, user *User) error
-	updateUserFn      func(ctx context.Context, user *User) error
+	getUserFn          func(ctx context.Context, userId string) (*User, error)
+	createUserFn       func(ctx context.Context, user *User) error
+	updateUserFn       func(ctx context.Context, user *User) error
 }
 
 func (m *mockDB) GetRound(ctx context.Context, sport, playDate string) (*Round, error) {
@@ -79,8 +79,8 @@ func (m *mockDB) UpdateUser(ctx context.Context, user *User) error {
 // --- Mock Auth0 Client ---
 
 type mockAuth0 struct {
-	getManagementTokenFn  func() (string, error)
-	updateUserMetadataFn  func(userId, username, managementToken string) error
+	getManagementTokenFn func() (string, error)
+	updateUserMetadataFn func(userId, username, managementToken string) error
 }
 
 func (m *mockAuth0) GetManagementToken() (string, error) {
@@ -691,6 +691,17 @@ func TestServiceSubmitResults_AuthenticatedExistingUser(t *testing.T) {
 	if updatedUser.TotalWins != 6 {
 		t.Errorf("expected totalWins 6, got %d", updatedUser.TotalWins)
 	}
+	if updatedUser.LastDayPlayed != "2026-02-13" {
+		t.Errorf("expected LastDayPlayed 2026-02-13, got %s", updatedUser.LastDayPlayed)
+	}
+	if updatedUser.Sports[0].Sport != "basketball" {
+		t.Errorf("expected sport stats for sport basketball, got %s", updatedUser.Sports[0].Sport)
+	}
+	if updatedUser.Sports[0].Stats.TotalPlays != 1 {
+		t.Errorf("expected for sport basketball totalPlays 1, got %d", updatedUser.Sports[0].Stats.TotalPlays)
+
+	}
+	// TODO add more unit tests here for validating new story notification logic and story missions
 }
 
 func TestServiceSubmitResults_RoundNotFound(t *testing.T) {
