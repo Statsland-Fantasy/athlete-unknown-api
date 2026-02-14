@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -134,6 +133,7 @@ func searchPlayerByName(name, hostname string) (string, *scrapeError) {
 	collector := colly.NewCollector(
 		colly.AllowedDomains(hostname, "www."+hostname),
 		colly.MaxDepth(1),
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"),
 	)
 
 	// Allow redirects between www and non-www versions
@@ -229,47 +229,6 @@ func searchPlayerByName(name, hostname string) (string, *scrapeError) {
 	return finalURL, nil
 }
 
-// createRoundFromPlayer builds a Round struct from Player data and params
-func (s *Server) createRoundFromPlayer(ctx context.Context, player *Player, params *scrapeParams) (*Round, *scrapeError) {
-	roundID, err := GenerateRoundID(params.Sport, params.PlayDate)
-	if err != nil {
-		return nil, &scrapeError{
-			StatusCode: 400,
-			Message:    "Invalid playDate format: " + err.Error(),
-			ErrorCode:  ErrorInvalidPlayDate,
-			Err:        err,
-		}
-	}
-
-	now := time.Now()
-	round := &Round{
-		RoundID:     roundID,
-		Sport:       params.Sport,
-		PlayDate:    params.PlayDate,
-		Player:      *player,
-		Created:     now,
-		LastUpdated: now,
-		Title:       params.Title,
-		Stats: RoundStats{
-			PlayDate: params.PlayDate,
-			Name:     player.Name,
-			Sport:    params.Sport,
-		},
-	}
-
-	// Store the round in DynamoDB
-	if err := s.db.CreateRound(ctx, round); err != nil {
-		return nil, &scrapeError{
-			StatusCode: 500,
-			Message:    "Failed to create round: " + err.Error(),
-			ErrorCode:  ErrorDatabaseError,
-			Err:        err,
-		}
-	}
-
-	return round, nil
-}
-
 // respondWithScrapeError sends an error response based on scrapeError
 func respondWithScrapeError(c *gin.Context, err *scrapeError) {
 	c.JSON(err.StatusCode, gin.H{
@@ -312,6 +271,7 @@ func scrapePlayerData(playerURL, hostname, sport string) (*Player, error) {
 	c := colly.NewCollector(
 		colly.AllowedDomains(hostname, "www."+hostname),
 		colly.MaxDepth(1),
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"),
 	)
 
 	// Allow redirects between www and non-www versions

@@ -9,6 +9,20 @@ import (
 	"os"
 )
 
+// Auth0Client defines the interface for Auth0 operations
+type Auth0Client interface {
+	GetManagementToken() (string, error)
+	UpdateUserMetadata(userId, username, managementToken string) error
+}
+
+// auth0Client is the concrete implementation of Auth0Client
+type auth0Client struct{}
+
+// NewAuth0Client creates a new Auth0Client
+func NewAuth0Client() Auth0Client {
+	return &auth0Client{}
+}
+
 // Auth0ManagementTokenResponse represents the response from Auth0 token endpoint
 type Auth0ManagementTokenResponse struct {
 	AccessToken string `json:"access_token"`
@@ -16,8 +30,8 @@ type Auth0ManagementTokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-// getAuth0ManagementToken obtains an access token for the Auth0 Management API
-func getAuth0ManagementToken() (string, error) {
+// GetManagementToken obtains an access token for the Auth0 Management API
+func (a *auth0Client) GetManagementToken() (string, error) {
 	domain := os.Getenv("AUTH0_DOMAIN")
 	clientID := os.Getenv("AUTH0_MANAGEMENT_CLIENT_ID")
 	clientSecret := os.Getenv("AUTH0_MANAGEMENT_CLIENT_SECRET")
@@ -63,8 +77,8 @@ func getAuth0ManagementToken() (string, error) {
 	return tokenResponse.AccessToken, nil
 }
 
-// updateAuth0UserMetadata updates the user_metadata for a user in Auth0
-func updateAuth0UserMetadata(userId, username, managementToken string) error {
+// UpdateUserMetadata updates the user_metadata for a user in Auth0
+func (a *auth0Client) UpdateUserMetadata(userId, username, managementToken string) error {
 	domain := os.Getenv("AUTH0_DOMAIN")
 	if domain == "" {
 		return fmt.Errorf("AUTH0_DOMAIN environment variable not set")

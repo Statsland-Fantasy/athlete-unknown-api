@@ -28,8 +28,10 @@ func SetupRouter() *gin.Engine {
 	log.Printf("DynamoDB client initialized (Rounds Table: %s, User Stats Table: %s, Region: %s)",
 		cfg.RoundsTableName, cfg.UsersTableName, cfg.AWSRegion)
 
-	// Create server with database dependency injection
-	server := NewServer(db)
+	// Create service and server with dependency injection
+	auth0Client := NewAuth0Client()
+	service := NewGameService(db, auth0Client)
+	server := NewServer(service)
 
 	// Set Gin mode based on environment
 	ginMode := os.Getenv("GIN_MODE")

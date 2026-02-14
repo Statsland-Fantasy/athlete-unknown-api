@@ -13,6 +13,18 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+// Database defines the interface for database operations
+type Database interface {
+	GetRound(ctx context.Context, sport, playDate string) (*Round, error)
+	CreateRound(ctx context.Context, round *Round) error
+	UpdateRound(ctx context.Context, round *Round) error
+	DeleteRound(ctx context.Context, sport, playDate string) error
+	GetRoundsBySport(ctx context.Context, sport, startDate, endDate string) ([]*RoundSummary, error)
+	GetUser(ctx context.Context, userId string) (*User, error)
+	CreateUser(ctx context.Context, user *User) error
+	UpdateUser(ctx context.Context, user *User) error
+}
+
 // DB wraps the DynamoDB client
 type DB struct {
 	client          *dynamodb.Client
