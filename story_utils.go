@@ -1,202 +1,200 @@
 package main
 
-import "fmt"
-
 // createInitialStoryMissions returns the default set of story missions for a new user
 func createEmptyStoryMissions(today string) []StoryMission {
 	return []StoryMission{
 		{
+			Criteria:     CriteriaStartGame,
 			StoryId:      "story_1",
-			Criteria:     "Start the Game",
 			Title:        "A Smashing Debut",
 			DateAchieved: today,
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay1Day,
 			StoryId:      "story_2",
-			Criteria:     "Start a Case",
 			Title:        "A Smashing Debut",
 			DateAchieved: today,
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay2Days,
 			StoryId:      "story_3",
-			Criteria:     "Solve 1 Case",
 			Title:        "A Smashing Debut",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay3Days,
 			StoryId:      "story_4",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay4Days,
 			StoryId:      "story_5",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay5Days,
 			StoryId:      "story_6",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay6Days,
 			StoryId:      "story_7",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay7Days,
 			StoryId:      "story_8",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay8Days,
 			StoryId:      "story_9",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay9Days,
 			StoryId:      "story_10",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay10Days,
 			StoryId:      "story_11",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay11Days,
 			StoryId:      "story_12",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay12Days,
 			StoryId:      "story_13",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay13Days,
 			StoryId:      "story_14",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay14Days,
 			StoryId:      "story_15",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaSolve1Case,
 			StoryId:      "story_16",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaSolve10Cases,
 			StoryId:      "story_17",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaSolve20Cases,
 			StoryId:      "story_18",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaSolve30Cases,
 			StoryId:      "story_19",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay3ConsecutiveDays,
 			StoryId:      "story_20",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay5ConsecutiveDays,
 			StoryId:      "story_21",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay7ConsecutiveDays,
 			StoryId:      "story_22",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaPlay10ConsecutiveDays,
 			StoryId:      "story_23",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaScore100,
 			StoryId:      "story_24",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaScore95,
 			StoryId:      "story_25",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaLose,
 			StoryId:      "story_26",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaNone,
 			StoryId:      "story_27",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
 		},
 		{
+			Criteria:     CriteriaNone,
 			StoryId:      "story_28",
-			Criteria:     "",
 			Title:        "",
 			DateAchieved: "",
 			PlayerName:   "",
@@ -204,101 +202,146 @@ func createEmptyStoryMissions(today string) []StoryMission {
 	}
 }
 
-func currentDailyStreakStoryMissions(dailyStreak int) string {
-	switch dailyStreak {
+func daysPlayedStoryMissions(daysPlayed int) Criteria {
+	switch daysPlayed {
 	case 1:
-		return "1"
+		return CriteriaPlay1Day
 	case 2:
-		return "2"
+		return CriteriaPlay2Days
 	case 3:
-		return "3"
+		return CriteriaPlay3Days
 	case 4:
-		return "4"
+		return CriteriaPlay4Days
 	case 5:
-		return "5"
+		return CriteriaPlay5Days
 	case 6:
-		return "6"
+		return CriteriaPlay6Days
 	case 7:
-		return "7"
+		return CriteriaPlay7Days
 	case 8:
-		return "8"
+		return CriteriaPlay8Days
 	case 9:
-		return "9"
+		return CriteriaPlay9Days
 	case 10:
-		return "10"
+		return CriteriaPlay10Days
 	case 11:
-		return "11"
+		return CriteriaPlay11Days
 	case 12:
-		return "12"
+		return CriteriaPlay12Days
 	case 13:
-		return "13"
+		return CriteriaPlay13Days
 	case 14:
-		return "14"
-	case 21:
-		return "21"
+		return CriteriaPlay14Days
 	default:
-		return ""
+		return CriteriaNone
 	}
 }
 
-func totalWinsStoryMissions(totalWins int) string {
+func totalWinsStoryMissions(totalWins int) Criteria {
 	switch totalWins {
 	case 1:
-		return "1"
-	case 5:
-		return "5"
+		return CriteriaSolve1Case
 	case 10:
-		return "10"
-	case 15:
-		return "15"
+		return CriteriaSolve10Cases
 	case 20:
-		return "20"
-	case 25:
-		return "25"
+		return CriteriaSolve20Cases
 	case 30:
-		return "30"
-	case 35:
-		return "35"
-	case 40:
-		return "40"
-	case 45:
-		return "45"
-	case 50:
-		return "50"
-	case 75:
-		return "75"
+		return CriteriaSolve30Cases
 	default:
-		return ""
+		return CriteriaNone
 	}
 }
 
-func updateStoryMissions(storyMissions *[]StoryMission, currentDailyStreakStoryId *string, totalWinsStoryId *string, todayDate string, playerName string) {
-	if storyMissions == nil || currentDailyStreakStoryId == nil || totalWinsStoryId == nil {
-		return
+func currentDailyStreakStoryMissions(currentStreak int) Criteria {
+	switch currentStreak {
+	case 3:
+		return CriteriaPlay3ConsecutiveDays
+	case 5:
+		return CriteriaPlay5ConsecutiveDays
+	case 7:
+		return CriteriaPlay7ConsecutiveDays
+	case 10:
+		return CriteriaPlay10ConsecutiveDays
+	default:
+		return CriteriaNone
 	}
-	storyIds := []string{*currentDailyStreakStoryId, *totalWinsStoryId}
+}
 
-	for _, storyId := range storyIds {
-		if storyId == "" {
-			continue
-		}
+func scoreStoryMissions(score int) Criteria {
+	switch {
+	case score == 100:
+		return CriteriaScore100
+	case score >= 95:
+		return CriteriaScore95
+	case score == 0:
+		return CriteriaLose
+	default:
+		return CriteriaNone
+	}
+}
 
-		for i, mission := range *storyMissions {
-			if mission.StoryId == storyId {
-				fmt.Printf("Matched story mission: index=%d, storyId=%s, title=%s", i, mission.StoryId, mission.Title)
-				if mission.DateAchieved != "" {
-					// If already achieved Clear the original pointer value
-					if storyId == *currentDailyStreakStoryId {
-						*currentDailyStreakStoryId = ""
-					}
-					if storyId == *totalWinsStoryId {
-						*totalWinsStoryId = ""
-					}
+func calculateAchievedStoryMissions(user *User, score int) []Criteria {
+	if user == nil {
+		return nil
+	}
+
+	var earnedStoryMissionCriteria []Criteria
+
+	// Score-earned story missions
+	scoreStoryMissionsCriteria := scoreStoryMissions(score)
+	if scoreStoryMissionsCriteria != CriteriaNone {
+		earnedStoryMissionCriteria = append(earnedStoryMissionCriteria, scoreStoryMissionsCriteria)
+	}
+
+	// total days played-earned story missions
+	daysPlayedStoryMissionCriteria := daysPlayedStoryMissions(user.TotalDaysPlayed)
+	if daysPlayedStoryMissionCriteria != CriteriaNone {
+		earnedStoryMissionCriteria = append(earnedStoryMissionCriteria, daysPlayedStoryMissionCriteria)
+	}
+
+	// current daily streak-earned story missions
+	currentDailyStreakStoryMissionsCriteria := currentDailyStreakStoryMissions(user.CurrentDailyStreak)
+	if currentDailyStreakStoryMissionsCriteria != CriteriaNone {
+		earnedStoryMissionCriteria = append(earnedStoryMissionCriteria, currentDailyStreakStoryMissionsCriteria)
+	}
+
+	// total wins-earned story missions
+	totalWinsStoryMissionsCriteria := totalWinsStoryMissions(user.TotalWins)
+	if totalWinsStoryMissionsCriteria != CriteriaNone {
+		earnedStoryMissionCriteria = append(earnedStoryMissionCriteria, totalWinsStoryMissionsCriteria)
+	}
+
+	return earnedStoryMissionCriteria
+}
+
+func updateStoryMissions(user *User, todayDate string, playerName string, earnedStoryMissionsCriteria []Criteria) []Criteria {
+	var filteredCritiera []Criteria
+
+	for _, criteria := range earnedStoryMissionsCriteria {
+		for i, mission := range user.StoryMissions {
+			if mission.Criteria == criteria && mission.DateAchieved == "" {
+				user.StoryMissions[i].DateAchieved = todayDate
+				user.StoryMissions[i].PlayerName = playerName
+
+				if !isDaysPlayedCriteria(criteria) {
+					filteredCritiera = append(filteredCritiera, criteria)
 				}
-				(*storyMissions)[i].DateAchieved = todayDate
-				(*storyMissions)[i].PlayerName = playerName
 				break
 			}
 		}
+	}
+
+	return filteredCritiera
+}
+
+func isDaysPlayedCriteria(c Criteria) bool {
+	switch c {
+	case CriteriaPlay1Day, CriteriaPlay2Days, CriteriaPlay3Days, CriteriaPlay4Days,
+		CriteriaPlay5Days, CriteriaPlay6Days, CriteriaPlay7Days, CriteriaPlay8Days,
+		CriteriaPlay9Days, CriteriaPlay10Days, CriteriaPlay11Days, CriteriaPlay12Days,
+		CriteriaPlay13Days, CriteriaPlay14Days:
+		return true
+	default:
+		return false
 	}
 }

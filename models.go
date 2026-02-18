@@ -91,7 +91,7 @@ type Result struct {
 // ResultResponse represents a game result submission response
 type ResultResponse struct {
 	Result
-	StoryId string `json:"storyId,omitempty"`
+	EarnedStoryMissionsCriteria []Criteria `json:"earnedStoryMissionsCriteria,omitempty"`
 }
 
 // User represents comprehensive statistics for a user
@@ -103,6 +103,7 @@ type User struct {
 	LastDayPlayed      string           `json:"lastDayPlayed" dynamodbav:"lastDayPlayed"`
 	TotalPlays         int              `json:"totalPlays" dynamodbav:"totalPlays"`
 	TotalWins          int              `json:"totalWins" dynamodbav:"totalWins"`
+	TotalDaysPlayed    int              `json:"totalDaysPlayed" dynamodbav:"totalDaysPlayed"`
 	Sports             []UserSportStats `json:"sports" dynamodbav:"sports"`
 	StoryMissions      []StoryMission   `json:"storyMissions" dynamodbav:"storyMissions"`
 }
@@ -131,11 +132,11 @@ type StoryTemplate struct {
 
 // StoryMission represents the status of each story mission. Stored in User object
 type StoryMission struct {
-	Criteria     string `json:"criteria"` // ex: Solve 1 Case
-	Title        string `json:"title"`    // ex: A Smashing Debut
-	DateAchieved string `json:"date"`
-	PlayerName   string `json:"playerName"`
-	StoryId      string `json:"storyId"`
+	Criteria     Criteria `json:"criteria"`
+	Title        string   `json:"title"` // ex: A Smashing Debut
+	DateAchieved string   `json:"date"`
+	PlayerName   string   `json:"playerName"`
+	StoryId      string   `json:"storyId"`
 }
 
 // Story represents the response to FE with resolved text, date, names, etc for simple pass through display

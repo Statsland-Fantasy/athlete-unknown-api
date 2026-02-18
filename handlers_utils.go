@@ -119,29 +119,28 @@ func getUserTimezone(c *gin.Context) *time.Location {
 // - Keeps the streak unchanged if they already played on currentDate (prevents multiple increments on same day)
 // Always updates LastDayPlayed to currentDate
 // The currentDate parameter should be the real-life date (typically today's date from time.Now())
-func updateDailyStreak(user *User, currentDate string) string {
-	storyIdAchieved := ""
+func updateDailyStreak(user *User, currentDate string) {
 	if user == nil {
-		return storyIdAchieved
+		return
 	}
 
 	// Check if we have a previous play date to compare against
 	if user.LastDayPlayed != "" {
 		// If they already played on this date, don't update the streak (prevents multiple increments)
 		if user.LastDayPlayed == currentDate {
-			return storyIdAchieved
+			return
 		}
 
 		lastPlayed, err := time.Parse(DateFormatYYYYMMDD, user.LastDayPlayed)
 		currentParsed, err2 := time.Parse(DateFormatYYYYMMDD, currentDate)
 
 		if err == nil && err2 == nil {
+			user.TotalDaysPlayed++
 			daysDiff := int(currentParsed.Sub(lastPlayed).Hours() / 24)
 
 			if daysDiff == 1 {
 				// Consecutive day - increment streak
 				user.CurrentDailyStreak++
-				storyIdAchieved = currentDailyStreakStoryMissions(user.CurrentDailyStreak)
 			} else if daysDiff > 1 {
 				// Missed a day - reset streak to 1
 				user.CurrentDailyStreak = 1
@@ -152,5 +151,4 @@ func updateDailyStreak(user *User, currentDate string) string {
 
 	// Update last day played to the current date
 	user.LastDayPlayed = currentDate
-	return storyIdAchieved
 }

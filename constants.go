@@ -155,3 +155,41 @@ func IsValidSport(sport string) bool {
 		return false
 	}
 }
+
+// Criteria constants for story missions
+type Criteria string
+
+const (
+	CriteriaStartGame Criteria = "Start the Game"
+	// # of Days Played
+	CriteriaPlay1Day   Criteria = "Play 1 Day"
+	CriteriaPlay2Days  Criteria = "Play 2 Days"
+	CriteriaPlay3Days  Criteria = "Play 3 Days"
+	CriteriaPlay4Days  Criteria = "Play 4 Days"
+	CriteriaPlay5Days  Criteria = "Play 5 Days"
+	CriteriaPlay6Days  Criteria = "Play 6 Days"
+	CriteriaPlay7Days  Criteria = "Play 7 Days"
+	CriteriaPlay8Days  Criteria = "Play 8 Days"
+	CriteriaPlay9Days  Criteria = "Play 9 Days"
+	CriteriaPlay10Days Criteria = "Play 10 Days"
+	CriteriaPlay11Days Criteria = "Play 11 Days"
+	CriteriaPlay12Days Criteria = "Play 12 Days"
+	CriteriaPlay13Days Criteria = "Play 13 Days"
+	CriteriaPlay14Days Criteria = "Play 14 Days"
+	// # of Cases Solved
+	CriteriaSolve1Case   Criteria = "Solve 1 Case"
+	CriteriaSolve10Cases Criteria = "Solve 10 Cases"
+	CriteriaSolve20Cases Criteria = "Solve 20 Cases"
+	CriteriaSolve30Cases Criteria = "Solve 30 Cases"
+	// # of Days Played in a Row
+	CriteriaPlay3ConsecutiveDays  Criteria = "Play 3 Days in a Row"
+	CriteriaPlay5ConsecutiveDays  Criteria = "Play 5 Days in a Row"
+	CriteriaPlay7ConsecutiveDays  Criteria = "Play 7 Days in a Row"
+	CriteriaPlay10ConsecutiveDays Criteria = "Play 10 Days in a Row"
+	// Score
+	CriteriaScore100 Criteria = "Achieve a Perfect Score"
+	CriteriaScore95  Criteria = "Score 95 or Higher"
+	// Misc
+	CriteriaLose Criteria = "Do Not Successfully Solve a Case"
+	CriteriaNone Criteria = ""
+)

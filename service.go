@@ -9,11 +9,11 @@ import (
 
 // Domain errors that handlers map to HTTP status codes
 var (
-	ErrRoundNotFound      = errors.New("round not found")
-	ErrRoundAlreadyExists = errors.New("round already exists")
-	ErrUserNotFound       = errors.New("user not found")
+	ErrRoundNotFound       = errors.New("round not found")
+	ErrRoundAlreadyExists  = errors.New("round already exists")
+	ErrUserNotFound        = errors.New("user not found")
 	ErrUserAlreadyMigrated = errors.New("user already migrated")
-	ErrInvalidPlayDate    = errors.New("invalid play date")
+	ErrInvalidPlayDate     = errors.New("invalid play date")
 )
 
 // SubmitResultsParams holds the parsed input for SubmitResults
@@ -21,7 +21,7 @@ type SubmitResultsParams struct {
 	Sport    string
 	PlayDate string
 	Result   Result
-	UserID   string         // empty if unauthenticated
+	UserID   string // empty if unauthenticated
 	Username string
 	Timezone *time.Location
 }
@@ -160,29 +160,29 @@ func (gs *GameService) SubmitResults(ctx context.Context, params SubmitResultsPa
 			return nil, fmt.Errorf("failed to retrieve user: %w", err)
 		}
 
-		currentDailyStreakStoryId := ""
-		totalWinsStoryId := ""
-
 		today := gs.now().In(params.Timezone).Format(DateFormatYYYYMMDD)
 
 		if user == nil {
-			totalWins := 0
-			if params.Result.Score > 0 {
-				totalWins = 1
-			}
 			user = &User{
 				UserId:             params.UserID,
 				UserName:           params.Username,
 				UserCreated:        gs.now(),
 				CurrentDailyStreak: 1,
 				TotalPlays:         1,
-				TotalWins:          totalWins,
+				TotalWins:          0,
+				TotalDaysPlayed:    1,
 				LastDayPlayed:      today,
 				Sports:             []UserSportStats{},
 				StoryMissions:      createEmptyStoryMissions(today),
 			}
 		} else {
-			currentDailyStreakStoryId = updateDailyStreak(user, today)
+			updateDailyStreak(user, today)
+		}
+
+		// Update root level stats
+		user.TotalPlays++
+		if params.Result.Score > 0 {
+			user.TotalWins++
 		}
 
 		if params.Username != "" {
@@ -206,13 +206,6 @@ func (gs *GameService) SubmitResults(ctx context.Context, params SubmitResultsPa
 			sportStats = &user.Sports[len(user.Sports)-1]
 		}
 
-		// Update root level stats
-		user.TotalPlays++
-		if params.Result.Score > 0 {
-			user.TotalWins++
-			totalWinsStoryId = totalWinsStoryMissions(user.TotalWins)
-		}
-
 		// Update sport-specific stats
 		updateStatsWithResult(&sportStats.Stats, &params.Result)
 
@@ -234,10 +227,11 @@ func (gs *GameService) SubmitResults(ctx context.Context, params SubmitResultsPa
 			sportStats.History = append(sportStats.History, roundHistory)
 		}
 
-		// Update storyMissions
-		updateStoryMissions(&user.StoryMissions, &currentDailyStreakStoryId, &totalWinsStoryId, today, params.Result.PlayerName)
+		earnedStoryMissionsCriteria := calculateAchievedStoryMissions(user, params.Result.Score)
 
-		resultResponse.StoryId = totalWinsStoryId
+		// Update storyMissions
+		filteredEarnedStoryMissionsCriteria := updateStoryMissions(user, today, params.Result.PlayerName, earnedStoryMissionsCriteria)
+		resultResponse.EarnedStoryMissionsCriteria = filteredEarnedStoryMissionsCriteria
 
 		// Save or update user
 		err = gs.db.UpdateUser(ctx, user)
