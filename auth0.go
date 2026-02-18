@@ -90,7 +90,7 @@ func (a *auth0Client) UpdateUserMetadata(userId, username, managementToken strin
 	// Prepare the update payload
 	updatePayload := map[string]interface{}{
 		"user_metadata": map[string]string{
-			"display_username": username,
+			"athlete_unknown_username": username,
 		},
 	}
 
@@ -121,8 +121,6 @@ func (a *auth0Client) UpdateUserMetadata(userId, username, managementToken strin
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("Auth0 user update failed with status %d: %s", resp.StatusCode, string(body))
 	}
-
-	// TODO: Also update the username in the userStats field and figure out which is source of truth
 
 	return nil
 }

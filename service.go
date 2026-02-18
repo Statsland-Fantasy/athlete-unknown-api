@@ -358,7 +358,7 @@ func (gs *GameService) createRoundFromPlayer(ctx context.Context, player *Player
 	return round, nil
 }
 
-// UpdateUsername updates the user's username in Auth0
+// UpdateUsername updates the user's username in Auth0 & in User DB record
 func (gs *GameService) UpdateUsername(ctx context.Context, userId, username string) error {
 	managementToken, err := gs.auth0.GetManagementToken()
 	if err != nil {
@@ -368,6 +368,19 @@ func (gs *GameService) UpdateUsername(ctx context.Context, userId, username stri
 	err = gs.auth0.UpdateUserMetadata(userId, username, managementToken)
 	if err != nil {
 		return fmt.Errorf("failed to update username in Auth0: %w", err)
+	}
+
+	user, err := gs.db.GetUser(ctx, userId)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	user.UserName = username
+	if err := gs.db.UpdateUser(ctx, user); err != nil {
+		return fmt.Errorf("failed to update username in DB: %w", err)
 	}
 
 	return nil
